@@ -1,0 +1,48 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+    <model name="milford_haven">
+      <static>true</static>
+      <link name="base_link">
+        <collision name="base_collision">
+          <pose>0 0 -5</pose>
+          <geometry>
+            <box>
+              <size>1000 1000 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <visual name="base_visual">
+          <geometry>
+            <heightmap>
+              <texture>
+                <diffuse>file://media/materials/textures/dirt_diffusespecular.png</diffuse>
+                <normal>file://media/materials/textures/flat_normal.png</normal>
+                <size>1</size>
+              </texture>
+              <texture>
+                <diffuse>file://media/materials/textures/grass_diffusespecular.png</diffuse>
+                <normal>file://media/materials/textures/flat_normal.png</normal>
+                <size>1</size>
+              </texture>
+              <texture>
+                <diffuse>file://media/materials/textures/fungus_diffusespecular.png</diffuse>
+                <normal>file://media/materials/textures/flat_normal.png</normal>
+                <size>1</size>
+              </texture>
+              <blend>
+                <min_height>2</min_height>
+                <fade_dist>5</fade_dist>
+              </blend>
+              <blend>
+                <min_height>4</min_height>
+                <fade_dist>5</fade_dist>
+              </blend>
+              <uri>model://milford_haven/materials/textures/milford_haven_513.png</uri>
+              <size>1000 1000 250</size>
+              <pos>0 0 -5</pos>
+            </heightmap>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+</sdf>

@@ -1,0 +1,297 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+  <model name='proa_boat'>
+    <!-- <static>true</static> -->
+    <!-- <enable_wind>true</enable_wind> -->
+
+    <plugin name="hydrodynamics" filename="libHydrodynamicsPlugin.so">
+      <!-- Wave Model -->
+      <wave_model>ocean</wave_model>
+
+      <!-- Hydrodynamics -->
+      <!-- <damping_on>false</damping_on> -->
+      <!-- <viscous_drag_on>false</viscous_drag_on> -->
+      <!-- <pressure_drag_on>false</pressure_drag_on> -->
+
+      <!-- Markers -->
+      <markers>
+        <!-- <update_rate>30</update_rate> -->
+        <!-- <water_patch>true</water_patch> -->
+        <!-- <waterline>true</waterline> -->
+        <!-- <underwater_surface>true</underwater_surface> -->
+      </markers>
+    </plugin>
+
+    <link name="leeward_hull">
+      <enable_wind>false</enable_wind>
+      <pose>0 0 0 0 1.5707 0</pose>
+      <inertial>
+        <mass>16.9</mass>
+        <inertia>
+          <ixx>0.19</ixx>
+          <ixy>0</ixy>
+          <iyy>8.23</iyy>
+          <iyz>0</iyz>
+          <izz>8.23</izz>
+        </inertia>
+      </inertial>
+      <collision name="leeward_hull_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.15</radius>
+            <length>2.4</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.25</mu>
+              <mu2>0.25</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name="leeward_hull_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.15</radius>
+            <length>2.4</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+    
+    <link name="windward_hull">
+      <enable_wind>false</enable_wind>
+      <pose>0 1.0 0 0 1.5707 0</pose>
+      <inertial>
+        <mass>7.0</mass>
+        <inertia>
+          <ixx>0.08</ixx>
+          <ixy>0</ixy>
+          <iyy>0.62</iyy>
+          <iyz>0</iyz>
+          <izz>0.62</izz>
+        </inertia>
+      </inertial>
+      <collision name="windward_hull_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.15</radius>
+            <length>1.0</length>
+          </cylinder>
+        </geometry>
+        <surface>
+          <friction>
+            <ode>
+              <mu>0.25</mu>
+              <mu2>0.25</mu2>
+            </ode>
+          </friction>
+        </surface>
+      </collision>
+      <visual name="windward_hull_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.15</radius>
+            <length>1.0</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="deck">
+      <enable_wind>false</enable_wind>
+      <pose>0 0.5 0.14 0 0 0</pose>
+      <inertial>
+        <mass>2.0</mass>
+        <inertia>
+          <ixx>0.16</ixx>
+          <ixy>0</ixy>
+          <iyy>0.16</iyy>
+          <iyz>0</iyz>
+          <izz>0.33</izz>
+        </inertia>
+      </inertial>
+      <collision name="deck_collision">
+        <geometry>
+          <box>
+            <size>1.0 1.0 0.02</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="deck_visual">
+        <geometry>
+          <box>
+            <size>1.0 1.0 0.02</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="fore_mast">
+      <enable_wind>false</enable_wind>
+      <pose>0.5 0 0.90 0 0 0</pose>
+      <inertial>
+        <mass>0.3</mass>
+        <inertia>
+          <ixx>0.055</ixx>
+          <ixy>0</ixy>
+          <iyy>0.055</iyy>
+          <iyz>0</iyz>
+          <izz>0.00009</izz>
+        </inertia>
+      </inertial>
+      <collision name="fore_mast_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>1.5</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="fore_mast_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>1.5</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="fore_sail">
+      <enable_wind>true</enable_wind>
+      <pose>0.5 0 0.95 0 0 0</pose>
+      <inertial>
+        <mass>0.35</mass>
+        <inertia>
+          <ixx>0.057</ixx>
+          <ixy>0</ixy>
+          <iyy>0.064</iyy>
+          <iyz>0</iyz>
+          <izz>0.0072</izz>
+        </inertia>
+      </inertial>
+      <collision name="fore_sail_collision">
+        <geometry>
+          <box>
+            <size>0.5 0.005 1.4</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="fore_sail_visual">
+        <geometry>
+          <box>
+            <size>0.5 0.005 1.4</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="aft_mast">
+      <enable_wind>false</enable_wind>
+      <pose>-0.5 0 0.90 0 0 0</pose>
+      <inertial>
+        <mass>0.3</mass>
+        <inertia>
+          <ixx>0.055</ixx>
+          <ixy>0</ixy>
+          <iyy>0.055</iyy>
+          <iyz>0</iyz>
+          <izz>0.00009</izz>
+        </inertia>
+      </inertial>
+      <collision name="aft_mast_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>1.5</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="aft_mast_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>1.5</length>
+          </cylinder>
+        </geometry>
+      </visual>
+    </link>
+
+    <link name="aft_sail">
+      <enable_wind>true</enable_wind>
+      <pose>-0.5 0 0.95 0 0 0</pose>
+      <inertial>
+        <mass>0.35</mass>
+        <inertia>
+          <ixx>0.057</ixx>
+          <ixy>0</ixy>
+          <iyy>0.064</iyy>
+          <iyz>0</iyz>
+          <izz>0.0072</izz>
+        </inertia>
+      </inertial>
+      <collision name="aft_sail_collision">
+        <geometry>
+          <box>
+            <size>0.5 0.005 1.4</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="aft_sail_visual">
+        <geometry>
+          <box>
+            <size>0.5 0.005 1.4</size>
+          </box>
+        </geometry>
+      </visual>
+    </link>
+
+    <!-- hulls & deck  -->
+    <joint type="fixed" name="leeward_hull_deck_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>deck</child>
+      <parent>leeward_hull</parent>
+    </joint>
+
+    <joint type="fixed" name="deck_windward_hull_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>windward_hull</child>
+      <parent>deck</parent>
+    </joint>
+
+    <!-- mast & sails  -->
+    <joint type="fixed" name="fore_mast_fore_sail_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>fore_sail</child>
+      <parent>fore_mast</parent>
+    </joint>
+
+    <joint type="revolute" name="leeward_hull_fore_mast_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>fore_mast</child>
+      <parent>leeward_hull</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+      </axis>
+    </joint>
+
+    <joint type="fixed" name="aft_mast_fore_sail_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>aft_sail</child>
+      <parent>aft_mast</parent>
+    </joint>
+
+    <joint type="revolute" name="leeward_hull_aft_mast_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>aft_mast</child>
+      <parent>leeward_hull</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+      </axis>
+    </joint>
+
+  </model>
+</sdf>

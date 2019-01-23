@@ -1,0 +1,69 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+
+  <model name='tug_boat'>
+    <pose>0 0 0 -1.57079 0 3.14159</pose>
+    <!-- <static>true</static> -->
+
+    <plugin name="hydrodynamics" filename="libHydrodynamicsPlugin.so">
+      <!-- Wave Model -->
+      <wave_model>ocean</wave_model>
+
+      <!-- Linear and Angular Damping -->
+      <cDampL1>0.0E+0</cDampL1>
+      <cDampL2>0.0E+0</cDampL2>
+      <cDampR1>0.0E+0</cDampR1>
+      <cDampR2>0.0E+0</cDampR2>
+
+      <!-- 'Pressure' Drag -->
+      <cPDrag1>1.0E+3</cPDrag1>
+      <cPDrag2>1.0E+3</cPDrag2>
+      <fPDrag>0.4</fPDrag>
+      <cSDrag1>1.0E+3</cSDrag1>
+      <cSDrag2>1.0E+3</cSDrag2>
+      <fSDrag>0.3</fSDrag>
+      <vRDrag>1.0</vRDrag>
+
+      <!-- Markers -->
+      <markers>
+        <!-- <update_rate>30</update_rate> -->
+        <!-- <water_patch>true</water_patch> -->
+        <!-- <waterline>true</waterline> -->
+        <!-- <underwater_surface>true</underwater_surface> -->
+      </markers>
+    </plugin>
+
+    <link name="base_link">
+      <visual name="base_visual">
+        <geometry>
+          <mesh>
+            <uri>model://tug_boat/meshes/tug_boat.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+      <collision name="base_collision">
+        <geometry>
+          <mesh>
+            <uri>model://tug_boat/meshes/tug_boat_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>30000</mass>
+        <inertia>
+          <ixx>9900</ixx>
+          <ixy>0</ixy>
+          <iyy>66000</iyy>
+          <iyz>0</iyz>
+          <izz>72000</izz>
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+</sdf>

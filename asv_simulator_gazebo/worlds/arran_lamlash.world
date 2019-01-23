@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="arran_lamlash_world">
+    
+    <!-- GUI -->
+    <gui>
+      <plugin name="keyboard_gui_plugin" filename="libKeyboardGUIPlugin.so"/>
+    </gui>
+
+    <!-- Scene -->
+    <scene>
+      <sky>
+        <clouds>
+          <speed>12</speed>
+        </clouds>
+      </sky>
+    </scene>
+
+    <!-- Lights -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- World models  -->
+    <include>
+      <uri>model://arran_lamlash</uri>
+    </include>
+
+    <include>
+      <uri>model://ocean</uri>
+    </include>
+
+  </world>
+</sdf>

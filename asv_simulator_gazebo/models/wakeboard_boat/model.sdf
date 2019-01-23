@@ -1,0 +1,54 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+
+  <model name='wakeboard_boat'>
+    <pose>0 0 0 0 0 0</pose>
+    <!-- <static>true</static> -->
+
+    <plugin name="hydrodynamics" filename="libHydrodynamicsPlugin.so">
+      <!-- Wave Model -->
+      <wave_model>ocean</wave_model>
+
+      <!-- Markers -->
+      <markers>
+        <!-- <update_rate>30</update_rate> -->
+        <!-- <water_patch>true</water_patch> -->
+        <!-- <waterline>true</waterline> -->
+        <!-- <underwater_surface>true</underwater_surface> -->
+      </markers>
+    </plugin>
+
+    <link name="base_link">
+      <visual name="base_visual">
+        <geometry>
+          <mesh>
+            <uri>model://wakeboard_boat/meshes/wakeboard_boat.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+      <collision name="base_collision">
+        <geometry>
+          <mesh>
+            <uri>model://wakeboard_boat/meshes/wakeboard_boat_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>1000</mass>
+        <inertia>
+          <ixx>332</ixx>
+          <ixy>0</ixy>
+          <iyy>2255</iyy>
+          <iyz>0</iyz>
+          <izz>2446</izz>
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+</sdf>
