@@ -1,0 +1,39 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+
+  <!-- 
+    Specifications:
+
+    L = 4.95m
+    C = 0m
+    +/- 2.475m
+
+    Mass is calculated for steel. 4.95m x 0.01m x 0.01m is 3.81kg.
+    Links are offset at 5.0m, 10.0m, etc.
+    Joints must be offset -2.5m
+  -->
+
+  <model name="chain_long">        
+    <!-- <static>true</static> -->
+    
+    <include>      
+      <pose>0 0 0 0 0 0</pose>
+      <uri>model://chain_link_long</uri>
+      <name>chain_link0</name>
+    </include>
+
+    <include>
+      <pose>5.0 0 0 0 0 0</pose>
+      <uri>model://chain_link_long</uri>
+      <name>chain_link1</name>
+    </include>
+
+
+    <joint type="ball" name="chain_link_0_1_joint">
+      <pose>-2.5 0 0 0 0 0</pose>
+      <parent>chain_link0::base_link</parent>
+      <child>chain_link1::base_link</child>
+    </joint>
+
+  </model>
+</sdf>

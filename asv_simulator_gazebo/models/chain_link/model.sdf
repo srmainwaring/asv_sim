@@ -1,0 +1,42 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+
+  <model name='chain_link'>
+    <pose>0 0 0 0 0 0</pose>
+    <!-- <static>true</static> -->
+
+    <link name="base_link">
+      <visual name="base_visual">
+        <geometry>
+          <box>
+            <size>0.45 0.01 0.01</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Grey</name>
+          </script>
+        </material>
+      </visual>
+      <collision name="base_collision">
+        <max_contacts>2</max_contacts>
+        <geometry>
+          <box>
+            <size>0.45 0.01 0.01</size>
+          </box>
+        </geometry>
+      </collision>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.3465</mass>
+        <inertia>
+          <ixx>0.00000577</ixx>
+          <ixy>0</ixy>
+          <iyy>0.00585</iyy>
+          <iyz>0</iyz>
+          <izz>0.00585</izz>
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+</sdf>

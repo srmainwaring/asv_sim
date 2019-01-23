@@ -1,0 +1,50 @@
+<?xml version='1.0'?>
+<sdf version='1.6'>
+
+  <!--
+    Specifications
+
+    Steel mnooring block
+    r = 0.5
+    h = 0.5
+    mass = 3023kg
+  -->
+  
+  <model name='mooring_block'>
+    <pose>0 0 0 0 0 0</pose>
+    <link name="base_link">
+      <visual name="base_visual">
+        <geometry>
+          <cylinder>
+            <radius>0.5</radius>
+            <length>0.5</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Black</name>
+          </script>
+        </material>
+      </visual>
+      <collision name="base_collision">
+        <geometry>
+          <cylinder>
+            <radius>0.5</radius>
+            <length>0.5</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>3023</mass>
+        <inertia>
+          <ixx>251</ixx>
+          <ixy>0</ixy>
+          <iyy>251</iyy>
+          <iyz>0</iyz>
+          <izz>378</izz>
+        </inertia>
+      </inertial>
+    </link>
+  </model>
+</sdf>

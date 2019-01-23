@@ -13,6 +13,8 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <exec_depend>asv_simulator_gazebo</exec_depend>
+  <exec_depend>gazebo</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
 
   <export>
     <metapackage />

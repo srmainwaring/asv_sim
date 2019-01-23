@@ -13,6 +13,8 @@
   <author email="rhys.mainwaring@me.com">Rhys Mainwaring</author>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <exec_depend>gazebo</exec_depend>
+  <exec_depend>gazebo_ros</exec_depend>
 
   <export>
     <gazebo_ros gazebo_media_path="${prefix}" />
