@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>asv_simulator_gazebo</name>
+  <version>0.1.0</version>
+  <description>
+    This package contains Gazebo media, models, and worlds for simulating
+    surface vessels. There are ROS launch scripts that may be used to
+    launch a Gazebo session and load a world using `roslaunch`.
+  </description>
+
+  <maintainer email="rhys.mainwaring@me.com">Rhys Mainwaring</maintainer>
+  <license>GPLv3</license>
+  <author email="rhys.mainwaring@me.com">Rhys Mainwaring</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <gazebo_ros gazebo_media_path="${prefix}" />
+    <gazebo_ros gazebo_model_path="${prefix}/world_models:${prefix}/models" />
+  </export>
+</package>
