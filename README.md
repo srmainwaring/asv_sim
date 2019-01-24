@@ -27,23 +27,17 @@ mkdir src
 catkin init
 ```
 
-Clone the ASV Wave Simulator repository:
+Clone the ASV Simulator repository:
 
 ```bash
 cd src
-git clone ssh://rhys@diskstation.local:/volume1/git/asv_simulator
+git clone ssh://rhys@diskstation.local:/volume1/git/asv_sim.git
 ```
 
 Compile the packages:
 
 ```bash
-catkin build --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo
-```
-
-or with tests:
-
-```bash
-catkin build --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo --catkin-args run_tests
+catkin build
 ```
 
 ## Usage
@@ -51,7 +45,7 @@ catkin build --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo --catkin-args run_te
 Launch a Gazebo session with `roslaunch`:
 
 ```bash
-roslaunch asv_wave_gazebo ocean_world.launch verbose:=true
+roslaunch asv_sim_gazebo milford_haven_world.launch verbose:=true
 ```
 
 ## License
