@@ -1,20 +1,56 @@
 <?xml version="1.0" ?>
+<!--
+  Copyright (C) 2019  Rhys Mainwaring
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
 <sdf version="1.6">
   <world name="luing_sound_world">
     
     <!-- GUI -->
     <gui>
       <plugin name="keyboard_gui_plugin" filename="libKeyboardGUIPlugin.so"/>
+      <camera name='user_camera'>
+        <pose>463.929 -473.361 50.8614 0 0.067456 2.53619</pose>
+        <view_controller>orbit</view_controller>
+        <projection_type>perspective</projection_type>
+      </camera>
     </gui>
 
     <!-- Scene -->
     <scene>
+      <time>8</time>
+      <sunrise>6</sunrise>
+      <sunset>18</sunset>
       <sky>
         <clouds>
           <speed>12</speed>
+          <direction>1.57079</direction>
         </clouds>
       </sky>
+      <grid>false</grid>
+      <origin_visual>false</origin_visual>
     </scene>
+
+    <!-- Coordinates  -->
+    <spherical_coordinates>
+      <latitude_deg>-5.667659</latitude_deg>
+      <longitude_deg>56.1870385</longitude_deg>
+      <elevation>0</elevation>
+      <heading_deg>0</heading_deg>
+      <surface_model>EARTH_WGS84</surface_model>
+    </spherical_coordinates>
 
     <!-- Lights -->
     <include>
