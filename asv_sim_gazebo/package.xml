@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>asv_simulator_gazebo</name>
+  <name>asv_sim_gazebo</name>
   <version>0.1.0</version>
   <description>
     This package contains Gazebo media, models, and worlds for simulating

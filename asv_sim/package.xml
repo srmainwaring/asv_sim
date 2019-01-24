@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>asv_simulator</name>
+  <name>asv_sim</name>
   <version>0.1.0</version>
   <description>
     This package contains plugins and models for simulating
@@ -12,7 +12,7 @@
   <author email="rhys.mainwaring@me.com">Rhys Mainwaring</author>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <exec_depend>asv_simulator_gazebo</exec_depend>
+  <exec_depend>asv_sim_gazebo</exec_depend>
   <exec_depend>gazebo</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
 

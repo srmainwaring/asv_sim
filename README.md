@@ -27,11 +27,11 @@ mkdir src
 catkin init
 ```
 
-Clone the ASV Wave Simulator repository:
+Clone the ASV Simulator repository:
 
 ```bash
 cd src
-git clone ssh://rhys@diskstation.local:/volume1/git/robotics/asv_simulator.git
+git clone ssh://rhys@diskstation.local:/volume1/git/asv_sim.git
 ```
 
 Compile the packages:
@@ -45,7 +45,7 @@ catkin build
 Launch a Gazebo session with `roslaunch`:
 
 ```bash
-roslaunch asv_simulator_gazebo milford_haven_world.launch verbose:=true
+roslaunch asv_sim_gazebo milford_haven_world.launch verbose:=true
 ```
 
 ## License

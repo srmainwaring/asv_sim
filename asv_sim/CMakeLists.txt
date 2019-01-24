@@ -1,3 +1,4 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(asv_simulator_gazebo)
+project(asv_sim)
 find_package(catkin REQUIRED)
+catkin_metapackage()
