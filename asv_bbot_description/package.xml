@@ -1,11 +1,9 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>asv_sim_gazebo</name>
+  <name>asv_bbot_description</name>
   <version>0.1.0</version>
   <description>
-    This package contains Gazebo media, models, and worlds for simulating
-    surface vessels. There are ROS launch scripts that may be used to
-    launch a Gazebo session and load a world using `roslaunch`.
+    Robot description for a test surface vessel (a floating box bot). 
   </description>
 
   <maintainer email="rhys.mainwaring@me.com">Rhys Mainwaring</maintainer>
@@ -14,12 +12,12 @@
 
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>gazebo_ros</build_depend>
-
-  <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>joint_state_publisher</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>rviz</exec_depend>
 
   <export>
     <gazebo_ros gazebo_media_path="${prefix}" />
-    <gazebo_ros gazebo_model_path="${prefix}/world_models:${prefix}/models" />
+    <gazebo_ros gazebo_model_path="${prefix}/models" />
   </export>
 </package>
