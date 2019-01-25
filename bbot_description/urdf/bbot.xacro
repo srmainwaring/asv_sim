@@ -1,1 +1,41 @@
 <?xml version="1.0" ?>
+<robot name="bbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Constants for robot dimensions -->
+  <xacro:property name="mass" value="20000" />  
+  <xacro:property name="loa" value="10" />  
+  <xacro:property name="woa" value="4" />  
+  <xacro:property name="doa" value="2" />  
+
+  <!-- Import Gazebo elements -->
+  <xacro:include filename="$(find bbot_description)/urdf/bbot.gazebo" />
+
+  <!-- Import materials -->
+  <xacro:include filename="$(find bbot_description)/urdf/materials.xacro" />
+
+  <!-- Base link (main hull) -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="${loa} ${woa} ${doa}"/>
+      </geometry>
+      <material name="orange" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="${loa} ${woa} ${doa}"/>
+      </geometry>
+    </collision>
+    
+    <!-- Mass and inertial assume volume is 0.25 densitity of water -->
+    <inertial>
+      <mass value="${mass}" />
+      <inertia 
+        ixx="${mass * (woa * woa + doa * doa) / 12.0}" ixy="0.0" ixz="0.0"
+        iyy="${mass * (doa * doa + loa * loa) / 12.0}" iyz="0.0"
+        izz="${mass * (loa * loa + woa * woa) / 12.0}" />
+    </inertial>
+  </link>
+
+</robot>
