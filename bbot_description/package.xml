@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>asv_bbot_description</name>
+  <name>bbot_description</name>
   <version>0.1.0</version>
   <description>
     Robot description for a test surface vessel (a floating box bot). 

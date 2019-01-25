@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<robot name="bbot">
+
+  <material name="orange">
+    <color rgba="${255/255} ${108/255} ${10/255} 1.0"/>
+  </material>
+
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="10.0 4.0 2.0"/>
+      </geometry>
+      <material name="orange" />
+    </visual>
+  </link>
+
+</robot>
