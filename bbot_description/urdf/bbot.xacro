@@ -6,6 +6,8 @@
   <xacro:property name="loa" value="10" />  
   <xacro:property name="woa" value="4" />  
   <xacro:property name="doa" value="2" />  
+  <xacro:property name="camera_mass" value="0.1" />  
+  <xacro:property name="camera_size" value="0.1" />  
 
   <!-- Import Gazebo elements -->
   <xacro:include filename="$(find bbot_description)/urdf/bbot.gazebo" />
@@ -37,5 +39,54 @@
         izz="${mass * (loa * loa + woa * woa) / 12.0}" />
     </inertial>
   </link>
+
+  <!-- Camera -->
+  <link name="camera_link">
+    <visual>
+      <geometry>
+        <box size="${camera_size} ${camera_size} ${camera_size}"/>
+      </geometry>
+      <material name="black" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="${camera_size} ${camera_size} ${camera_size}"/>
+      </geometry>
+    </collision>
+    
+    <inertial>
+      <mass value="${camera_mass}" />
+      <inertia 
+        ixx="${camera_mass * (camera_size * camera_size) / 6.0}" ixy="0.0" ixz="0.0"
+        iyy="${camera_mass * (camera_size * camera_size) / 6.0}" iyz="0.0"
+        izz="${camera_mass * (camera_size * camera_size) / 6.0}" />
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0 ${doa}/2" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <!--
+    generate an optical frame http://www.ros.org/reps/rep-0103.html#suffix-frames
+    so that ros and opencv can operate on the camera frame correctly
+  -->
+  <link name="camera_link_optical">
+  </link>
+
+  <joint name="camera_optical_joint" type="fixed">
+    <!--
+      these values have to be these values otherwise the gazebo camera image
+      won't be aligned properly with the frame it is supposedly originating from
+    -->
+    <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
+    <parent link="camera_link"/>
+    <child link="camera_link_optical"/>
+  </joint>
+
 
 </robot>

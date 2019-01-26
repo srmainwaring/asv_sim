@@ -4,7 +4,7 @@
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(find bbot_description)/launch/bbot_rviz.rviz" />
 
-  <param name="robot_description" command="$(find xacro)/xacro --inorder $(arg model)" />
+  <param name="robot_description" command="$(find xacro)/xacro $(arg model)" />
   <param name="use_gui" value="$(arg gui)" />
 
   <!-- Publish joint states -->
