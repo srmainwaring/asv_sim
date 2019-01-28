@@ -1,11 +1,25 @@
 <?xml version="1.0" ?>
 <robot name="bbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+  <!-- Math constants -->
+  <xacro:property name="math_pi" value="3.141592653589793" />  
+
+  <!-- Math macros -->
+  <xacro:macro name="box_inertial" params="mass x y z">  
+    <inertial>
+      <mass value="${mass}" />
+      <inertia 
+        ixx="${mass * (y * y + z * z) / 12.0}" ixy="0.0" ixz="0.0"
+        iyy="${mass * (z * z + x * x) / 12.0}" iyz="0.0"
+        izz="${mass * (x * x + y * y) / 12.0}" />
+    </inertial>
+  </xacro:macro>  
+
   <!-- Constants for robot dimensions -->
-  <xacro:property name="mass" value="20000" />  
-  <xacro:property name="loa" value="10" />  
-  <xacro:property name="woa" value="4" />  
-  <xacro:property name="doa" value="2" />  
+  <xacro:property name="hull_mass" value="20000.0" />
+  <xacro:property name="hull_loa" value="10.0" />  
+  <xacro:property name="hull_woa" value="4.0" />  
+  <xacro:property name="hull_doa" value="2.0" />  
   <xacro:property name="camera_mass" value="0.1" />  
   <xacro:property name="camera_size" value="0.1" />  
 
@@ -19,25 +33,18 @@
   <link name="base_link">
     <visual>
       <geometry>
-        <box size="${loa} ${woa} ${doa}"/>
+        <box size="${hull_loa} ${hull_woa} ${hull_doa}"/>
       </geometry>
       <material name="orange" />
     </visual>
 
     <collision>
       <geometry>
-        <box size="${loa} ${woa} ${doa}"/>
+        <box size="${hull_loa} ${hull_woa} ${hull_doa}"/>
       </geometry>
     </collision>
     
-    <!-- Mass and inertial assume volume is 0.25 densitity of water -->
-    <inertial>
-      <mass value="${mass}" />
-      <inertia 
-        ixx="${mass * (woa * woa + doa * doa) / 12.0}" ixy="0.0" ixz="0.0"
-        iyy="${mass * (doa * doa + loa * loa) / 12.0}" iyz="0.0"
-        izz="${mass * (loa * loa + woa * woa) / 12.0}" />
-    </inertial>
+    <xacro:box_inertial mass="${hull_mass}" x="${hull_loa}" y="${hull_loa}" z="${hull_doa}" />
   </link>
 
   <!-- Camera -->
@@ -55,37 +62,14 @@
       </geometry>
     </collision>
     
-    <inertial>
-      <mass value="${camera_mass}" />
-      <inertia 
-        ixx="${camera_mass * (camera_size * camera_size) / 6.0}" ixy="0.0" ixz="0.0"
-        iyy="${camera_mass * (camera_size * camera_size) / 6.0}" iyz="0.0"
-        izz="${camera_mass * (camera_size * camera_size) / 6.0}" />
-    </inertial>
+    <xacro:box_inertial mass="${camera_mass}" x="${camera_size}" y="${camera_size}" z="${camera_size}" />
   </link>
 
   <joint name="camera_joint" type="fixed">
     <axis xyz="0 1 0" />
-    <origin xyz="0 0 ${doa}/2" rpy="0 0 0"/>
+    <origin xyz="${hull_loa/2 - 0.25} 0 ${hull_doa/2 + camera_size/2}" rpy="0 0 0"/>
     <parent link="base_link"/>
     <child link="camera_link"/>
-  </joint>
-
-  <!--
-    generate an optical frame http://www.ros.org/reps/rep-0103.html#suffix-frames
-    so that ros and opencv can operate on the camera frame correctly
-  -->
-  <link name="camera_link_optical">
-  </link>
-
-  <joint name="camera_optical_joint" type="fixed">
-    <!--
-      these values have to be these values otherwise the gazebo camera image
-      won't be aligned properly with the frame it is supposedly originating from
-    -->
-    <origin xyz="0 0 0" rpy="${-pi/2} 0 ${-pi/2}"/>
-    <parent link="camera_link"/>
-    <child link="camera_link_optical"/>
   </joint>
 
 
