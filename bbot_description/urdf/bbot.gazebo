@@ -22,18 +22,38 @@
     </plugin>
   </gazebo>
 
-  <!-- base_link (main hull) -->
+  <!-- Base Material (main hull) -->
   <gazebo reference="base_link">
     <material>Gazebo/Orange</material>
   </gazebo>
 
-  <!-- camera_link -->
-  <gazebo reference="camera_link">
+  <!-- Camera Material -->
+  <gazebo reference="cam_link">
     <material>Gazebo/Red</material>
   </gazebo>
 
-  <!-- camera sensor -->
-  <gazebo reference="camera_link">
+  <!-- Ray Material -->
+  <gazebo reference="ray_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <!-- GPS Material -->
+  <gazebo reference="gps_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <!-- IMU Material -->
+  <gazebo reference="imu_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <!-- Magnetometer Material -->
+  <gazebo reference="mag_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+ <!-- Camera Sensor -->
+  <gazebo reference="cam_link">
     <sensor type="camera" name="camera1">
       <always_on>1</always_on>>
       <update_rate>30.0</update_rate>
@@ -55,7 +75,7 @@
         <cameraName>bbot/camera1</cameraName>
         <imageTopicName>image_raw</imageTopicName>
         <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-        <frameName>camera_link</frameName>
+        <frameName>cam_link</frameName>
         <hackBaseline>0.07</hackBaseline>
         <distortionK1>0.0</distortionK1>
         <distortionK2>0.0</distortionK2>
@@ -63,6 +83,87 @@
         <distortionT1>0.0</distortionT1>
         <distortionT2>0.0</distortionT2>
       </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Ray Sensor -->
+  <gazebo reference="ray_link">
+    <sensor type="gpu_ray" name="ray1">
+      <always_on>1</always_on>>
+      <update_rate>40.0</update_rate>
+      <visualize>true</visualize>
+      <ray name="ray1">
+        <scan>
+          <horizontal>
+            <samples>640</samples>
+            <resolution>1</resolution>
+            <min_angle>-1.570796</min_angle>
+            <max_angle>1.570796</max_angle>
+          </horizontal>
+          <vertical>
+            <samples>1</samples>
+            <!-- <resolution>5</resolution> -->
+            <!-- <min_angle>-0.261799</min_angle>
+            <max_angle>0.261799</max_angle> -->
+            <resolution>1</resolution>
+            <min_angle>0</min_angle>
+            <max_angle>0</max_angle>
+          </vertical>
+
+        </scan>
+        <range>
+          <min>0.10</min>
+          <max>30.0</max>
+          <resolution>0.01</resolution>
+        </range>
+      </ray>
+      <plugin name="ray_controller" filename="libgazebo_ros_gpu_laser.so">
+        <topicName>/bbot/laser/scan</topicName>
+        <frameName>ray_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- GPS Sensor -->
+  <gazebo reference="gps_link">
+    <sensor type="gps" name="gps1">
+      <always_on>1</always_on>>
+      <update_rate>100.0</update_rate>
+      <visualize>true</visualize>
+      <gps name="gps1">
+      </gps>
+    </sensor>
+  </gazebo>
+
+ <!-- IMU Sensor -->
+  <gazebo reference="imu_link">
+    <gravity>true</gravity>
+    <sensor type="imu" name="imu1">
+      <always_on>1</always_on>>
+      <update_rate>100.0</update_rate>
+      <visualize>true</visualize>
+      <imu name="imu1">
+      </imu>
+      <plugin name="imu_controller" filename="libgazebo_ros_imu_sensor.so" >
+        <topicName>imu</topicName>
+        <bodyName>imu_link</bodyName>
+        <updateRateHZ>10.0</updateRateHZ>
+        <gaussianNoise>0.0</gaussianNoise>
+        <xyzOffset>0 0 0</xyzOffset>
+        <rpyOffset>0 0 0</rpyOffset>
+        <frameName>imu_link</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- Magnetometer Sensor -->
+  <gazebo reference="mag_link">
+    <sensor type="magnetometer" name="mag1">
+      <always_on>1</always_on>>
+      <update_rate>100.0</update_rate>
+      <visualize>true</visualize>
+      <magnetometer name="mag1">
+      </magnetometer>
     </sensor>
   </gazebo>
 

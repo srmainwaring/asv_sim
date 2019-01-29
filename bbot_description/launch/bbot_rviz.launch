@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <launch>
-  <arg name="model" default="$(find bbot_description)/urdf/bbot.urdf" />
+  <arg name="model" default="$(find bbot_description)/urdf/bbot.xacro" />
   <arg name="gui" default="true" />
   <arg name="rvizconfig" default="$(find bbot_description)/launch/bbot_rviz.rviz" />
 
