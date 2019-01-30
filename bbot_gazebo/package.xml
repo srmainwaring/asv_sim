@@ -1,11 +1,9 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>asv_sim_gazebo</name>
-  <version>0.1.0</version>
+  <name>bbot_gazebo</name>
+  <version>0.0.0</version>
   <description>
-    This package contains Gazebo media, models, and worlds for simulating
-    surface vessels. There are ROS launch scripts that may be used to
-    launch a Gazebo session and load a world using `roslaunch`.
+    This package contains launch files for the bbot robot.
   </description>
 
   <maintainer email="rhys.mainwaring@me.com">Rhys Mainwaring</maintainer>
@@ -16,10 +14,15 @@
 
   <build_depend>gazebo_ros</build_depend>
 
+  <exec_depend>asv_wave_sim_gazebo</exec_depend>
+  <exec_depend>asv_wave_sim_gazebo_plugins</exec_depend>
+  <exec_depend>gazebo_plugins</exec_depend>
   <exec_depend>gazebo_ros</exec_depend>
+  <exec_depend>bbot_description</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
   <export>
     <gazebo_ros gazebo_media_path="${prefix}" />
-    <gazebo_ros gazebo_model_path="${prefix}/world_models:${prefix}/models" />
+    <gazebo_ros gazebo_model_path="${prefix}/models" />
   </export>
 </package>

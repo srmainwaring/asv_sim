@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<robot name="bbot">
+
+  <!-- GAZEBO SPECIFIC -->
+
+  <!-- Hydrodynamics plugin -->
+  <gazebo>
+    <plugin name="hydrodynamics" filename="libHydrodynamicsPlugin.so">
+      <!-- Wave Model -->
+      <wave_model>ocean</wave_model>
+
+      <!-- Hydrodynamics -->
+      <damping_on>true</damping_on>
+      <viscous_drag_on>true</viscous_drag_on>
+      <pressure_drag_on>true</pressure_drag_on>
+
+      <!-- Markers -->
+      <markers>
+        <update_rate>30</update_rate>
+        <water_patch>false</water_patch>
+        <waterline>false</waterline>
+        <underwater_surface>false</underwater_surface>
+      </markers>
+    </plugin>
+  </gazebo>
+
+  <!-- base_link (main hull) -->
+  <gazebo reference="base_link">
+    <material>Gazebo/Orange</material>
+  </gazebo>
+
+  <!-- camera_link -->
+  <gazebo reference="camera_link">
+    <material>Gazebo/Red</material>
+  </gazebo>
+
+  <!-- camera sensor -->
+  <gazebo reference="camera_link">
+    <sensor type="camera" name="camera1">
+      <always_on>1</always_on>>
+      <update_rate>30.0</update_rate>
+      <camera name="head">
+        <horizontal_fov>1.047</horizontal_fov>
+        <image>
+          <width>800</width>
+          <height>800</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.02</near>
+          <far>300</far>
+        </clip>
+      </camera>
+      <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+        <alwaysOn>true</alwaysOn>
+        <updateRate>0.0</updateRate>
+        <cameraName>bbot/camera1</cameraName>
+        <imageTopicName>image_raw</imageTopicName>
+        <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+        <frameName>camera_link</frameName>
+        <hackBaseline>0.07</hackBaseline>
+        <distortionK1>0.0</distortionK1>
+        <distortionK2>0.0</distortionK2>
+        <distortionK3>0.0</distortionK3>
+        <distortionT1>0.0</distortionT1>
+        <distortionT2>0.0</distortionT2>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <!-- GAZEBO SPECIFIC -->
+
+
+  <!-- Base link (main hull) -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="10.0 4.0 2.0"/>
+      </geometry>
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="10.0 4.0 2.0"/>
+      </geometry>
+    </collision>
+    
+    <!-- Mass and inertial assume volume is 0.25 densitity of water -->
+    <inertial>
+      <mass value="20000.0" />
+      <inertia 
+        ixx="33333.0" ixy="0.0" ixz="0.0"
+        iyy="173333.0" iyz="0.0"
+        izz="193333.0" />
+    </inertial>
+  </link>
+
+  <!-- Camera -->
+  <link name="camera_link">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+      <material name="red" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </collision>
+
+    <!-- Mock inertial values -->
+    <inertial>
+      <mass value="0.1" />
+      <inertia 
+        ixx="0.01" ixy="0.0" ixz="0.0"
+        iyy="0.01" iyz="0.0"
+        izz="0.01" />
+    </inertial>
+  </link>
+
+  <joint name="camera_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="4.0 0 1.05" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="camera_link"/>
+  </joint>
+
+  <!--
+    generate an optical frame http://www.ros.org/reps/rep-0103.html#suffix-frames
+    so that ros and opencv can operate on the camera frame correctly
+  -->
+  <!-- <link name="camera_link_optical">
+  </link> -->
+
+  <!-- <joint name="camera_optical_joint" type="fixed"> -->
+    <!--
+      these values have to be these values otherwise the gazebo camera image
+      won't be aligned properly with the frame it is supposedly originating from
+    -->
+    <!-- <origin xyz="0 0 0" rpy="-1.570796 0 -1.570796"/>
+    <parent link="camera_link"/>
+    <child link="camera_link_optical"/>
+  </joint> -->
+
+</robot>

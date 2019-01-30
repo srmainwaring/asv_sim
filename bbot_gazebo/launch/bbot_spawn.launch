@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<!-- Spawn an instance of bbot into a Gazebo world -->
+<launch>
+  <!-- 
+    Parameters:
+      model: the name to give to the spawned model. 
+
+    Usage:
+      roslaunch bbot_gazebo bbot_spawn.launch model:=bbot
+  -->
+  <arg name="model" default="bbot"/>
+
+  <!-- Load the URDF into the ROS parameter server -->
+  <param name="robot_description"
+    command="$(find xacro)/xacro '$(find bbot_description)/urdf/bbot.xacro'" />
+
+  <!-- Spawn the URDF robot into Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-param robot_description -urdf  -model $(arg model)" />
+
+</launch>
