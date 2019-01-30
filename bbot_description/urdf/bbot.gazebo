@@ -5,7 +5,7 @@
   <gazebo>
     <plugin name="hydrodynamics" filename="libHydrodynamicsPlugin.so">
       <!-- Wave Model -->
-      <wave_model>ocean</wave_model>
+      <wave_model>ocean_waves</wave_model>
 
       <!-- Hydrodynamics -->
       <damping_on>true</damping_on>
@@ -145,7 +145,7 @@
       <imu name="imu1">
       </imu>
       <plugin name="imu_controller" filename="libgazebo_ros_imu_sensor.so" >
-        <topicName>imu</topicName>
+        <topicName>/bbot/imu</topicName>
         <bodyName>imu_link</bodyName>
         <updateRateHZ>10.0</updateRateHZ>
         <gaussianNoise>0.0</gaussianNoise>
