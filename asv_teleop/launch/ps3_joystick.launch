@@ -1,0 +1,32 @@
+<launch>
+  <!-- 
+    Launch a osx_joystick node that publishes a sensor_msgs/Joy 
+    message to the topic: /<model>/joy.
+
+    Nodes:
+      osx_joystick
+
+    Published:
+      /joy 
+
+    Parameters:
+      model:=   The name of the model the joystick will control (required). 
+      num:=     The number of the joystick to connect to (default: 0)
+      hz:=      The refresh rate to poll the joystick (default: 50 Hz)
+
+    Usage:
+      roslaunch asv_sim_gazebo ps3_joy_remapper.launch num:=0 hz:=50
+  -->
+  <arg name="model"/>
+  <arg name="num" default="0"/>
+  <arg name="hz" default="50"/>
+
+  <group ns="$(arg model)">
+    <node name="osx_joystick" pkg="osx_joystick" type="osx_joystick"
+      args="--num $(arg num) --hz $(arg hz)"
+    >
+      <remap from="joy0" to="/$(arg model)/joy" />
+    </node>
+  </group>
+
+</launch>
