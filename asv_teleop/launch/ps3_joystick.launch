@@ -1,31 +1,49 @@
 <launch>
   <!-- 
     Launch a osx_joystick node that publishes a sensor_msgs/Joy 
-    message to the topic: /<model>/joy.
+    message to the topic: /<uuv_name>/joy.
 
     Nodes:
-      osx_joystick
+      name: ps3_joystick
+      pkg:  osx_joystick
+      type: osx_joystick
 
-    Published:
-      /joy 
+    Publish:
+      /<uuv_name>/joy 
 
     Parameters:
-      model:=   The name of the model the joystick will control (required). 
-      num:=     The number of the joystick to connect to (default: 0)
-      hz:=      The refresh rate to poll the joystick (default: 50 Hz)
+      model_name:=  The name of the model the joystick will control (required). 
+      uuv_name:=    The name of the uuv the joystick will control (default: model_name). 
+      num:=         The number of the joystick to connect to (default: 0)
+      hz:=          The refresh rate to poll the joystick (default: 50 Hz)
 
     Usage:
-      roslaunch asv_sim_gazebo ps3_joy_remapper.launch num:=0 hz:=50
+      $ roslaunch asv_teleop ps3_joystick.launch model_name:=rexrov num:=0 hz:=50
+
+      $ rosnode list
+      /rexrov/ps3_joystick
+      /rosout
+
+      $ rostopic list
+      /rexrov/joy
+      /rosout
+      /rosout_agg
+
+    Notes:
+      The default behaviour of the osx_joystick node is to publish sensor_msgs/Joy
+      to the topic /joy<num>.  This launch script runs the node in the namespace
+      <uuv_name> and remaps the output to topic /<uuv_name>/joy
   -->
-  <arg name="model"/>
+  <arg name="model_name" />
+  <arg name="uuv_name" default="$(arg model_name)"/>
   <arg name="num" default="0"/>
   <arg name="hz" default="50"/>
 
-  <group ns="$(arg model)">
-    <node name="osx_joystick" pkg="osx_joystick" type="osx_joystick"
+  <group ns="$(arg uuv_name)">
+    <node name="ps3_joystick" pkg="osx_joystick" type="osx_joystick"
       args="--num $(arg num) --hz $(arg hz)"
     >
-      <remap from="joy0" to="/$(arg model)/joy" />
+      <remap from="joy0" to="/$(arg uuv_name)/joy" />
     </node>
   </group>
 
