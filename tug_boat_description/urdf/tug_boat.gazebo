@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<robot>
+
+  <!-- JoyToForceTorque plugin -->
+  <gazebo>
+    <plugin name="joy_to_ft" filename="libJoyToForceTorquePlugin.so">
+      <topic>/joy</topic>
+      <link_name>thruster_link</link_name>
+      <force_gain>100000</force_gain>
+      <yaw_gain>0.7</yaw_gain>
+    </plugin>
+  </gazebo>
+
+  <!-- Hydrodynamics plugin -->
+  <gazebo>
+    <plugin name="hydrodynamics" filename="libHydrodynamicsPlugin.so">
+      <!-- Wave Model -->
+      <wave_model>ocean_waves</wave_model>
+
+      <!-- Hydrodynamics -->
+      <damping_on>true</damping_on>
+      <viscous_drag_on>true</viscous_drag_on>
+      <pressure_drag_on>true</pressure_drag_on>
+
+      <!-- Linear and Angular Damping -->
+      <cDampL1>1.0E-6</cDampL1>
+      <cDampL2>1.0E-6</cDampL2>
+      <cDampR1>1.0E-6</cDampR1>
+      <cDampR2>1.0E-6</cDampR2>
+
+      <!-- 'Pressure' Drag -->
+      <cPDrag1>1.0E+2</cPDrag1>
+      <cPDrag2>1.0E+2</cPDrag2>
+      <fPDrag>0.4</fPDrag>
+      <cSDrag1>1.0E+2</cSDrag1>
+      <cSDrag2>1.0E+2</cSDrag2>
+      <fSDrag>0.4</fSDrag>
+      <vRDrag>1.0</vRDrag>
+
+      <!-- Markers -->
+      <markers>
+        <update_rate>30</update_rate>
+        <water_patch>false</water_patch>
+        <waterline>false</waterline>
+        <underwater_surface>false</underwater_surface>
+      </markers>
+    </plugin>
+  </gazebo>
+
+  <!-- Base Material (main hull) -->
+  <gazebo reference="base_link">
+    <material>Gazebo/Gray</material>
+  </gazebo>
+
+  <!-- Thruster Material -->
+  <gazebo reference="thruster_link">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+</robot>

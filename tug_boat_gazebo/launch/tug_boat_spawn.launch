@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<launch>
+  <!--
+    Spawn an instance of tug_boat into a Gazebo world
+
+    Nodes:
+      name: spawn_urdf
+      pkg:  gazebo_ros
+      type: spawn_model
+
+    Publish:      
+
+    Parameters:
+      model_name:=  The name to give to the spawned model (required). 
+
+    Usage:
+      $ roslaunch tug_boat_gazebo tug_boat_spawn.launch model_name:=tug_boat
+  -->
+  <arg name="model_name" default="tug_boat"/>
+
+  <!-- Load the URDF into the ROS parameter server -->
+  <param name="robot_description"
+    command="$(find xacro)/xacro '$(find tug_boat_description)/urdf/tug_boat.xacro'" />
+
+  <!-- Spawn the URDF robot into Gazebo -->
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" respawn="false" output="screen"
+    args="-param robot_description -urdf  -model $(arg model_name)" />
+
+</launch>
