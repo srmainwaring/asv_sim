@@ -20,11 +20,16 @@
     <pose>0 0 0 0 0 0</pose>
     <static>false</static>
 
-    <plugin name="joy_to_ft" filename="libJoyToForceTorquePlugin.so">
-      <topic>/joy</topic>
+    <plugin name="link_joint_controller" filename="libLinkJointControllerPlugin.so">
+      <input_topic>/cmd_vel</input_topic>
       <link_name>thruster_link</link_name>
-      <force_gain>100000</force_gain>
-      <yaw_gain>0.7</yaw_gain>
+      <link_scale>40</link_scale>
+      <link_type>velocity</link_type>
+      <link_pid>1000 0 10</link_pid>
+      <joint_name>thruster_joint</joint_name>
+      <joint_scale>0.8</joint_scale>
+      <joint_type>position</joint_type>
+      <joint_pid>1000 0 10</joint_pid>
     </plugin>
 
     <plugin name="hydrodynamics" filename="libHydrodynamicsPlugin.so">
@@ -60,8 +65,9 @@
       </markers>
     </plugin>
 
-    <!-- AABB 17.4 x 6.1 x 4.2 -->
+    <!-- Hull: dimensions 17.4 x 6.1 x 4.2 -->
     <link name="base_link">
+      <!-- Hull -->
       <visual name="base_visual">
         <geometry>
           <mesh>
@@ -92,8 +98,154 @@
           <izz>849925</izz>
         </inertia>
       </inertial>
+
+      <!-- Camera -->
+      <visual name="cam_visual">
+        <pose>3.6 0 6.5 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.1 0.1 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>__default__</uri>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+
+      <sensor type="camera" name="cam1">
+        <pose>3.6 0 6.5 0 0 0</pose>
+        <always_on>1</always_on>>
+        <update_rate>0</update_rate>
+        <camera name="cam1">
+          <horizontal_fov>1.5</horizontal_fov>
+          <image>
+            <width>800</width>
+            <height>800</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.02</near>
+            <far>300</far>
+          </clip>
+        </camera>
+        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
+          <alwaysOn>true</alwaysOn>
+          <updateRate>0.0</updateRate>
+          <cameraName>camera1</cameraName>
+          <imageTopicName>image_raw</imageTopicName>
+          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
+          <frameName>camera_link</frameName>
+          <hackBaseline>0.07</hackBaseline>
+          <distortionK1>0.0</distortionK1>
+          <distortionK2>0.0</distortionK2>
+          <distortionK3>0.0</distortionK3>
+          <distortionT1>0.0</distortionT1>
+          <distortionT2>0.0</distortionT2>
+        </plugin>
+      </sensor>
+
+      <!-- GPS -->
+      <visual name="gps_visual">
+        <pose>0.6 0 7.2 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.1 0.1 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>__default__</uri>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+
+      <sensor type="gps" name="gps1">
+        <pose>0.6 0 7.2 0 0 0</pose>
+        <always_on>1</always_on>>
+        <update_rate>0</update_rate>
+        <gps>
+        </gps>
+      </sensor>
+
+      <!-- IMU -->
+      <visual name="imu_visual">
+        <pose>0.8 0 7.2 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.1 0.1 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>__default__</uri>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+
+      <sensor type="imu" name="imu1">
+        <pose>0.8 0 7.2 0 0 0</pose>
+          <always_on>1</always_on>>
+        <update_rate>0</update_rate>
+        <imu>
+        </imu>
+      </sensor>
+
+      <!-- Magnetometer -->  
+      <visual name="mag_visual">
+        <pose>1.0 0 7.2 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.1 0.1 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>__default__</uri>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+
+      <sensor type="magnetometer" name="mag1">
+        <pose>1.0 0 7.2 0 0 0</pose>
+        <always_on>1</always_on>>
+        <update_rate>0</update_rate>
+        <magnetometer>
+        </magnetometer>
+      </sensor>
+
+      <!-- Ray -->
+      <visual name="ray_visual">
+        <pose>3.4 0 7.4 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.1 0.1 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>__default__</uri>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+
+      <sensor type="ray" name="ray1">
+        <pose>3.4 0 7.4 0 0 0</pose>
+        <always_on>1</always_on>>
+        <update_rate>0</update_rate>
+        <ray>
+        </ray>
+      </sensor>
+
     </link>
 
+    <!-- Thruster -->
     <link name="thruster_link">
       <pose>-6.5 0 0.5 0 0 0</pose>
       <visual name="thruster_visual">
@@ -128,306 +280,18 @@
       </inertial>
     </link>
 
-    <joint type="fixed" name="base_thruster_joint">
+    <joint type="revolute" name="thruster_joint">
       <pose>0 0 0 0 0 0</pose>
       <child>thruster_link</child>
       <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.0</lower>
+          <upper>1.0</upper>
+        </limit>
+      </axis>
     </joint>
-
-    <!-- Camera -->
-    <!-- <link name="cam_link">
-      <pose>-3.6 -6.5 0 -1.57079 0 3.14159</pose>
-
-      <visual name="cam_visual">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>__default__</uri>
-            <name>Gazebo/Red</name>
-          </script>
-        </material>
-      </visual>
-
-      <collision name="cam_collision">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-      </collision>
-      
-      <inertial>
-        <pose>0 0 0 0 0 0</pose>
-        <mass>7.7</mass>
-        <inertia>
-          <ixx>0.013</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.013</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.013</izz>
-        </inertia>
-      </inertial>
-
-      <sensor type="camera" name="cam1">
-        <always_on>1</always_on>>
-        <update_rate>0</update_rate>
-        <camera name="cam1">
-          <horizontal_fov>1.5</horizontal_fov>
-          <image>
-            <width>800</width>
-            <height>800</height>
-            <format>R8G8B8</format>
-          </image>
-          <clip>
-            <near>0.02</near>
-            <far>300</far>
-          </clip>
-        </camera>
-        <plugin name="camera_controller" filename="libgazebo_ros_camera.so">
-          <alwaysOn>true</alwaysOn>
-          <updateRate>0.0</updateRate>
-          <cameraName>rrbot/camera1</cameraName>
-          <imageTopicName>image_raw</imageTopicName>
-          <cameraInfoTopicName>camera_info</cameraInfoTopicName>
-          <frameName>camera_link_optical</frameName>
-          <hackBaseline>0.07</hackBaseline>
-          <distortionK1>0.0</distortionK1>
-          <distortionK2>0.0</distortionK2>
-          <distortionK3>0.0</distortionK3>
-          <distortionT1>0.0</distortionT1>
-          <distortionT2>0.0</distortionT2>
-        </plugin>
-      </sensor>
-
-    </link>
-
-    <joint type="fixed" name="base_cam_joint">
-      <pose>0 0 0 0 0 0</pose>
-      <child>cam_link</child>
-      <parent>base_link</parent>
-    </joint>     -->
-
-    <!-- GPS -->
-    <!-- <link name="gps_link">
-      <pose>-0.6 -7.2 0 -1.57079 0 3.14159</pose>
-
-      <visual name="gps_visual">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>__default__</uri>
-            <name>Gazebo/Red</name>
-          </script>
-        </material>
-      </visual>
-
-      <collision name="gps_collision">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-      </collision>
-      
-      <inertial>
-        <pose>0 0 0 0 0 0</pose>
-        <mass>7.7</mass>
-        <inertia>
-          <ixx>0.013</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.013</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.013</izz>
-        </inertia>
-      </inertial>
-
-      <sensor type="gps" name="gps1">
-        <always_on>1</always_on>>
-        <update_rate>0</update_rate>
-        <gps name="gps1">
-        </gps>
-      </sensor>
-
-    </link>
-
-    <joint type="fixed" name="base_gps_joint">
-      <pose>0 0 0 0 0 0</pose>
-      <child>gps_link</child>
-      <parent>base_link</parent>
-    </joint>     -->
-
-    <!-- IMU -->
-    <!-- <link name="imu_link">
-      <pose>-0.8 -7.2 0 -1.57079 0 3.14159</pose>
-
-      <visual name="imu_visual">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>__default__</uri>
-            <name>Gazebo/Red</name>
-          </script>
-        </material>
-      </visual>
-
-      <collision name="imu_collision">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-      </collision>
-      
-      <inertial>
-        <pose>0 0 0 0 0 0</pose>
-        <mass>1</mass>
-        <mass>7.7</mass>
-        <inertia>
-          <ixx>0.013</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.013</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.013</izz>
-        </inertia>
-      </inertial>
-
-      <sensor type="imu" name="imu1">
-        <always_on>1</always_on>>
-        <update_rate>0</update_rate>
-        <imu name="imu1">
-        </imu>
-      </sensor>
-
-    </link>
-
-    <joint type="fixed" name="base_imu_joint">
-      <pose>0 0 0 0 0 0</pose>
-      <child>imu_link</child>
-      <parent>base_link</parent>
-    </joint>     -->
-
-    <!-- Magnetometer -->
-    <!-- <link name="mag_link">
-      <pose>-1.0 -7.2 0 -1.57079 0 3.14159</pose>
-
-      <visual name="mag_visual">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>__default__</uri>
-            <name>Gazebo/Red</name>
-          </script>
-        </material>
-      </visual>
-
-      <collision name="mag_collision">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-      </collision>
-      
-      <inertial>
-        <pose>0 0 0 0 0 0</pose>
-        <mass>7.7</mass>
-        <inertia>
-          <ixx>0.013</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.013</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.013</izz>
-        </inertia>
-      </inertial>
-
-      <sensor type="magnetometer" name="mag1">
-        <always_on>1</always_on>>
-        <update_rate>0</update_rate>
-        <magnetometer name="mag1">
-        </magnetometer>
-      </sensor>
-
-    </link>
-
-    <joint type="fixed" name="base_mag_joint">
-      <pose>0 0 0 0 0 0</pose>
-      <child>mag_link</child>
-      <parent>base_link</parent>
-    </joint>     -->
-
-    <!-- Ray -->
-    <!-- <link name="ray_link">
-      <pose>-3.4 -7.4 0 -1.57079 0 3.14159</pose>
-
-      <visual name="ray_visual">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-        <material>
-          <script>
-            <uri>__default__</uri>
-            <name>Gazebo/Red</name>
-          </script>
-        </material>
-      </visual>
-
-      <collision name="ray_collision">
-        <geometry>
-          <box>
-            <size>0.1 0.1 0.1</size>
-          </box>
-        </geometry>
-      </collision>
-      
-      <inertial>
-        <pose>0 0 0 0 0 0</pose>
-        <mass>7.7</mass>
-        <inertia>
-          <ixx>0.013</ixx>
-          <ixy>0.0</ixy>
-          <ixz>0.0</ixz>
-          <iyy>0.013</iyy>
-          <iyz>0.0</iyz>
-          <izz>0.013</izz>
-        </inertia>
-      </inertial>
-
-      <sensor type="ray" name="ray1">
-        <always_on>1</always_on>>
-        <update_rate>0</update_rate>
-        <ray name="ray1">
-        </ray>
-      </sensor>
-
-    </link>
-
-    <joint type="fixed" name="base_ray_joint">
-      <pose>0 0 0 0 0 0</pose>
-      <child>ray_link</child>
-      <parent>base_link</parent>
-    </joint>     -->
 
   </model>
 </sdf>
