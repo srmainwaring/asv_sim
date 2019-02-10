@@ -82,7 +82,7 @@
       <collision name="base_collision">
         <geometry>
           <mesh>
-            <uri>model://rs750/meshes/rs750_hull_collision.stl</uri>
+            <uri>model://rs750/meshes/rs750_hull_collision_3.stl</uri>
           </mesh>
         </geometry>
       </collision>
