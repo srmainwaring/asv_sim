@@ -70,7 +70,7 @@
       <visual name="hull_visual">
         <geometry>
           <mesh>
-            <uri>model://rs750/meshes/rs750_hull.stl</uri>
+            <uri>model://rs750/meshes/rs750_hull_foils.stl</uri>
           </mesh>
         </geometry>
         <material>
