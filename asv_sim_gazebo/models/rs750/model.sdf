@@ -67,10 +67,22 @@
 
     <!-- Hull -->
     <link name="base_link">
-      <visual name="base_visual">
+      <visual name="hull_visual">
         <geometry>
           <mesh>
             <uri>model://rs750/meshes/rs750_hull.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+      <visual name="deck_visual">
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_deck.stl</uri>
           </mesh>
         </geometry>
         <material>
