@@ -68,9 +68,10 @@
     <!-- Hull -->
     <link name="base_link">
       <visual name="hull_visual">
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
-            <uri>model://rs750/meshes/rs750_hull_foils.stl</uri>
+            <uri>model://rs750/meshes/rs750_hull.stl</uri>
           </mesh>
         </geometry>
         <material>
@@ -79,7 +80,9 @@
           </script>
         </material>
       </visual>
+
       <visual name="deck_visual">
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://rs750/meshes/rs750_deck.stl</uri>
@@ -91,13 +94,76 @@
           </script>
         </material>
       </visual>
+
+      <visual name="keel_fin_visual">
+        <pose>-0.16255 -0.00512 -0.54053 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_keel_fin.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="keel_bulb_visual">
+        <pose>-0.26638 0.01038 -1.08674 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_keel_bulb.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="rudder_visual">
+        <pose>-1.2436 -0.00323 -0.0487 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_rudder.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
       <collision name="base_collision">
+        <pose>0 0 0 0 0 0</pose>
         <geometry>
           <mesh>
             <uri>model://rs750/meshes/rs750_hull_collision_3.stl</uri>
           </mesh>
         </geometry>
       </collision>
+
+      <collision name="keel_fin_collision">
+       <pose>-0.16255 -0.00512 -0.54053 0 0 0</pose>
+         <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_keel_fin_collision_2.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <collision name="rudder_collision">
+        <pose>-1.2436 -0.00323 -0.0487 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_rudder_collision_3.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
       <inertial>
         <pose>-0.1 0 -0.75 0 0 0</pose>
         <mass>60</mass>
