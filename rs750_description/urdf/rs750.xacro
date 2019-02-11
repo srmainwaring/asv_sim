@@ -1,0 +1,187 @@
+<?xml version="1.0" ?>
+<robot name="bbot" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Math constants -->
+  <xacro:property name="math_pi" value="3.141592653589793" />  
+
+  <!-- Math macros -->
+  <xacro:macro name="box_inertial" params="mass x y z">  
+    <inertial>
+      <mass value="${mass}" />
+      <inertia 
+        ixx="${mass * (y * y + z * z) / 12.0}" ixy="0.0" ixz="0.0"
+        iyy="${mass * (z * z + x * x) / 12.0}" iyz="0.0"
+        izz="${mass * (x * x + y * y) / 12.0}" />
+    </inertial>
+  </xacro:macro>  
+
+  <!-- Constants for robot dimensions -->
+  <xacro:property name="hull_mass" value="20000.0" />
+  <xacro:property name="hull_loa" value="10.0" />  
+  <xacro:property name="hull_woa" value="4.0" />  
+  <xacro:property name="hull_doa" value="2.0" />
+
+  <xacro:property name="cam_mass" value="0.1" />  
+  <xacro:property name="cam_size" value="0.1" />  
+
+  <xacro:property name="ray_mass" value="0.1" />  
+  <xacro:property name="ray_size" value="0.1" />  
+
+  <xacro:property name="imu_mass" value="0.1" />  
+  <xacro:property name="imu_size" value="0.1" />  
+
+  <xacro:property name="gps_mass" value="0.1" />  
+  <xacro:property name="gps_size" value="0.1" />  
+
+  <xacro:property name="mag_mass" value="0.1" />  
+  <xacro:property name="mag_size" value="0.1" />  
+
+  <!-- Import Gazebo elements -->
+  <xacro:include filename="$(find bbot_description)/urdf/bbot.gazebo" />
+
+  <!-- Import materials -->
+  <xacro:include filename="$(find bbot_description)/urdf/materials.xacro" />
+
+  <!-- Base link (main hull) -->
+  <link name="base_link">
+    <visual>
+      <geometry>
+        <box size="${hull_loa} ${hull_woa} ${hull_doa}"/>
+      </geometry>
+      <material name="orange" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="${hull_loa} ${hull_woa} ${hull_doa}"/>
+      </geometry>
+    </collision>
+    
+    <xacro:box_inertial mass="${hull_mass}" x="${hull_loa}" y="${hull_loa}" z="${hull_doa}" />
+  </link>
+
+  <!-- Camera -->
+  <link name="cam_link">
+    <visual>
+      <geometry>
+        <box size="${cam_size} ${cam_size} ${cam_size}"/>
+      </geometry>
+      <material name="red" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="${cam_size} ${cam_size} ${cam_size}"/>
+      </geometry>
+    </collision>
+    
+    <xacro:box_inertial mass="${cam_mass}" x="${cam_size}" y="${cam_size}" z="${cam_size}" />
+  </link>
+
+  <joint name="cam_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="${hull_loa/2 - 0.25} 0 ${hull_doa/2 + cam_size/2}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="cam_link"/>
+  </joint>
+
+  <!-- Ray -->
+  <link name="ray_link">
+    <visual>
+      <geometry>
+        <box size="${ray_size} ${ray_size} ${ray_size}"/>
+      </geometry>
+      <material name="red" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="${ray_size} ${ray_size} ${ray_size}"/>
+      </geometry>
+    </collision>
+    
+    <xacro:box_inertial mass="${ray_mass}" x="${ray_size}" y="${ray_size}" z="${ray_size}" />
+  </link>
+
+  <joint name="ray_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="${hull_loa/2 - 0.25} 0.4 ${hull_doa/2 + ray_size/2}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="ray_link"/>
+  </joint>
+
+ <!-- GPS -->
+  <link name="gps_link">
+    <visual>
+      <geometry>
+        <box size="${gps_size} ${gps_size} ${gps_size}"/>
+      </geometry>
+      <material name="red" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="${gps_size} ${gps_size} ${gps_size}"/>
+      </geometry>
+    </collision>
+    
+    <xacro:box_inertial mass="${gps_mass}" x="${gps_size}" y="${gps_size}" z="${gps_size}" />
+  </link>
+
+  <joint name="gps_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0.4 ${hull_doa/2 + gps_size/2}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="gps_link"/>
+  </joint>
+
+ <!-- IMU -->
+  <link name="imu_link">
+    <visual>
+      <geometry>
+        <box size="${imu_size} ${imu_size} ${imu_size}"/>
+      </geometry>
+      <material name="red" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="${imu_size} ${imu_size} ${imu_size}"/>
+      </geometry>
+    </collision>
+    
+    <xacro:box_inertial mass="${imu_mass}" x="${imu_size}" y="${imu_size}" z="${imu_size}" />
+  </link>
+
+  <joint name="imu_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 0 ${hull_doa/2 + imu_size/2}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="imu_link"/>
+  </joint>
+  
+   <!-- Magnetometer -->
+  <link name="mag_link">
+    <visual>
+      <geometry>
+        <box size="${mag_size} ${mag_size} ${mag_size}"/>
+      </geometry>
+      <material name="red" />
+    </visual>
+
+    <collision>
+      <geometry>
+        <box size="${mag_size} ${mag_size} ${mag_size}"/>
+      </geometry>
+    </collision>
+    
+    <xacro:box_inertial mass="${gps_mass}" x="${mag_size}" y="${mag_size}" z="${mag_size}" />
+  </link>
+
+  <joint name="mag_joint" type="fixed">
+    <axis xyz="0 1 0" />
+    <origin xyz="0 -0.4 ${hull_doa/2 + mag_size/2}" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="mag_link"/>
+  </joint>
+</robot>
