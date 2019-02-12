@@ -19,6 +19,7 @@
   <model name='rs750'>
     <pose>0 0 0 0 0 0</pose>
     <static>false</static>
+    <enable_wind>true</enable_wind>
 
     <plugin name="link_joint_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel</input_topic>
@@ -27,6 +28,30 @@
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>rudder_joint</joint_name>
+      <joint_scale>0.8</joint_scale>
+      <joint_type>position</joint_type>
+      <joint_pid>1000 0 10</joint_pid>
+    </plugin>
+
+    <plugin name="link_joint_controller2" filename="libLinkJointControllerPlugin.so">
+      <input_topic>/cmd_vel2</input_topic>
+      <link_name>__default__</link_name>
+      <link_scale>1</link_scale>
+      <link_type>velocity</link_type>
+      <link_pid>1000 0 10</link_pid>
+      <joint_name>main_sail_joint</joint_name>
+      <joint_scale>0.8</joint_scale>
+      <joint_type>position</joint_type>
+      <joint_pid>1000 0 10</joint_pid>
+    </plugin>
+
+    <plugin name="link_joint_controller3" filename="libLinkJointControllerPlugin.so">
+      <input_topic>/cmd_vel2</input_topic>
+      <link_name>__default__</link_name>
+      <link_scale>1</link_scale>
+      <link_type>velocity</link_type>
+      <link_pid>1000 0 10</link_pid>
+      <joint_name>jib_sail_joint</joint_name>
       <joint_scale>0.8</joint_scale>
       <joint_type>position</joint_type>
       <joint_pid>1000 0 10</joint_pid>
@@ -63,6 +88,22 @@
         <waterline>false</waterline>
         <underwater_surface>false</underwater_surface>
       </markers>
+    </plugin>
+
+    <plugin name="main_sail_liftdrag" filename="libLiftDragPlugin.so">
+      <a0>0.08727</a0>
+      <alpha_stall>0.3368</alpha_stall>
+      <cla>5.418</cla>
+      <cla_stall>-2.1419</cla_stall>
+      <cda>0.0</cda>
+      <cda_stall>0.0</cda_stall>
+      <area>1.81</area>
+      <fluid_density>1.225</fluid_density>
+      <forwards>1 0 0</forwards>
+      <upward>0 1 0</upward>
+      <cp>0.46 0 1.96</cp>
+      <link_name>main_sail_link</link_name>
+      <radial_symmetry>true</radial_symmetry>
     </plugin>
 
     <!-- Hull -->
@@ -137,62 +178,6 @@
           </script>
         </material>
       </visual>
-
-      <!-- <visual name="main_boom_visual">
-        <pose>-0.489375 0 0.291875 0 0 0</pose>
-        <geometry>
-          <mesh>
-            <uri>model://rs750/meshes/rs750_main_boom.stl</uri>
-          </mesh>
-        </geometry>
-        <material>
-          <script>
-            <name>Gazebo/Gray</name>
-          </script>
-        </material>
-      </visual>
-
-      <visual name="main_sail_visual">
-        <pose>-0.02625 0 0.291875 0 0 0</pose>
-        <geometry>
-          <mesh>
-            <uri>model://rs750/meshes/rs750_main_sail.stl</uri>
-          </mesh>
-        </geometry>
-        <material>
-          <script>
-            <name>Gazebo/Gray</name>
-          </script>
-        </material>
-      </visual> -->
-
-      <!-- <visual name="jib_boom_visual">
-        <pose>0.568125 0 0.235625 0 0 0</pose>
-        <geometry>
-          <mesh>
-            <uri>model://rs750/meshes/rs750_jib_boom.stl</uri>
-          </mesh>
-        </geometry>
-        <material>
-          <script>
-            <name>Gazebo/Gray</name>
-          </script>
-        </material>
-      </visual>
-
-      <visual name="jib_sail_visual">
-        <pose>0.105 0 0.235625 0 0 0</pose>
-        <geometry>
-          <mesh>
-            <uri>model://rs750/meshes/rs750_jib_sail.stl</uri>
-          </mesh>
-        </geometry>
-        <material>
-          <script>
-            <name>Gazebo/Gray</name>
-          </script>
-        </material>
-      </visual> -->
 
       <collision name="base_collision">
         <pose>0 0 0 0 0 0</pose>
