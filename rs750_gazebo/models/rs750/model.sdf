@@ -138,7 +138,7 @@
         </material>
       </visual>
 
-      <visual name="main_boom_visual">
+      <!-- <visual name="main_boom_visual">
         <pose>-0.489375 0 0.291875 0 0 0</pose>
         <geometry>
           <mesh>
@@ -164,9 +164,9 @@
             <name>Gazebo/Gray</name>
           </script>
         </material>
-      </visual>
+      </visual> -->
 
-      <visual name="jib_boom_visual">
+      <!-- <visual name="jib_boom_visual">
         <pose>0.568125 0 0.235625 0 0 0</pose>
         <geometry>
           <mesh>
@@ -192,7 +192,7 @@
             <name>Gazebo/Gray</name>
           </script>
         </material>
-      </visual>
+      </visual> -->
 
       <collision name="base_collision">
         <pose>0 0 0 0 0 0</pose>
@@ -278,6 +278,140 @@
       </axis>
     </joint>
 
+    <!-- Main Sail -->
+    <link name="main_sail_link">
+      <pose>-0.02625 0 0.291875 0 0 0</pose>
+
+      <visual name="main_sail_visual">
+        <!-- <pose>-0.02625 0 0.291875 0 0 0</pose> -->
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_main_sail.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="main_boom_visual">
+        <!-- <pose>-0.489375 0 0.291875 0 0 0</pose> -->
+        <pose>-0.463125 0 -0.01125 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_main_boom.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <collision name="main_sail_collision">
+        <!-- <pose>-0.02625 0 0.291875 0 0 0</pose> -->
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_main_sail.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.1</ixx>
+          <ixy>0</ixy>
+          <iyy>0.1</iyy>
+          <iyz>0</iyz>
+          <izz>0.1</izz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <joint type="revolute" name="main_sail_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>main_sail_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <initial_position>0</initial_position>
+        <limit>
+          <lower>-0.8</lower>
+          <upper>0.8</upper>
+        </limit>
+      </axis>
+    </joint>
+
+    <!-- Jib Sail -->
+    <link name="jib_sail_link">
+      <pose>1.03125 0 0.235625 0 0 0</pose>
+
+      <visual name="jib_sail_visual">
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_jib_sail.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="jib_boom_visual">
+        <pose>-0.463125 0 -0.01125 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_jib_boom.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <collision name="jib_sail_collision">
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_jib_sail.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.1</ixx>
+          <ixy>0</ixy>
+          <iyy>0.1</iyy>
+          <iyz>0</iyz>
+          <izz>0.1</izz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <joint type="revolute" name="jib_sail_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>jib_sail_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>-0.271652766 0 0.962395332</xyz>
+        <initial_position>0</initial_position>
+        <limit>
+          <lower>-0.8</lower>
+          <upper>0.8</upper>
+        </limit>
+      </axis>
+    </joint>
 
     <!-- Thruster -->
     <link name="thruster_link">
