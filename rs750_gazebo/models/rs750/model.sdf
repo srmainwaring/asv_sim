@@ -123,6 +123,77 @@
         </material>
       </visual>
 
+      <!-- Rigging  -->
+      <visual name="mast_visual">
+        <pose>0 0 2.09 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_mast.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="main_boom_visual">
+        <pose>-0.489375 0 0.291875 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_main_boom.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="main_sail_visual">
+        <pose>-0.02625 0 0.291875 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_main_sail.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="jib_boom_visual">
+        <pose>0.568125 0 0.235625 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_jib_boom.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="jib_sail_visual">
+        <pose>0.105 0 0.235625 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750/meshes/rs750_jib_sail.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
       <collision name="base_collision">
         <pose>0 0 0 0 0 0</pose>
         <geometry>
@@ -199,6 +270,7 @@
       <parent>base_link</parent>
       <axis>
         <xyz>0 0 1</xyz>
+        <initial_position>0</initial_position>
         <limit>
           <lower>-0.8</lower>
           <upper>0.8</upper>
@@ -248,6 +320,7 @@
       <parent>base_link</parent>
       <axis>
         <xyz>0 0 1</xyz>
+        <initial_position>0</initial_position>
         <limit>
           <lower>-0.01</lower>
           <upper>0.01</upper>
