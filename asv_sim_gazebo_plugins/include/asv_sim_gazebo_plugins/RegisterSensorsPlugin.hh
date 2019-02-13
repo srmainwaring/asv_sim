@@ -26,8 +26,24 @@
 
 namespace asv
 {
-  
   /// \brief A Gazebo system plugin to register custom sensors.
+  ///
+  /// # Usage
+  ///
+  /// From the command line:
+  ///
+  /// \code
+  /// gzserver --server-plugin libRegisterSensorsPlugin.so
+  /// \endcode
+  ///
+  /// In a roslaunch file:
+  ///
+  /// \code
+  /// <arg
+  ///   name="extra_gazebo_args"
+  ///   default="--server-plugin libRegisterSensorsPlugin.so"
+  /// />
+  /// \endcode
   ///
   class GAZEBO_VISIBLE RegisterSensorsPlugin : public gazebo::SystemPlugin
   {

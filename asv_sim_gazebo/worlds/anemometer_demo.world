@@ -20,7 +20,7 @@
     
     <!-- Wind -->
     <wind>
-      <linear_velocity>100 0 0</linear_velocity>
+      <linear_velocity>10 0 0</linear_velocity>
     </wind>
 
     <!-- Lights -->
@@ -37,6 +37,7 @@
     <model name="anemometer">
       <pose>0 0 0.5 0 0 0</pose>
       <static>false</static>
+      <enable_wind>true</enable_wind>
 
       <link name="base_link">
         <visual name="base_visual">

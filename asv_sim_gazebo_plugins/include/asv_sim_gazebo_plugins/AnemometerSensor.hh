@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 /// \file AnemometerSensor.hh
-/// \brief This file defines a Gazebo Sensor used to measure wind speed and direction.
+/// \brief This file defines a Gazebo sensor used to measure wind speed and direction.
 
 #ifndef _ASV_SIM_GAZEBO_PLUGINS_ANEMOMETER_SENSOR_HH_
 #define _ASV_SIM_GAZEBO_PLUGINS_ANEMOMETER_SENSOR_HH_
@@ -45,6 +45,41 @@ namespace gazebo
     /// \{
 
     /// \brief AnemometerSensor to measure wind speed and direction.
+    ///
+    /// #Usage
+    /// 
+    /// Add the SDF for the sensor to a <link> element of your model.
+    /// 
+    /// \code
+    /// <sensor name="anemometer_sensor" type="anemometer">
+    ///   <always_on>true</always_on>
+    ///   <update_rate>50</update_rate>
+    ///   <topic>anemometer</topic>
+    /// </sensor>
+    /// \endcode
+    ///
+    /// # Published Topics
+    ///
+    /// 1. ~/anemometer (gazebo::msgs::Param_V)
+    ///   - time (gazebo::msgs::Time)
+    ///     The simulation time of the observation. 
+    ///   - true_wind (gazebo::msgs::Vector3d)
+    ///     The true wind at the link origin. 
+    ///   - apparent_wind (gazebo::msgs::Vector3d)
+    ///     The apparent wind at the link origin
+    ///     (i.e. true wind adjusted for the link velocity). 
+    ///
+    /// # Parameters
+    ///
+    /// 1. <always_on> (bool, default: false)
+    ///   Standard <sensor> parameter. See SDF documentation for details.
+    ///
+    /// 2. <update_rate> (double, default: 0)
+    ///   Standard <sensor> parameter. See SDF documentation for details.
+    ///
+    /// 3. <topic> (string, default: ~/anemometer)
+    ///   Standard <sensor> parameter. See SDF documentation for details.
+    ///
     class GZ_SENSORS_VISIBLE AnemometerSensor: public Sensor
     {
       /// \brief Destructor.
