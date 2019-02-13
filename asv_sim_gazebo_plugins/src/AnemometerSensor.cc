@@ -255,6 +255,29 @@ void AnemometerSensor::Load(const std::string& _worldName)
     nextParam->set_name("apparent_wind");
     nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
   }
+
+  // @DEBUG_INFO
+  {
+    auto nextParam = this->dataPtr->anemometerMsg.add_param();
+    nextParam->set_name("link_vel");
+    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
+  }
+  {
+    auto nextParam = this->dataPtr->anemometerMsg.add_param();
+    nextParam->set_name("link_omega");
+    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
+  }
+  {
+    auto nextParam = this->dataPtr->anemometerMsg.add_param();
+    nextParam->set_name("sensor_xr");
+    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
+  }
+  {
+    auto nextParam = this->dataPtr->anemometerMsg.add_param();
+    nextParam->set_name("sensor_vel");
+    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
+  }
+
 }
 
 void AnemometerSensor::Init()
@@ -285,37 +308,41 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
   // Get latest pose information
   if (this->dataPtr->parentLink)
   {
-    // Get pose in gazebo reference frame
-    ignition::math::Pose3d magPose =
-      this->pose + this->dataPtr->parentLink->WorldPose();
+    // Sensor pose relative to the world frame
+    ignition::math::Pose3d sensorWorldPose
+      = this->pose + this->dataPtr->parentLink->WorldPose();
 
-    // In Gazebo (v9.6.4) the wind velocity on an Entity is not 
-    // corrected for the Entity's own motion.
+    // Link velocity at the link CoM in the world frame.
+    ignition::math::Vector3d linkWorldCoMLinearVel
+      = this->dataPtr->parentLink->WorldCoGLinearVel();
 
-    // Link velocity at the link origin in the world frame.
-    ignition::math::Vector3d worldLinearVel
-      = this->dataPtr->parentLink->WorldLinearVel();
+    // Link angular velocity at the link CoM in the world frame.
+    ignition::math::Vector3d linkWorldAngularVel
+      = this->dataPtr->parentLink->WorldAngularVel();
+
+    // Sensor pose relative to the link CoM
+    ignition::math::Pose3d sensorCoMPose
+      = sensorWorldPose - this->dataPtr->parentLink->WorldCoGPose();
+
+    // Sensor velocity: vs = omega x r_(CoM, sensor)
+    ignition::math::Vector3d sensorWorldLinearVel
+      = linkWorldCoMLinearVel + linkWorldAngularVel.Cross(sensorCoMPose.Pos());
 
     // Wind velocity at the link origin in the world frame.
-    // This is the true wind at the link origin
-    // (i.e. unadjusted for the link's motion)
+    // We use this to approximate the true wind at the sensor origin
+    // (true wind = unadjusted for the sensors's motion)
     auto& wind = this->world->Wind();
     ignition::math::Vector3d windWorldLinearVel
       = wind.WorldLinearVel(this->dataPtr->parentLink.get());
 
-    // Wind velocity at the link origin in the link frame.
-    // Not really useful, as this is not apparent wind (see above)
-    // ignition::math::Vector3d windRelativeLinearVel
-    //   = wind.RelativeLinearVel(this->dataPtr->parentLink.get());
-
-    // Apparent wind velocity at the link origin in the world frame.
+    // Apparent wind velocity at the sensor origin in the world frame.
     ignition::math::Vector3d apparentWindWorldLinearVel 
-      = windWorldLinearVel + worldLinearVel;
+      = windWorldLinearVel + sensorWorldLinearVel;
 
-    // Apparent wind velocity at the link origin in the link frame.
-    // This is what would be measured by an anemometer fixed to the link.
+    // Apparent wind velocity at the sensor origin in the sensor frame.
+    // This is what would be measured by an anemometer.
     ignition::math::Vector3d apparentWindRelativeLinearVel
-     = this->dataPtr->parentLink->WorldPose().Rot().Inverse().RotateVector(
+     = sensorWorldPose.Rot().Inverse().RotateVector(
         apparentWindWorldLinearVel);
 
     // Update the messages.
@@ -323,6 +350,18 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
       "true_wind", windWorldLinearVel);
     SetMsgParam(this->dataPtr->anemometerMsg,
       "apparent_wind", apparentWindRelativeLinearVel);
+
+    // @DEBUG_INFO
+    SetMsgParam(this->dataPtr->anemometerMsg,
+      "link_vel", linkWorldCoMLinearVel);
+    SetMsgParam(this->dataPtr->anemometerMsg,
+      "link_omega", linkWorldAngularVel);
+
+    SetMsgParam(this->dataPtr->anemometerMsg,
+      "sensor_xr", sensorCoMPose.Pos());
+    SetMsgParam(this->dataPtr->anemometerMsg,
+      "sensor_vel", sensorWorldLinearVel);
+
   }
 
   // Save the time of the measurement
