@@ -289,13 +289,40 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
     ignition::math::Pose3d magPose =
       this->pose + this->dataPtr->parentLink->WorldPose();
 
-    auto& wind = this->world->Wind();
-    ignition::math::Vector3d trueWind = wind.LinearVel();
-    SetMsgParam(this->dataPtr->anemometerMsg, "true_wind", trueWind);
+    // In Gazebo (v9.6.4) the wind velocity on an Entity is not 
+    // corrected for the Entity's own motion.
 
-    ignition::math::Vector3d apparentWind
-      = wind.RelativeLinearVel(this->dataPtr->parentLink.get());
-    SetMsgParam(this->dataPtr->anemometerMsg, "apparent_wind", apparentWind);
+    // Link velocity at the link origin in the world frame.
+    ignition::math::Vector3d worldLinearVel
+      = this->dataPtr->parentLink->WorldLinearVel();
+
+    // Wind velocity at the link origin in the world frame.
+    // This is the true wind at the link origin
+    // (i.e. unadjusted for the link's motion)
+    auto& wind = this->world->Wind();
+    ignition::math::Vector3d windWorldLinearVel
+      = wind.WorldLinearVel(this->dataPtr->parentLink.get());
+
+    // Wind velocity at the link origin in the link frame.
+    // Not really useful, as this is not apparent wind (see above)
+    // ignition::math::Vector3d windRelativeLinearVel
+    //   = wind.RelativeLinearVel(this->dataPtr->parentLink.get());
+
+    // Apparent wind velocity at the link origin in the world frame.
+    ignition::math::Vector3d apparentWindWorldLinearVel 
+      = windWorldLinearVel + worldLinearVel;
+
+    // Apparent wind velocity at the link origin in the link frame.
+    // This is what would be measured by an anemometer fixed to the link.
+    ignition::math::Vector3d apparentWindRelativeLinearVel
+     = this->dataPtr->parentLink->WorldPose().Rot().Inverse().RotateVector(
+        apparentWindWorldLinearVel);
+
+    // Update the messages.
+    SetMsgParam(this->dataPtr->anemometerMsg,
+      "true_wind", windWorldLinearVel);
+    SetMsgParam(this->dataPtr->anemometerMsg,
+      "apparent_wind", apparentWindRelativeLinearVel);
   }
 
   // Save the time of the measurement

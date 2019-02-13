@@ -1,0 +1,86 @@
+<?xml version="1.0" ?>
+<!--
+  Copyright (C) 2019  Rhys Mainwaring
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<sdf version="1.6">
+  <world name="anemometer_demo">
+    
+    <!-- Wind -->
+    <wind>
+      <linear_velocity>100 0 0</linear_velocity>
+    </wind>
+
+    <!-- Lights -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- World models  -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- Test model  -->
+    <model name="anemometer">
+      <pose>0 0 0.5 0 0 0</pose>
+      <static>false</static>
+
+      <link name="base_link">
+        <visual name="base_visual">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <name>Gazebo/Gray</name>
+            </script>
+          </material>
+        </visual>
+        <collision name="base_collision">
+          <geometry>
+            <box>
+              <size>1 1 1</size>
+            </box>
+          </geometry>
+        </collision>
+        <inertial>
+          <pose>0 0 0 0 0 0</pose>
+          <mass>10</mass>
+          <inertia>
+            <ixx>1.6</ixx>
+            <ixy>0</ixy>
+            <iyy>1.6</iyy>
+            <iyz>0</iyz>
+            <izz>1.6</izz>
+          </inertia>
+        </inertial>
+
+        <!-- Sensors -->
+        <sensor name="anemometer_sensor" type="anemometer">
+          <always_on>true</always_on>
+          <update_rate>50</update_rate>
+          <topic>anemometer</topic>
+          <!-- <anemometer>
+          </anemometer> -->
+        </sensor>
+
+      </link>
+    </model>
+
+  </world>
+</sdf>
