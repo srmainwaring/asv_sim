@@ -113,19 +113,19 @@ You should see a world containing a single block at the origin.
 The figure below shows the block falling to demonstate the effect
 of motion on apparent wind:
 
-![Anemometer World](../../images/anemometer_world_falling.jpg)
+![Anemometer World](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_world_falling.jpg)
 
 Open the Topic Visualization window and select the `anemometer` topic:
 
-![Anemometer Topic](../../images/anemometer_topic.jpg)
+![Anemometer Topic](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic.jpg)
 
 When the block is at rest with axis aligned with the world frame,
 the true and apparent wind should be the same. When the block is in motion,
 for instance by setting the `z` pose to `100` and letting it fall, the
 apparent wind will be adjusted for the object's motion.
 
-![Anemometer Rest](../../images/anemometer_topic_view_rest.jpg)
-![Anemometer Falling](../../images/anemometer_topic_view_falling.jpg)
+![Anemometer Rest](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic_view_rest.jpg)
+![Anemometer Falling](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic_view_falling.jpg)
 
 ## License
 
