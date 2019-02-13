@@ -30,7 +30,7 @@ namespace asv
 {
   
 ///////////////////////////////////////////////////////////////////////////////
-// AnemometerSensorPluginPlugin
+// AnemometerSensorPlugin
 
   /// \internal
   /// \brief Class to hold private data for AnemometerSensorPlugin.

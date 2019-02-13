@@ -65,6 +65,23 @@ target_compile_options(AnemometerSensorPlugin PRIVATE "-Wno-unknown-pragmas")
 
 list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST AnemometerSensorPlugin)
 
+# RegisterSensorsPlugin
+add_library(RegisterSensorsPlugin
+  SHARED
+    src/AnemometerSensor.cc
+    src/RegisterSensorsPlugin.cc
+)
+
+target_link_libraries(RegisterSensorsPlugin
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+target_compile_options(RegisterSensorsPlugin PRIVATE "-Wno-unknown-pragmas")
+
+list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST RegisterSensorsPlugin)
+
 ############################################################################### 
 # Executables...
 
