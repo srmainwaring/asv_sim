@@ -86,13 +86,16 @@ Add the SDF for the sensor to a `<link>` element of your model.
 ### Parameters
 
 1. `<always_on>` (`bool`, default: `false`) \
-  Standard `<sensor>` parameter. See SDF documentation for details.
+  Standard `<sensor>` parameter.
+  See [SDF documentation](http://sdformat.org/spec?ver=1.6&elem=sensor) for details.
 
 2. `<update_rate>` (`double`, default: `0`) \
-  Standard `<sensor>` parameter. See SDF documentation for details.
+  Standard `<sensor>` parameter.
+  See [SDF documentation](http://sdformat.org/spec?ver=1.6&elem=sensor) for details.
 
 3. `<topic>` (`string`, default: `~/anemometer`) \
-  Standard `<sensor>` parameter. See SDF documentation for details.
+  Standard `<sensor>` parameter.
+  See [SDF documentation](http://sdformat.org/spec?ver=1.6&elem=sensor) for details.
 
 ## Anemometer Example
 
