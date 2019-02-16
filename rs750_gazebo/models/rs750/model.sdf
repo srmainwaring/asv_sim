@@ -21,10 +21,10 @@
     <static>false</static>
     <enable_wind>true</enable_wind>
 
-    <plugin name="link_joint_controller" filename="libLinkJointControllerPlugin.so">
+    <plugin name="rudder_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel</input_topic>
       <link_name>thruster_link</link_name>
-      <link_scale>5</link_scale>
+      <link_scale>0</link_scale>
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>rudder_joint</joint_name>
@@ -33,26 +33,26 @@
       <joint_pid>1000 0 10</joint_pid>
     </plugin>
 
-    <plugin name="link_joint_controller2" filename="libLinkJointControllerPlugin.so">
+    <plugin name="main_sail_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel2</input_topic>
       <link_name>__default__</link_name>
-      <link_scale>1</link_scale>
+      <link_scale>0</link_scale>
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>main_sail_joint</joint_name>
-      <joint_scale>0.8</joint_scale>
+      <joint_scale>1.5</joint_scale>
       <joint_type>position</joint_type>
-      <joint_pid>1000 0 10</joint_pid>
+      <joint_pid>2000 0 10</joint_pid>
     </plugin>
 
-    <plugin name="link_joint_controller3" filename="libLinkJointControllerPlugin.so">
+    <plugin name="jib_sail_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel2</input_topic>
       <link_name>__default__</link_name>
-      <link_scale>1</link_scale>
+      <link_scale>0</link_scale>
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>jib_sail_joint</joint_name>
-      <joint_scale>0.8</joint_scale>
+      <joint_scale>1.5</joint_scale>
       <joint_type>position</joint_type>
       <joint_pid>1000 0 10</joint_pid>
     </plugin>
@@ -90,18 +90,34 @@
       </markers>
     </plugin>
 
-    <plugin name="main_sail_liftdrag" filename="libLiftDragPlugin.so">
-      <a0>0.08727</a0>
-      <alpha_stall>0.3368</alpha_stall>
-      <cla>5.418</cla>
-      <cla_stall>-2.1419</cla_stall>
-      <cda>0.0</cda>
-      <cda_stall>0.0</cda_stall>
-      <area>1.81</area>
-      <fluid_density>1.225</fluid_density>
-      <forwards>1 0 0</forwards>
+    <plugin name="main_sail_liftdrag" filename="libSailLiftDragPlugin.so">
+      <a0>0.0</a0>
+      <alpha_stall>0.7854</alpha_stall>
+      <cla>1.2732</cla>
+      <cla_stall>-1.2732</cla_stall>
+      <cda>0.1</cda>
+      <!-- <cda>0.6366</cda> -->
+      <!-- <area>1.81</area> -->
+      <area>1.</area>
+      <fluid_density>1.2</fluid_density>
+      <forward>1 0 0</forward>
       <upward>0 1 0</upward>
-      <cp>0.46 0 1.96</cp>
+      <cp>-0.30875 0 1.30625</cp>
+      <link_name>main_sail_link</link_name>
+      <radial_symmetry>true</radial_symmetry>
+    </plugin>
+
+    <plugin name="jib_sail_liftdrag" filename="libSailLiftDragPlugin.so">
+      <a0>0.0</a0>
+      <alpha_stall>0.7854</alpha_stall>
+      <cla>1.2732</cla>
+      <cla_stall>-1.2732</cla_stall>
+      <cda>0.1</cda>
+      <area>1.43</area>
+      <fluid_density>1.2</fluid_density>
+      <forward>1 0 0</forward>
+      <upward>0 1 0</upward>
+      <cp>-0.605666667 0 1.20528</cp>
       <link_name>main_sail_link</link_name>
       <radial_symmetry>true</radial_symmetry>
     </plugin>
@@ -389,8 +405,8 @@
         <xyz>0 0 1</xyz>
         <initial_position>0</initial_position>
         <limit>
-          <lower>-0.8</lower>
-          <upper>0.8</upper>
+          <lower>-1.7</lower>
+          <upper>1.7</upper>
         </limit>
       </axis>
     </joint>
@@ -478,8 +494,8 @@
         <xyz>-0.271652766 0 0.962395332</xyz>
         <initial_position>0</initial_position>
         <limit>
-          <lower>-0.8</lower>
-          <upper>0.8</upper>
+          <lower>-1.7</lower>
+          <upper>1.7</upper>
         </limit>
       </axis>
     </joint>

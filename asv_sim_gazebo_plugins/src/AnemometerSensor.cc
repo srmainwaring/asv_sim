@@ -160,7 +160,7 @@ namespace gazebo
       /// \brief Mutex to protect read and writes
       public: std::mutex mutex;
 
-      /// \brief Publish to gztopic "~/anemometer".
+      /// \brief Publish to topic "~/anemometer".
       public: transport::PublisherPtr anemometerPub;
 
       /// \brief Parent link of this sensor.
@@ -337,7 +337,7 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
 
     // Apparent wind velocity at the sensor origin in the world frame.
     ignition::math::Vector3d apparentWindWorldLinearVel 
-      = windWorldLinearVel + sensorWorldLinearVel;
+      = windWorldLinearVel - sensorWorldLinearVel;
 
     // Apparent wind velocity at the sensor origin in the sensor frame.
     // This is what would be measured by an anemometer.

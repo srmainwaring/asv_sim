@@ -34,6 +34,7 @@ include_directories(
   ${IGNITION-COMMON_INCLUDE_DIRS}
   ${IGNITION-MATHS_INCLUDE_DIRS}
   ${IGNITION-MSGS_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}/msgs
   )
 
 link_directories(
@@ -41,7 +42,10 @@ link_directories(
   ${IGNITION-COMMON_LIBRARY_DIRS}
   ${IGNITION-MATHS_LIBRARY_DIRS}
   ${IGNITION-MSGS_LIBRARY_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}/msgs
   )
+
+add_subdirectory(msgs)
 
 ############################################################################### 
 # Libraries...
@@ -57,6 +61,7 @@ add_library(RegisterSensorsPlugin
 )
 
 target_link_libraries(RegisterSensorsPlugin
+  asv_sim_gazebo_plugin_msgs
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
@@ -65,6 +70,23 @@ target_link_libraries(RegisterSensorsPlugin
 target_compile_options(RegisterSensorsPlugin PRIVATE "-Wno-unknown-pragmas")
 
 list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST RegisterSensorsPlugin)
+
+# SailLiftDragPlugin
+add_library(SailLiftDragPlugin
+  SHARED
+    src/SailLiftDragPlugin.cc
+)
+
+target_link_libraries(SailLiftDragPlugin
+  asv_sim_gazebo_plugin_msgs
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+target_compile_options(SailLiftDragPlugin PRIVATE "-Wno-unknown-pragmas")
+
+list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST SailLiftDragPlugin)
 
 ############################################################################### 
 # Executables...
