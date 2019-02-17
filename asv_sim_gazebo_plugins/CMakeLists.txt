@@ -91,6 +91,23 @@ list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST SailLiftDragPlugin)
 ############################################################################### 
 # Executables...
 
+add_executable(SailLiftDragMsgSubscriber
+  src/SailLiftDragMsgSubscriber.cc
+)
+
+target_link_libraries(SailLiftDragMsgSubscriber  
+  asv_sim_gazebo_plugin_msgs
+  ${GAZEBO_LIBRARIES}
+)
+
+target_compile_options(SailLiftDragMsgSubscriber PRIVATE "-Wno-unknown-pragmas")
+
+add_dependencies(SailLiftDragMsgSubscriber
+  asv_sim_gazebo_plugin_msgs
+)
+
+list(APPEND ASV_SIM_GAZEBO_EXECUTABLES_LIST SailLiftDragMsgSubscriber)
+
 ############################################################################### 
 # Tests...
 # 
@@ -106,6 +123,12 @@ endif()
 # Install
 
 install(TARGETS ${ASV_SIM_GAZEBO_PLUGINS_LIST}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(TARGETS ${ASV_SIM_GAZEBO_EXECUTABLES_LIST}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
