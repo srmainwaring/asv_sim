@@ -464,7 +464,7 @@ void SailLiftDragPlugin::OnUpdate()
     this->data->liftDragPub->Publish(liftDragMsg);
   
   // @DEBUG_INFO
-  gzmsg << liftDragMsg.DebugString() << std::endl;
+  // gzmsg << liftDragMsg.DebugString() << std::endl;
 
 
 }
