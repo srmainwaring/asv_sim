@@ -27,7 +27,8 @@
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>steering_joint</joint_name>
-      <joint_scale>0.8</joint_scale>
+      <!-- <joint_scale>0.8</joint_scale> -->
+      <joint_scale>0.01</joint_scale>
       <joint_type>position</joint_type>
       <joint_pid>1000 0 10</joint_pid>
     </plugin>
@@ -38,10 +39,11 @@
       <link_scale>0</link_scale>
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
-      <joint_name>sail_joint</joint_name>
-      <joint_scale>1.5</joint_scale>
+      <joint_name>wing_sail_joint</joint_name>
+      <!-- <joint_scale>1.5</joint_scale> -->
+      <joint_scale>0.01</joint_scale>
       <joint_type>position</joint_type>
-      <joint_pid>1000 0 10</joint_pid>
+      <joint_pid>2000 0 10</joint_pid>
     </plugin>
 
     <plugin name="wing_sail_liftdrag" filename="libSailLiftDragPlugin.so">
