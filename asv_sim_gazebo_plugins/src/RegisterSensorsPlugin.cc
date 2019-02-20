@@ -16,12 +16,31 @@
 #include "asv_sim_gazebo_plugins/RegisterSensorsPlugin.hh"
 #include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
 
+#include "gazebo/msgs/MsgFactory.hh"
+
+#include "lift_drag.pb.h"
+
 using namespace gazebo;
 
 namespace asv
 {
 
   GZ_REGISTER_SYSTEM_PLUGIN(RegisterSensorsPlugin)
+
+  // GZ_REGISTER_STATIC_MSG("asv_msgs.msgs.LiftDrag", LiftDrag)
+  GAZEBO_VISIBLE boost::shared_ptr<google::protobuf::Message> NewLiftDrag()
+  {
+    return boost::shared_ptr<asv_msgs::msgs::LiftDrag>(
+      new asv_msgs::msgs::LiftDrag);
+  } 
+  class GAZEBO_VISIBLE MsgLiftDrag
+  {
+    public: MsgLiftDrag()
+    {
+      gazebo::msgs::MsgFactory::RegisterMsg("asv_msgs.msgs.LiftDrag", NewLiftDrag);
+    }
+  };
+  static MsgLiftDrag GzLiftDragMsgInitializer;
 
   RegisterSensorsPlugin::~RegisterSensorsPlugin()
   {
@@ -36,6 +55,12 @@ namespace asv
   {
     // Register the sensor with the server.
     gazebo::sensors::RegisterAnemometerSensor();
+    gzmsg << "RegisterSensor: Type: " << "Anemometer" << std::endl;
+
+    // Register custom messages with the MsgFactory
+    // gazebo::msgs::MsgFactory::RegisterMsg("asv_msgs.msgs.LiftDrag", NewLiftDrag);
+    // gzmsg << "RegisterMsg: Type: " << "asv_msgs.msgs.LiftDrag" << std::endl;
+
   }
 
   void RegisterSensorsPlugin::Init()

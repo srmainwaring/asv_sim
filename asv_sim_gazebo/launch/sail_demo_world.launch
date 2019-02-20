@@ -5,7 +5,10 @@
   -->
   <arg name="paused" default="false" />
   <arg name="use_sim_time" default="true" />
-  <arg name="extra_gazebo_args" default="--server-plugin libRegisterSensorsPlugin.so" />
+  <arg 
+    name="extra_gazebo_args"
+    default="--server-plugin libRegisterSensorsPlugin.so --gui-plugin libRegisterSensorsPlugin.so"
+  />
   <arg name="gui" default="true" />
   <arg name="recording" default="false" />
   <arg name="debug" default="false" />

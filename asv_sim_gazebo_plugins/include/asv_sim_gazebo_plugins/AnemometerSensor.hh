@@ -100,7 +100,7 @@ namespace gazebo
       // Documentation inherited.
       public: void Fini() override;
 
-      // Documentation inherited.
+      /// \brief Create a topic string for the sensor.
       public: virtual std::string GetTopic() const;
 
       // Documentation inherited.
@@ -116,7 +116,7 @@ namespace gazebo
 
       /// \internal
       /// \brief Pointer to the class private data.
-      private: std::shared_ptr<AnemometerSensorPrivate> dataPtr;
+      private: std::unique_ptr<AnemometerSensorPrivate> dataPtr;
     };
     /// \}
   } // namespace sensors

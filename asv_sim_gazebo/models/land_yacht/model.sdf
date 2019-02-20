@@ -27,31 +27,41 @@
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>steering_joint</joint_name>
-      <!-- <joint_scale>0.8</joint_scale> -->
       <joint_scale>0.01</joint_scale>
       <joint_type>position</joint_type>
       <joint_pid>1000 0 10</joint_pid>
     </plugin>
 
-    <plugin name="sail_controller" filename="libLinkJointControllerPlugin.so">
+    <!-- <plugin name="wing_sail_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel2</input_topic>
       <link_name>__default__</link_name>
       <link_scale>0</link_scale>
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>wing_sail_joint</joint_name>
-      <!-- <joint_scale>1.5</joint_scale> -->
+      <joint_scale>0.01</joint_scale>
+      <joint_type>position</joint_type>
+      <joint_pid>2000 0 10</joint_pid>
+    </plugin> -->
+
+    <plugin name="trim_tab_controller" filename="libLinkJointControllerPlugin.so">
+      <input_topic>/cmd_vel2</input_topic>
+      <link_name>__default__</link_name>
+      <link_scale>0</link_scale>
+      <link_type>velocity</link_type>
+      <link_pid>1000 0 10</link_pid>
+      <joint_name>trim_tab_joint</joint_name>
       <joint_scale>0.01</joint_scale>
       <joint_type>position</joint_type>
       <joint_pid>2000 0 10</joint_pid>
     </plugin>
 
-    <plugin name="wing_sail_liftdrag" filename="libSailLiftDragPlugin.so">
+    <plugin name="wing_sail_liftdrag" filename="libSailPlugin.so">
       <a0>0.0</a0>
-      <alpha_stall>0.7854</alpha_stall>
-      <cla>1.2732</cla>
-      <cla_stall>-1.2732</cla_stall>
-      <cda>0.6366</cda>
+      <cla>6.2832</cla>
+      <alpha_stall>0.1592</alpha_stall>
+      <cla_stall>-0.7083</cla_stall>
+      <cda>0.63662</cda>
       <area>1.0</area>
       <fluid_density>1.2</fluid_density>
       <forward>1 0 0</forward>
@@ -59,6 +69,23 @@
       <cp>0 0 0</cp>
       <link_name>wing_sail_link</link_name>
       <radial_symmetry>true</radial_symmetry>
+      <topic>lift_drag</topic>
+    </plugin>
+
+    <plugin name="trim_tab_liftdrag" filename="libSailPlugin.so">
+      <a0>0.0</a0>
+      <cla>6.2832</cla>
+      <alpha_stall>0.1592</alpha_stall>
+      <cla_stall>-0.7083</cla_stall>
+      <cda>0.63662</cda>
+      <area>0.1</area>
+      <fluid_density>1.2</fluid_density>
+      <forward>1 0 0</forward>
+      <upward>0 1 0</upward>
+      <cp>0 0 0</cp>
+      <link_name>trim_tab_link</link_name>
+      <radial_symmetry>true</radial_symmetry>
+      <topic>lift_drag</topic>
     </plugin>
 
     <!-- Base -->
@@ -351,6 +378,22 @@
           </box>
         </geometry>
       </collision>
+
+      <visual name="trim_tab_support_visual">
+        <pose>0 0 0 0 1.570796 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.01</radius>
+            <length>2</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
       <inertial>
         <pose>0 0 0 0 0 0</pose>
         <mass>1</mass>
@@ -399,6 +442,64 @@
         </limit>
       </axis>
       <sensor name="force_torque_sensor" type="force_torque">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+      </sensor>
+    </joint>
+
+    <!-- Trim tab -->
+    <link name="trim_tab_link">
+      <pose>-1.1 0 1.05 0 0 0</pose>
+
+      <visual name="trim_tab_visual">
+        <geometry>
+          <box>
+            <size>0.2 0.01 0.5</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <collision name="trim_tab_collision">
+        <geometry>
+          <box>
+            <size>0.2 0.01 0.5</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>1</mass>
+        <inertia>
+          <ixx>0.16</ixx>
+          <ixy>0</ixy>
+          <iyy>0.16</iyy>
+          <iyz>0</iyz>
+          <izz>0.16</izz>
+        </inertia>
+      </inertial>
+
+    </link>
+
+    <joint type="revolute" name="trim_tab_joint">
+      <pose>0.025 0 0 0 0 0</pose>
+      <child>trim_tab_link</child>
+      <parent>wing_sail_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <initial_position>0</initial_position>
+        <limit>
+          <lower>-1.5</lower>
+          <upper>1.5</upper>
+        </limit>
+      </axis>
+      <sensor name="trim_tab_force_torque" type="force_torque">
         <always_on>true</always_on>
         <update_rate>30</update_rate>
         <visualize>true</visualize>

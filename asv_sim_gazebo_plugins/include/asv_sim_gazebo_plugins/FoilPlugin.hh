@@ -31,49 +31,43 @@
  * limitations under the License.
  *
 */
-#ifndef GAZEBO_PLUGINS_SAIL_LIFT_DRAG_PLUGIN_HH_
-#define GAZEBO_PLUGINS_SAIL_LIFT_DRAG_PLUGIN_HH_
+#ifndef _ASV_SIM_GAZEBO_PLUGINS_FOIL_PLUGIN_HH_
+#define _ASV_SIM_GAZEBO_PLUGINS_FOIL_PLUGIN_HH_
 
 #include "gazebo/common/Plugin.hh"
 
 #include <memory>
 
-namespace gazebo
+namespace asv
 {
-  class SailLiftDragPluginPrivate;
+  class FoilPluginPrivate;
 
-  /// \brief A plugin that simulates lift and drag.
-  class GAZEBO_VISIBLE SailLiftDragPlugin : public ModelPlugin
+  /// \brief A plugin that simulates lift and drag on a sail.
+  class GAZEBO_VISIBLE FoilPlugin : public gazebo::ModelPlugin
   {
     /// \brief Destructor.
-    public: virtual ~SailLiftDragPlugin();
+    public: virtual ~FoilPlugin();
 
     /// \brief Constructor.
-    public: SailLiftDragPlugin();
+    public: FoilPlugin();
 
     // Documentation Inherited.
-    public: void Load(physics::ModelPtr _model, sdf::ElementPtr _sdf) override;
+    public: void Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf) override;
 
     // Documentation Inherited.
     public: void Reset() override;
 
+    /// \brief Create a topic string for the sensor.
+    public: virtual std::string GetTopic() const;
+
     /// \brief Callback for World Update events.
     protected: virtual void OnUpdate();
  
-    /// \brief Calculate the lift coefficient as a function
-    /// of the angle of attack.
-    /// \param[in] _alpha Angle of attack in radians.
-    public: double LiftCoefficient(double _alpha) const;
-
-    /// \brief Calculate the drag coefficient as a function
-    /// of the angle of attack.
-    /// \param[in] _alpha Angle of attack in radians.
-    public: double DragCoefficient(double _alpha) const;
-
     /// \internal
     /// \brief Pointer to the class private data.
-    private: std::shared_ptr<SailLiftDragPluginPrivate> data;
+    private: std::unique_ptr<FoilPluginPrivate> data;
   };
-}
 
-#endif // GAZEBO_PLUGINS_SAIL_LIFT_DRAG_PLUGIN_HH_
+} // namespace asv
+
+#endif // _ASV_SIM_GAZEBO_PLUGINS_FOIL_PLUGIN_HH_

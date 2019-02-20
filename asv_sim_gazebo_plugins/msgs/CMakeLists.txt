@@ -7,18 +7,26 @@ foreach(ITR ${GAZEBO_INCLUDE_DIRS})
   endif()
 endforeach()
 
+include_directories(
+  ${GAZEBO_INCLUDE_DIRS}
+  ${GAZEBO_PROTO_INCLUDE_DIRS}
+)
+
+link_directories(
+  ${GAZEBO_LIBRARY_DIRS}
+)
+
 set (msgs
   lift_drag.proto
   anemometer.proto
-  # ${PROTOBUF_IMPORT_DIRS}/vector3d.proto
-  # ${PROTOBUF_IMPORT_DIRS}/header.proto
-  # ${PROTOBUF_IMPORT_DIRS}/time.proto
 )
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
-add_library(asv_sim_gazebo_plugin_msgs SHARED ${PROTO_SRCS})
-target_link_libraries(asv_sim_gazebo_plugin_msgs
+
+add_library(asv_sim_gazebo_plugins_msgs SHARED ${PROTO_SRCS})
+
+target_link_libraries(asv_sim_gazebo_plugins_msgs
   ${PROTOBUF_LIBRARY}
   ${GAZEBO_LIBRARIES}
-  ${GAZEBO_MSG_LIBRARIES}
+  ${GAZEBO_PROTO_LIBRARIES}
 )

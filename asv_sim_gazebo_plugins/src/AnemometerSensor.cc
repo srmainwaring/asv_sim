@@ -177,6 +177,9 @@ namespace gazebo
 
 AnemometerSensor::~AnemometerSensor()
 {
+  // Clean up.
+  this->dataPtr->anemometerPub.reset();
+  this->Fini();
 }
 
 AnemometerSensor::AnemometerSensor() : 

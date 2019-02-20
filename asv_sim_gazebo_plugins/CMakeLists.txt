@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(catkin REQUIRED COMPONENTS gazebo_ros)
 find_package(gazebo REQUIRED)
+find_package(Boost REQUIRED)
+find_package(Protobuf REQUIRED)
 
 ############################################################################### 
 # Catkin...
@@ -19,22 +21,29 @@ find_package(gazebo REQUIRED)
 catkin_package(
   INCLUDE_DIRS
     include
-  LIBRARIES
-    AnemometerSensorPlugin
+    ${Boost_INCLUDE_DIRS}
+    ${catkin_INCLUDE_DIRS}
+    ${GAZEBO_INCLUDE_DIRS}
+    ${GAZEBO_PROTO_INCLUDE_DIRS}
+    LIBRARIES
+    asv_sim_gazebo_plugins
+    asv_sim_gazebo_plugins_msgs
+    RegisterSensorsPlugin
+    SailLiftDragPlugin
   DEPENDS
     gazebo_ros
 )
 
 include_directories(
   ${PROJECT_SOURCE_DIR}/include
+  ${CMAKE_CURRENT_BINARY_DIR}/msgs
   ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
-  ${GAZEBO_MSG_INCLUDE_DIRS}
+  ${GAZEBO_PROTO_INCLUDE_DIRS}
   ${IGNITION-COMMON_INCLUDE_DIRS}
   ${IGNITION-MATHS_INCLUDE_DIRS}
   ${IGNITION-MSGS_INCLUDE_DIRS}
-  ${CMAKE_CURRENT_BINARY_DIR}/msgs
   )
 
 link_directories(
@@ -42,13 +51,42 @@ link_directories(
   ${IGNITION-COMMON_LIBRARY_DIRS}
   ${IGNITION-MATHS_LIBRARY_DIRS}
   ${IGNITION-MSGS_LIBRARY_DIRS}
-  ${CMAKE_CURRENT_BINARY_DIR}/msgs
+  # ${CMAKE_CURRENT_BINARY_DIR}/msgs
   )
+
+############################################################################### 
+# Lists
+
+set(ASV_SIM_GAZEBO_LIBRARIES_LIST "")
+set(ASV_SIM_GAZEBO_PLUGINS_LIST "")
+set(ASV_SIM_GAZEBO_EXECUTABLES_LIST "")
+
+############################################################################### 
+# Messages...
 
 add_subdirectory(msgs)
 
+list(APPEND ASV_SIM_GAZEBO_LIBRARIES_LIST asv_sim_gazebo_plugins_msgs)
+
 ############################################################################### 
 # Libraries...
+
+# asv_sim_gazebo_plugins
+add_library(asv_sim_gazebo_plugins
+  SHARED
+    src/LiftDragModel.cc
+    src/Utilities.cc
+)
+
+target_link_libraries(asv_sim_gazebo_plugins
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+target_compile_options(asv_sim_gazebo_plugins PRIVATE "-Wno-unknown-pragmas")
+
+list(APPEND ASV_SIM_GAZEBO_LIBRARIES_LIST asv_sim_gazebo_plugins)
 
 ############################################################################### 
 # Plugins...
@@ -61,52 +99,87 @@ add_library(RegisterSensorsPlugin
 )
 
 target_link_libraries(RegisterSensorsPlugin
-  asv_sim_gazebo_plugin_msgs
+  asv_sim_gazebo_plugins_msgs
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
+)
+
+add_dependencies(RegisterSensorsPlugin
+  asv_sim_gazebo_plugins_msgs
 )
 
 target_compile_options(RegisterSensorsPlugin PRIVATE "-Wno-unknown-pragmas")
 
 list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST RegisterSensorsPlugin)
 
-# SailLiftDragPlugin
-add_library(SailLiftDragPlugin
+# SailPlugin
+add_library(SailPlugin
   SHARED
-    src/SailLiftDragPlugin.cc
+    src/SailPlugin.cc
 )
 
-target_link_libraries(SailLiftDragPlugin
-  asv_sim_gazebo_plugin_msgs
+target_link_libraries(SailPlugin
+  asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
 )
 
-target_compile_options(SailLiftDragPlugin PRIVATE "-Wno-unknown-pragmas")
+add_dependencies(SailPlugin
+  asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
+)
 
-list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST SailLiftDragPlugin)
+target_compile_options(SailPlugin PRIVATE "-Wno-unknown-pragmas")
+
+list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST SailPlugin)
+
+# FoilPlugin
+add_library(FoilPlugin
+  SHARED
+    src/FoilPlugin.cc
+)
+
+target_link_libraries(FoilPlugin
+  asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+add_dependencies(FoilPlugin
+  asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
+)
+
+target_compile_options(FoilPlugin PRIVATE "-Wno-unknown-pragmas")
+
+list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST FoilPlugin)
 
 ############################################################################### 
 # Executables...
 
-add_executable(SailLiftDragMsgSubscriber
-  src/SailLiftDragMsgSubscriber.cc
+add_executable(LiftDragMsgSubscriber
+  src/LiftDragMsgSubscriber.cc
 )
 
-target_link_libraries(SailLiftDragMsgSubscriber  
-  asv_sim_gazebo_plugin_msgs
+target_link_libraries(LiftDragMsgSubscriber  
+  asv_sim_gazebo_plugins_msgs
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
 )
 
-target_compile_options(SailLiftDragMsgSubscriber PRIVATE "-Wno-unknown-pragmas")
+target_compile_options(LiftDragMsgSubscriber PRIVATE "-Wno-unknown-pragmas")
 
-add_dependencies(SailLiftDragMsgSubscriber
-  asv_sim_gazebo_plugin_msgs
+add_dependencies(LiftDragMsgSubscriber
+  asv_sim_gazebo_plugins_msgs
 )
 
-list(APPEND ASV_SIM_GAZEBO_EXECUTABLES_LIST SailLiftDragMsgSubscriber)
+list(APPEND ASV_SIM_GAZEBO_EXECUTABLES_LIST LiftDragMsgSubscriber)
 
 ############################################################################### 
 # Tests...
@@ -121,6 +194,12 @@ endif()
 
 ############################################################################### 
 # Install
+
+install(TARGETS ${ASV_SIM_GAZEBO_LIBRARIES_LIST}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 install(TARGETS ${ASV_SIM_GAZEBO_PLUGINS_LIST}
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
