@@ -1,0 +1,463 @@
+<?xml version='1.0'?>
+<!--
+  Copyright (C) 2019  Rhys Mainwaring
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+<sdf version='1.6'>
+  <model name='rs750_rig'>
+    <pose>0 0 0.05 0 0 0</pose>
+    <static>false</static>
+
+    <!-- Controllers -->
+    <plugin name="base_controller" filename="libLinkJointControllerPlugin.so">
+      <input_topic>/cmd_vel</input_topic>
+      <link_name>__default__</link_name>
+      <link_scale>0</link_scale>
+      <link_type>velocity</link_type>
+      <link_pid>1000 0 10</link_pid>
+      <joint_name>base_joint</joint_name>
+      <joint_scale>0.01</joint_scale>
+      <joint_type>position</joint_type>
+      <joint_pid>10000 0 2000</joint_pid>
+    </plugin>
+
+    <plugin name="main_sail_controller" filename="libLinkJointControllerPlugin.so">
+      <input_topic>/cmd_vel2</input_topic>
+      <link_name>__default__</link_name>
+      <link_scale>0</link_scale>
+      <link_type>velocity</link_type>
+      <link_pid>1000 0 10</link_pid>
+      <joint_name>main_sail_joint</joint_name>
+      <joint_scale>0.01</joint_scale>
+      <joint_type>limit</joint_type>
+      <joint_pid>1000 0 10</joint_pid>
+    </plugin>
+
+    <plugin name="jib_sail_controller" filename="libLinkJointControllerPlugin.so">
+      <input_topic>/cmd_vel2</input_topic>
+      <link_name>__default__</link_name>
+      <link_scale>0</link_scale>
+      <link_type>velocity</link_type>
+      <link_pid>1000 0 10</link_pid>
+      <joint_name>jib_sail_joint</joint_name>
+      <joint_scale>0.01</joint_scale>
+      <joint_type>limit</joint_type>
+      <joint_pid>1000 0 10</joint_pid>
+    </plugin>
+
+    <!-- Lift / Drag -->
+    <plugin name="main_sail_liftdrag" filename="libSailPlugin.so">
+      <a0>0.0</a0>
+      <cla>6.2832</cla>
+      <alpha_stall>0.1592</alpha_stall>
+      <cla_stall>-0.7083</cla_stall>
+      <cda>0.63662</cda>
+      <area>1.81</area>
+      <fluid_density>1.2</fluid_density>
+      <forward>1 0 0</forward>
+      <upward>0 1 0</upward>
+      <cp>-0.30875 0 1.30625</cp>
+      <link_name>main_sail_link</link_name>
+      <radial_symmetry>true</radial_symmetry>
+      <topic>lift_drag</topic>
+    </plugin>
+
+    <plugin name="jib_sail_liftdrag" filename="libSailPlugin.so">
+      <a0>0.0</a0>
+      <cla>6.2832</cla>
+      <alpha_stall>0.1592</alpha_stall>
+      <cla_stall>-0.7083</cla_stall>
+      <cda>0.63662</cda>
+      <area>1.43</area>
+      <fluid_density>1.2</fluid_density>
+      <forward>1 0 0</forward>
+      <upward>0 1 0</upward>
+      <cp>-0.605666667 0 1.20528</cp>
+      <link_name>jib_sail_link</link_name>
+      <radial_symmetry>true</radial_symmetry>
+      <topic>lift_drag</topic>
+    </plugin>
+
+    <!-- Base -->
+    <link name="base_link">
+      <visual name="base_visual">
+        <pose>0 0 0 0 0 0</pose>      
+        <geometry>
+          <box>
+            <size>2 1 0.1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+      <visual name="front_support_visual">
+        <pose>0.995 0 0.55 0 0 0</pose>      
+        <geometry>
+          <box>
+            <size>0.01 0.1 1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+      <visual name="back_support_visual">
+        <pose>-0.995 0 0.55 0 0 0</pose>      
+        <geometry>
+          <box>
+            <size>0.01 0.1 1</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <collision name="base_collision">
+        <pose>0 0 0 0 0 0</pose>      
+        <geometry>
+          <box>
+            <size>2 1 0.1</size>
+          </box>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>1000</mass>
+        <inertia>
+          <ixx>84</ixx>
+          <ixy>0</ixy>
+          <iyy>334</iyy>
+          <iyz>0</iyz>
+          <izz>416</izz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <joint type="revolute" name="base_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>base_link</child>
+      <parent>world</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <initial_position>0</initial_position>
+      </axis>
+      <sensor name="base_force_torque" type="force_torque">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+      </sensor>
+    </joint>
+
+    <!-- Platform -->
+    <link name="platform_link">
+      <pose>0 0 1 0 0 0</pose>      
+      <visual name="platform_visual">
+        <pose>0 0 0 0 1.57079 0</pose>      
+        <geometry>
+          <cylinder>
+            <radius>0.05</radius>
+            <length>1.98</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="counterweight_visual">
+        <pose>0 0 -0.5 0 1.57079 0</pose>      
+        <geometry>
+          <cylinder>
+            <radius>0.1</radius>
+            <length>1</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="counterweight_fin_visual">
+        <pose>0 0 -0.25 0 0 0</pose>      
+        <geometry>
+          <box>
+            <size>1 0.01 0.5</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="mast_visual">
+        <pose>0 0 2.009375 0 0 0</pose>      
+        <geometry>
+          <mesh>
+            <uri>model://rs750_rig/meshes/rs750_mast.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <collision name="platform_collision">
+        <pose>0 0 0 0 1.57079 0</pose>      
+        <geometry>
+          <cylinder>
+            <radius>0.05</radius>
+            <length>2</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <!-- Inertial is for the counterweight -->
+      <inertial>
+        <pose>0 0 -0.5 0 0 0</pose>
+        <mass>1000</mass>
+        <inertia>
+          <ixx>5</ixx>
+          <ixy>0</ixy>
+          <iyy>85</iyy>
+          <iyz>0</iyz>
+          <izz>85</izz>
+        </inertia>
+      </inertial>
+    </link>
+
+    <joint type="revolute" name="platform_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>platform_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>1 0 0</xyz>
+        <initial_position>0</initial_position>
+      </axis>
+      <dynamics>
+        <damping>3</damping>
+        <friction>1</friction>
+      </dynamics>
+      <sensor name="platform_force_torque" type="force_torque">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+      </sensor>
+    </joint>
+
+    <!-- Main Sail -->
+    <link name="main_sail_link">
+      <pose>0 0 1.3 0 0 0</pose>
+
+      <visual name="main_sail_visual">
+        <geometry>
+          <mesh>
+            <uri>model://rs750_rig/meshes/rs750_main_sail.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="main_boom_visual">
+        <pose>-0.463125 0 -0.01125 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750_rig/meshes/rs750_main_boom.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <collision name="main_sail_collision">
+        <geometry>
+          <mesh>
+            <uri>model://rs750_rig/meshes/rs750_main_sail.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <pose>-0.30875 0 1.30625 0 0 0</pose>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.127</ixx>
+          <ixy>0</ixy>
+          <iyy>0.135</iyy>
+          <iyz>0</iyz>
+          <izz>0.00715</izz>
+        </inertia>
+      </inertial>
+
+      <sensor name="main_sail_anemometer" type="anemometer">
+        <pose>-0.30875 0 1.30625 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>50</update_rate>
+        <topic>main_sail_anemometer</topic>
+      </sensor>
+      <visual name="main_sail_anemometer_visual">
+        <pose>-0.30875 0 1.30625 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>0.025</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+
+    </link>
+
+    <joint type="revolute" name="main_sail_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>main_sail_link</child>
+      <parent>platform_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <initial_position>0</initial_position>
+        <limit>
+          <lower>-1.7</lower>
+          <upper>1.7</upper>
+        </limit>
+      </axis>
+      <sensor name="main_sail_force_torque" type="force_torque">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+      </sensor>
+    </joint>
+
+    <!-- Jib Sail -->
+    <link name="jib_sail_link">
+      <pose>1.03125 0 1.105 0 0 0</pose>
+
+      <visual name="jib_sail_visual">
+        <geometry>
+          <mesh>
+            <uri>model://rs750_rig/meshes/rs750_jib_sail.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <visual name="jib_boom_visual">
+        <pose>-0.463125 0 -0.01125 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://rs750_rig/meshes/rs750_jib_boom.stl</uri>
+          </mesh>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Gray</name>
+          </script>
+        </material>
+      </visual>
+
+      <collision name="jib_sail_collision">
+        <geometry>
+          <mesh>
+            <uri>model://rs750_rig/meshes/rs750_jib_sail.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+      <inertial>
+        <pose>-0.605666667 0 1.20528 0 0 0</pose>
+        <mass>0.1</mass>
+        <inertia>
+          <ixx>0.0918</ixx>
+          <ixy>0</ixy>
+          <iyy>0.0980</iyy>
+          <iyz>0</iyz>
+          <izz>0.00620</izz>
+        </inertia>
+      </inertial>
+
+      <sensor name="jib_sail_anemometer" type="anemometer">
+        <pose>-0.605666667 0 1.20528 0 0 0</pose>
+        <always_on>true</always_on>
+        <update_rate>50</update_rate>
+        <topic>jib_sail_anemometer</topic>
+      </sensor>
+      <visual name="jib_sail_anemometer_visual">
+        <pose>-0.605666667 0 1.20528 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.025</radius>
+            <length>0.025</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <name>Gazebo/Red</name>
+          </script>
+        </material>
+      </visual>
+
+    </link>
+
+    <joint type="revolute" name="jib_sail_joint">
+      <pose>0 0 0 0 0 0</pose>
+      <child>jib_sail_link</child>
+      <parent>platform_link</parent>
+      <axis>
+        <xyz>-0.271652766 0 0.962395332</xyz>
+        <initial_position>0</initial_position>
+        <limit>
+          <lower>-1.7</lower>
+          <upper>1.7</upper>
+        </limit>
+      </axis>
+      <sensor name="jib_sail_force_torque" type="force_torque">
+        <always_on>true</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+      </sensor>
+    </joint>
+
+  </model>
+</sdf>

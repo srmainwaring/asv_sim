@@ -21,6 +21,7 @@
     <static>false</static>
     <enable_wind>true</enable_wind>
 
+    <!-- Controllers -->
     <plugin name="rudder_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel</input_topic>
       <link_name>__default__</link_name>
@@ -33,29 +34,29 @@
       <joint_pid>2000 0 10</joint_pid>
     </plugin>
 
-    <!-- <plugin name="main_sail_controller" filename="libLinkJointControllerPlugin.so">
+    <plugin name="main_sail_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel2</input_topic>
       <link_name>__default__</link_name>
       <link_scale>0</link_scale>
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>main_sail_joint</joint_name>
-      <joint_scale>1.5</joint_scale>
-      <joint_type>position</joint_type>
+      <joint_scale>0.01</joint_scale>
+      <joint_type>limit</joint_type>
       <joint_pid>1000 0 10</joint_pid>
-    </plugin> -->
+    </plugin>
 
-    <!-- <plugin name="jib_sail_controller" filename="libLinkJointControllerPlugin.so">
+    <plugin name="jib_sail_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel2</input_topic>
       <link_name>__default__</link_name>
       <link_scale>0</link_scale>
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>jib_sail_joint</joint_name>
-      <joint_scale>1.5</joint_scale>
-      <joint_type>position</joint_type>
+      <joint_scale>0.01</joint_scale>
+      <joint_type>limit</joint_type>
       <joint_pid>1000 0 10</joint_pid>
-    </plugin> -->
+    </plugin>
 
     <!-- <plugin name="wing_sail_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel2</input_topic>
@@ -64,12 +65,12 @@
       <link_type>velocity</link_type>
       <link_pid>1000 0 10</link_pid>
       <joint_name>wing_sail_joint</joint_name>
-      <joint_scale>1.5</joint_scale>
+      <joint_scale>0.01</joint_scale>
       <joint_type>position</joint_type>
       <joint_pid>1000 0 10</joint_pid>
     </plugin> -->
 
-    <plugin name="trim_tab_controller" filename="libLinkJointControllerPlugin.so">
+    <!-- <plugin name="trim_tab_controller" filename="libLinkJointControllerPlugin.so">
       <input_topic>/cmd_vel2</input_topic>
       <link_name>__default__</link_name>
       <link_scale>0</link_scale>
@@ -79,7 +80,7 @@
       <joint_scale>0.01</joint_scale>
       <joint_type>position</joint_type>
       <joint_pid>2000 0 10</joint_pid>
-    </plugin>
+    </plugin> -->
 
     <plugin name="hydrodynamics" filename="libHydrodynamicsPlugin.so">
       <!-- Wave Model -->
@@ -121,7 +122,7 @@
       </markers>
     </plugin>
 
-    <!-- <plugin name="main_sail_liftdrag" filename="libSailPlugin.so">
+    <plugin name="main_sail_liftdrag" filename="libSailPlugin.so">
       <a0>0.0</a0>
       <cla>6.2832</cla>
       <alpha_stall>0.1592</alpha_stall>
@@ -148,12 +149,12 @@
       <forward>1 0 0</forward>
       <upward>0 1 0</upward>
       <cp>-0.605666667 0 1.20528</cp>
-      <link_name>main_sail_link</link_name>
+      <link_name>jib_sail_link</link_name>
       <radial_symmetry>true</radial_symmetry>
       <topic>lift_drag</topic>
-    </plugin> -->
+    </plugin>
 
-    <plugin name="wing_sail_liftdrag" filename="libSailPlugin.so">
+    <!-- <plugin name="wing_sail_liftdrag" filename="libSailPlugin.so">
       <a0>0.0</a0>
       <cla>6.2832</cla>
       <alpha_stall>0.1592</alpha_stall>
@@ -183,7 +184,7 @@
       <link_name>trim_tab_link</link_name>
       <radial_symmetry>true</radial_symmetry>
       <topic>lift_drag</topic>
-    </plugin>
+    </plugin> -->
 
     <plugin name="keel_liftdrag" filename="libFoilPlugin.so">
       <a0>0.0</a0>
@@ -484,8 +485,8 @@
         <xyz>0 0 1</xyz>
         <initial_position>0</initial_position>
         <limit>
-          <lower>-1.3</lower>
-          <upper>1.3</upper>
+          <lower>-0.7</lower>
+          <upper>0.7</upper>
         </limit>
       </axis>
       <sensor name="rudder_force_torque" type="force_torque">
@@ -496,7 +497,7 @@
     </joint>
 
     <!-- Main Sail -->
-    <!-- <link name="main_sail_link">
+    <link name="main_sail_link">
       <pose>-0.02625 0 0.291875 0 0 0</pose>
 
       <visual name="main_sail_visual">
@@ -544,10 +545,9 @@
           <iyz>0</iyz>
           <izz>0.1</izz>
         </inertia>
-      </inertial> -->
+      </inertial>
 
-      <!-- Sensors -->
-      <!-- <sensor name="main_sail_anemometer" type="anemometer">
+      <sensor name="main_sail_anemometer" type="anemometer">
         <pose>-0.30875 0 1.30625 0 0 0</pose>
         <always_on>true</always_on>
         <update_rate>50</update_rate>
@@ -568,9 +568,9 @@
         </material>
       </visual>
 
-    </link> -->
+    </link>
 
-    <!-- <joint type="revolute" name="main_sail_joint">
+    <joint type="revolute" name="main_sail_joint">
       <pose>0 0 0 0 0 0</pose>
       <child>main_sail_link</child>
       <parent>base_link</parent>
@@ -587,10 +587,10 @@
         <update_rate>30</update_rate>
         <visualize>true</visualize>
       </sensor>
-    </joint> -->
+    </joint>
 
     <!-- Jib Sail -->
-    <!-- <link name="jib_sail_link">
+    <link name="jib_sail_link">
       <pose>1.03125 0 0.235625 0 0 0</pose>
 
       <visual name="jib_sail_visual">
@@ -638,10 +638,9 @@
           <iyz>0</iyz>
           <izz>0.1</izz>
         </inertia>
-      </inertial> -->
+      </inertial>
 
-      <!-- Sensors -->
-      <!-- <sensor name="jib_sail_anemometer" type="anemometer">
+      <sensor name="jib_sail_anemometer" type="anemometer">
         <pose>-0.605666667 0 1.20528 0 0 0</pose>
         <always_on>true</always_on>
         <update_rate>50</update_rate>
@@ -662,9 +661,9 @@
         </material>
       </visual>
 
-    </link> -->
+    </link>
 
-    <!-- <joint type="revolute" name="jib_sail_joint">
+    <joint type="revolute" name="jib_sail_joint">
       <pose>0 0 0 0 0 0</pose>
       <child>jib_sail_link</child>
       <parent>base_link</parent>
@@ -681,10 +680,10 @@
         <update_rate>30</update_rate>
         <visualize>true</visualize>
       </sensor>
-    </joint> -->
+    </joint>
 
     <!-- Wing sail -->
-    <link name="wing_sail_link">
+    <!-- <link name="wing_sail_link">
       <pose>0 0 2.15 0 0 0</pose>
       <visual name="wing_sail_visual">
         <geometry>
@@ -731,7 +730,6 @@
         </inertia>
       </inertial>
 
-      <!-- Sensors -->
       <sensor name="anemometer_sensor" type="anemometer">
         <pose>0 0 0 0 0 0</pose>
         <always_on>true</always_on>
@@ -761,10 +759,6 @@
       <axis>
         <xyz>0 0 1</xyz>
         <initial_position>0</initial_position>
-        <!-- <limit>
-          <lower>-1.5</lower>
-          <upper>1.5</upper>
-        </limit> -->
         <dynamics>
           <damping>5</damping>
           <friction>1</friction>
@@ -775,10 +769,10 @@
         <update_rate>30</update_rate>
         <visualize>true</visualize>
       </sensor>
-    </joint>
+    </joint> -->
 
     <!-- Trim tab -->
-    <link name="trim_tab_link">
+    <!-- <link name="trim_tab_link">
       <pose>-0.9 0 2.15 0 0 0</pose>
 
       <visual name="trim_tab_visual">
@@ -833,7 +827,7 @@
         <update_rate>30</update_rate>
         <visualize>true</visualize>
       </sensor>
-    </joint>
+    </joint> -->
 
   </model>
 </sdf>
