@@ -99,13 +99,15 @@ add_library(RegisterSensorsPlugin
 )
 
 target_link_libraries(RegisterSensorsPlugin
-  asv_sim_gazebo_plugins_msgs
+asv_sim_gazebo_plugins
+asv_sim_gazebo_plugins_msgs
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
 )
 
 add_dependencies(RegisterSensorsPlugin
+  asv_sim_gazebo_plugins
   asv_sim_gazebo_plugins_msgs
 )
 
