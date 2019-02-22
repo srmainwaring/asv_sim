@@ -188,7 +188,7 @@
       </visual>
 
       <visual name="counterweight_visual">
-        <pose>0 0 -0.5 0 1.57079 0</pose>      
+        <pose>0 0 -0.2 0 1.57079 0</pose>      
         <geometry>
           <cylinder>
             <radius>0.1</radius>
@@ -202,7 +202,7 @@
         </material>
       </visual>
 
-      <visual name="counterweight_fin_visual">
+      <visual name="counterweight_support_visual">
         <pose>0 0 -0.25 0 0 0</pose>      
         <geometry>
           <box>
@@ -242,7 +242,7 @@
 
       <!-- Inertial is for the counterweight -->
       <inertial>
-        <pose>0 0 -0.5 0 0 0</pose>
+        <pose>0 0 -0.2 0 0 0</pose>
         <mass>1000</mass>
         <inertia>
           <ixx>5</ixx>

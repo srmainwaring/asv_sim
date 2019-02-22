@@ -60,14 +60,12 @@ namespace gazebo
     ///
     /// # Published Topics
     ///
-    /// 1. ~/anemometer (gazebo::msgs::Param_V)
+    /// 1. ~/anemometer (asv_msgs::msgs::Anemometer)
     ///   - time (gazebo::msgs::Time)
     ///     The simulation time of the observation. 
-    ///   - true_wind (gazebo::msgs::Vector3d)
-    ///     The true wind at the link origin. 
-    ///   - apparent_wind (gazebo::msgs::Vector3d)
-    ///     The apparent wind at the link origin
-    ///     (i.e. true wind adjusted for the link velocity). 
+    ///   - wind_velocity (gazebo::msgs::Vector3d)
+    ///     The apparent wind at the sensor origin.
+    ///     (i.e. true wind adjusted for the velocity of the sensor). 
     ///
     /// # Parameters
     ///

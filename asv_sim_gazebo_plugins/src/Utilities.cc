@@ -13,16 +13,53 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 #include "asv_sim_gazebo_plugins/Utilities.hh"
 
-#include <ignition/math/Pose3.hh>
-#include <ignition/math/Vector3.hh>
+namespace asv
+{
+  template <>
+  void MsgParamSetValue<bool>(gazebo::msgs::Param& _param, const bool& _value)
+  { 
+    _param.mutable_value()->set_bool_value(_value);
+  }
 
-#include <string>
+  template <>
+  void MsgParamSetValue<int>(gazebo::msgs::Param& _param, const int& _value)
+  { 
+    _param.mutable_value()->set_int_value(_value);
+  }
 
-using namespace asv;
+  template <>
+  void MsgParamSetValue<size_t>(gazebo::msgs::Param& _param, const size_t& _value)
+  { 
+    _param.mutable_value()->set_int_value(_value);
+  }
 
-///////////////////////////////////////////////////////////////////////////////
-// Utilities
+  template <>
+  void MsgParamSetValue<double>(gazebo::msgs::Param& _param, const double& _value)
+  { 
+    _param.mutable_value()->set_double_value(_value);
+  }
 
+  template <>
+  void MsgParamSetValue<std::string>(gazebo::msgs::Param& _param, const std::string& _value)
+  { 
+    _param.mutable_value()->set_string_value(_value);
+  }
+
+  template <>
+  void MsgParamSetValue<gazebo::common::Time>(gazebo::msgs::Param& _param, const gazebo::common::Time& _value)
+  { 
+    _param.mutable_value()->mutable_time_value()->set_sec(_value.sec);
+    _param.mutable_value()->mutable_time_value()->set_nsec(_value.nsec);
+  }
+
+  template <>
+  void MsgParamSetValue<ignition::math::Vector3d>(gazebo::msgs::Param& _param,
+    const ignition::math::Vector3d& _value)
+  { 
+    _param.mutable_value()->mutable_vector3d_value()->set_x(_value.X());
+    _param.mutable_value()->mutable_vector3d_value()->set_y(_value.Y());
+    _param.mutable_value()->mutable_vector3d_value()->set_z(_value.Z());
+  }
+}

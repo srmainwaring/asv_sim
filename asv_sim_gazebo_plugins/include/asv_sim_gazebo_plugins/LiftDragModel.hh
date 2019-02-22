@@ -36,6 +36,8 @@ namespace asv
     /// \brief Constructor.
     public: LiftDragModel();
  
+    /// \brief Create a new LiftDragModel from SDF.
+    /// \param[in] _sdf A pointer to an SDF element containing parameters.
     public: static LiftDragModel* Create(const sdf::ElementPtr& _sdf);
 
     /// \brief Compute the lift and drag forces in the world frame.

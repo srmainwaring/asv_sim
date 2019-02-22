@@ -14,6 +14,8 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
+#include "asv_sim_gazebo_plugins/MessageTypes.hh"
+#include "asv_sim_gazebo_plugins/Utilities.hh"
 
 #include <gazebo/common/Assert.hh>
 #include <gazebo/physics/Link.hh>
@@ -35,104 +37,9 @@
 #include <iostream>
 #include <string>
 
+using namespace asv;
 using namespace gazebo;
 using namespace sensors;
-
-/// \brief Template function for extracting a value from a parameter message.
-template <typename T>
-void MsgParamSetValue(gazebo::msgs::Param& _param, const T& _value)
-{
-  gzwarn << "Using default template for MsgParamSetValue" << std::endl;
-}
-
-/// \brief Template specialization for setting a bool in a parameter message.
-template <>
-void MsgParamSetValue<bool>(gazebo::msgs::Param& _param, const bool& _value)
-{ 
-  _param.mutable_value()->set_bool_value(_value);
-}
-
-/// \brief Template specialization for setting an int in a parameter message.
-template <>
-void MsgParamSetValue<int>(gazebo::msgs::Param& _param, const int& _value)
-{ 
-  _param.mutable_value()->set_int_value(_value);
-}
-
-/// \brief Template specialization for setting a size_t in a parameter message.
-template <>
-void MsgParamSetValue<size_t>(gazebo::msgs::Param& _param, const size_t& _value)
-{ 
-  _param.mutable_value()->set_int_value(_value);
-}
-
-/// \brief Template specialization for setting a double in a parameter message.
-template <>
-void MsgParamSetValue<double>(gazebo::msgs::Param& _param, const double& _value)
-{ 
-  _param.mutable_value()->set_double_value(_value);
-}
-
-/// \brief Template specialization for setting a string in a parameter message.
-template <>
-void MsgParamSetValue<std::string>(gazebo::msgs::Param& _param, const std::string& _value)
-{ 
-  _param.mutable_value()->set_string_value(_value);
-}
-
-/// \brief Template specialization for setting a string in a parameter message.
-template <>
-void MsgParamSetValue<common::Time>(gazebo::msgs::Param& _param, const common::Time& _value)
-{ 
-  _param.mutable_value()->mutable_time_value()->set_sec(_value.sec);
-  _param.mutable_value()->mutable_time_value()->set_nsec(_value.nsec);
-}
-
-/// \brief Template specialization for setting a Vector2 in a parameter message.
-// template <>
-// void MsgParamSetValue<ignition::math::Vector2d>(gazebo::msgs::Param& _param, const T& _value)
-// { 
-  // _param.mutable_value()->mutable_vector3d_value()->set_x(_value.x());
-  // _param.mutable_value()->mutable_vector3d_value()->set_y(_value.y());
-  // _param.mutable_value()->mutable_vector3d_value()->set_z(0);
-// }
-
-/// \brief Template specialization for setting a Vector3 in a parameter message.
-template <>
-void MsgParamSetValue<ignition::math::Vector3d>(gazebo::msgs::Param& _param,
-  const ignition::math::Vector3d& _value)
-{ 
-  _param.mutable_value()->mutable_vector3d_value()->set_x(_value.X());
-  _param.mutable_value()->mutable_vector3d_value()->set_y(_value.Y());
-  _param.mutable_value()->mutable_vector3d_value()->set_z(_value.Z());
-}
-
-/// \brief Template for setting a named parameter on a parameter vector message.
-template <typename T>
-void SetMsgParam(gazebo::msgs::Param_V& _msg, const std::string &_paramName, const T& _value)
-{
-  // Custom compare for params
-  auto compare = [=](auto& _param)
-  {
-    return _param.name() == _paramName;
-  };
-
-  auto it = std::find_if(std::begin(_msg.param()), std::end(_msg.param()), compare);
-  
-  // Not found
-  if (it == std::end(_msg.param()))
-  {
-    gzwarn << "Parameter <" << _paramName << "> not found: " 
-      <<  "Cannot set to " << _value << std::endl;
-    return;
-  }
-
-  // Found
-  auto index = std::distance(std::begin(_msg.param()), it);
-  auto param = _msg.mutable_param(index);
-  MsgParamSetValue<T>(*param, _value);
-
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 // AnemometerSensorPrivate
@@ -143,11 +50,14 @@ namespace gazebo
 {
   namespace sensors
   {
+    /// \internal
+    /// \brief Create a new AnemometerSensor.
     Sensor* NewAnemometerSensor()
     {
       return new gazebo::sensors::AnemometerSensor();
     }
 
+    /// \brief Register an AnemometerSensor with the gazebo SensorFactory.
     void RegisterAnemometerSensor()
     {
       SensorFactory::RegisterSensor("anemometer", NewAnemometerSensor);
@@ -167,7 +77,7 @@ namespace gazebo
       public: physics::LinkPtr parentLink;
 
       /// \brief Store the most recent anemometer message.
-      public: msgs::Param_V anemometerMsg;
+      public: asv_msgs::msgs::Anemometer anemometerMsg;
     };
   } // sensors
 } // gazebo
@@ -178,7 +88,6 @@ namespace gazebo
 AnemometerSensor::~AnemometerSensor()
 {
   // Clean up.
-  this->dataPtr->anemometerPub.reset();
   this->Fini();
 }
 
@@ -203,84 +112,8 @@ void AnemometerSensor::Load(const std::string& _worldName)
   this->dataPtr->parentLink =
     boost::dynamic_pointer_cast<physics::Link>(parentEntity);
 
-  this->dataPtr->anemometerPub = this->node->Advertise<msgs::Param_V>(
+  this->dataPtr->anemometerPub = this->node->Advertise<asv_msgs::msgs::Anemometer>(
       this->GetTopic(), 50);
-
-  // Parse sdf noise parameters
-  // sdf::ElementPtr magElem = this->sdf->GetElement("anemometer");
-
-  // if (!magElem)
-  // {
-  //   gzerr << "Missing <anemometer> element in sensor["
-  //     << this->Name() << "]\n";
-  // }
-  // else
-  // // Load anemometer field noise parameters
-  // {
-  //   if (magElem->HasElement("x") &&
-  //       magElem->GetElement("x")->HasElement("noise"))
-  //   {
-  //     this->noises[ANEMOMETER_X_NOISE] =
-  //       NoiseFactory::NewNoiseModel(
-  //           magElem->GetElement("x")->GetElement("noise"));
-  //   }
-
-  //   if (magElem->HasElement("y") &&
-  //       magElem->GetElement("y")->HasElement("noise"))
-  //   {
-  //     this->noises[ANEMOMETER_Y_NOISE] =
-  //       NoiseFactory::NewNoiseModel(
-  //           magElem->GetElement("y")->GetElement("noise"));
-  //   }
-
-  //   if (magElem->HasElement("z") &&
-  //       magElem->GetElement("z")->HasElement("noise"))
-  //   {
-  //     this->noises[ANEMOMETER_Z_NOISE] =
-  //       NoiseFactory::NewNoiseModel(
-  //           magElem->GetElement("z")->GetElement("noise"));
-  //   }
-  // }
-
-  // Initialise the anemometer message
-  { // time
-    auto nextParam = this->dataPtr->anemometerMsg.add_param();
-    nextParam->set_name("time");
-    nextParam->mutable_value()->set_type(msgs::Any::TIME);
-  }
-  { // true wind
-    auto nextParam = this->dataPtr->anemometerMsg.add_param();
-    nextParam->set_name("true_wind");
-    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
-  }
-  { // apparent wind
-    auto nextParam = this->dataPtr->anemometerMsg.add_param();
-    nextParam->set_name("apparent_wind");
-    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
-  }
-
-  // @DEBUG_INFO
-  {
-    auto nextParam = this->dataPtr->anemometerMsg.add_param();
-    nextParam->set_name("link_vel");
-    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
-  }
-  {
-    auto nextParam = this->dataPtr->anemometerMsg.add_param();
-    nextParam->set_name("link_omega");
-    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
-  }
-  {
-    auto nextParam = this->dataPtr->anemometerMsg.add_param();
-    nextParam->set_name("sensor_xr");
-    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
-  }
-  {
-    auto nextParam = this->dataPtr->anemometerMsg.add_param();
-    nextParam->set_name("sensor_vel");
-    nextParam->mutable_value()->set_type(msgs::Any::VECTOR3D);
-  }
-
 }
 
 void AnemometerSensor::Init()
@@ -290,8 +123,9 @@ void AnemometerSensor::Init()
 
 void AnemometerSensor::Fini()
 {
-  Sensor::Fini();
+  this->dataPtr->anemometerPub.reset();
   this->dataPtr->parentLink.reset();
+  Sensor::Fini();
 }
 
 std::string AnemometerSensor::GetTopic() const
@@ -349,27 +183,13 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
         apparentWindWorldLinearVel);
 
     // Update the messages.
-    SetMsgParam(this->dataPtr->anemometerMsg,
-      "true_wind", windWorldLinearVel);
-    SetMsgParam(this->dataPtr->anemometerMsg,
-      "apparent_wind", apparentWindRelativeLinearVel);
-
-    // @DEBUG_INFO
-    SetMsgParam(this->dataPtr->anemometerMsg,
-      "link_vel", linkWorldCoMLinearVel);
-    SetMsgParam(this->dataPtr->anemometerMsg,
-      "link_omega", linkWorldAngularVel);
-
-    SetMsgParam(this->dataPtr->anemometerMsg,
-      "sensor_xr", sensorCoMPose.Pos());
-    SetMsgParam(this->dataPtr->anemometerMsg,
-      "sensor_vel", sensorWorldLinearVel);
-
+    msgs::Set(this->dataPtr->anemometerMsg.mutable_wind_velocity(),
+      apparentWindRelativeLinearVel);
   }
 
   // Save the time of the measurement
   common::Time simTime = this->world->SimTime();
-  SetMsgParam(this->dataPtr->anemometerMsg, "time", simTime);
+  msgs::Set(this->dataPtr->anemometerMsg.mutable_time(), simTime);
 
   // Publish the message if needed
   if (this->dataPtr->anemometerPub)

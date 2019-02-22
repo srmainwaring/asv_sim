@@ -13,13 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#include "asv_sim_gazebo_plugins/MessageTypes.hh"
+
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/common.hh>
 #include <gazebo/transport/transport.hh>
 #include <gazebo/physics/physics.hh>
 #include <gazebo/msgs/msgs.hh>
-
-#include "lift_drag.pb.h"
 
 #include <atomic>
 #include <chrono>
@@ -27,14 +27,6 @@
 #include <thread>
 
 using namespace gazebo;
-
-namespace gazebo
-{
-  /// \brief Type definition for a pointer to a LiftDrag message.
-  typedef const boost::shared_ptr<
-    const asv_msgs::msgs::LiftDrag>
-      LiftDragPtr;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Ignition Transport Tutorial
@@ -52,7 +44,7 @@ void signal_handler(int _signal)
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Callback for topic "~/lift_drag".
 ///
-void OnLiftDragMsg(LiftDragPtr &_msg)
+void OnLiftDragMsg(asv::LiftDragPtr &_msg)
 {
   std::string topic("~/lift_drag");
   std::cout << "Received message on topic [" << topic << "]" << std::endl;

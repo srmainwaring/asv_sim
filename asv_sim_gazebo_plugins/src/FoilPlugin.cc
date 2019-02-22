@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Code modified from OSRF LiftDragPlugin
 
+// Portions of this code are modified from the OSRF LiftDragPlugin
 /*
  * Copyright (C) 2014 Open Source Robotics Foundation
  *
@@ -34,6 +34,7 @@
 
 #include "asv_sim_gazebo_plugins/FoilPlugin.hh"
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
+#include "asv_sim_gazebo_plugins/MessageTypes.hh"
 
 #include <algorithm>
 #include <functional>
@@ -48,8 +49,6 @@
 #include "gazebo/transport/transport.hh"
 
 #include <boost/algorithm/string.hpp>
-
-#include "lift_drag.pb.h"
 
 using namespace asv;
 using namespace gazebo;
@@ -204,7 +203,7 @@ void FoilPlugin::OnUpdate()
 
   // Pose of link origin and link CoM (world frame).
   auto linkPose = this->data->link->WorldPose();
-  auto comPose  = this->data->link->WorldInertialPose();
+  auto comPose  = this->data->link->WorldCoGPose();
 
   // Compute lift and drag
   double alpha=0, u=0, cl=0, cd=0;
@@ -215,9 +214,14 @@ void FoilPlugin::OnUpdate()
   // Resultant force arising from lift and drag (world frame).
   auto force = lift + drag;
 
-  // Vector from CoM to the centre of pressure (world frame).
+  // CoM (world frame).
   auto com = comPose.Pos();
-  auto xr  = linkPose.Pos() + this->data->cp - com;
+
+  // Rotate the centre of pressure (CP) into the world frame.
+  auto cpWorld = linkPose.Rot().RotateVector(this->data->cp);
+
+  // Vector from CoM to CP.
+  auto xr  = linkPose.Pos() + cpWorld - com;
 
   // Compute torque (about CoM in world frame)
   auto torque = xr.Cross(force);
@@ -225,31 +229,6 @@ void FoilPlugin::OnUpdate()
   // Ensure no overflow.
   force.Correct();
   torque.Correct();
-
-  // @DEBUG_INFO
-#if 0
-  gzmsg << "velWind:      " << velWind    << std::endl;
-  gzmsg << "velCp:        " << velCp      << std::endl;
-  gzmsg << "vel:          " << vel        << std::endl;
-  gzmsg << "velUnit:      " << velUnit    << std::endl;
-  gzmsg << "forwardI:     " << forwardI   << std::endl;
-  gzmsg << "upwardI:      " << upwardI    << std::endl;
-  gzmsg << "spanwiseI:    " << spanwiseI  << std::endl;
-  gzmsg << "velLD:        " << velLD      << std::endl;
-  gzmsg << "dragUnit:     " << dragUnit   << std::endl;
-  gzmsg << "liftUnit:     " << liftUnit   << std::endl;
-  gzmsg << "cosAlpha:     " << cosAlpha   << std::endl;
-  gzmsg << "alpha:        " << alpha      << std::endl;
-  gzmsg << "speedLD:      " << speedLD    << std::endl;
-  gzmsg << "cl:           " << cl         << std::endl;
-  gzmsg << "cd:           " << cd         << std::endl;
-  gzmsg << "lift:         " << lift       << std::endl;
-  gzmsg << "drag:         " << drag       << std::endl;
-  gzmsg << "xr:           " << xr         << std::endl;
-  gzmsg << "force:        " << force      << std::endl;
-  gzmsg << "torque:       " << torque     << std::endl;
-  gzmsg << std::endl;
-#endif
 
   // Add force and torque to link (applied to CoM in world frame).
   this->data->link->AddForce(force);
