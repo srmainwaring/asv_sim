@@ -98,9 +98,17 @@ namespace asv
             sensor_->SetActive(true);
         }
 
+        // Populate the message
+        apparent_wind_.header.stamp.sec  = sim_time.sec;
+        apparent_wind_.header.stamp.nsec = sim_time.nsec;
+
+        auto vel = sensor_->ApparentWindVelocity();
+        apparent_wind_.vector.x = vel.X();
+        apparent_wind_.vector.y = vel.Y();
+        apparent_wind_.vector.z = vel.Z();
+
         // Publish the apparent wind
         publisher_.publish(apparent_wind_);
-
     }
 
     // Register this plugin with the simulator

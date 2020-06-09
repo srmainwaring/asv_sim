@@ -76,8 +76,11 @@
           <always_on>true</always_on>
           <update_rate>50</update_rate>
           <topic>anemometer</topic>
-          <!-- <anemometer>
-          </anemometer> -->
+          <plugin filename="libgazebo_ros_anemometer.so" name="anemometer_plugin">
+              <robotNamespace>/</robotNamespace>
+              <frameId>anemometer</frameId>
+              <topicName>wind/apparent</topicName>
+          </plugin>
         </sensor>
 
       </link>

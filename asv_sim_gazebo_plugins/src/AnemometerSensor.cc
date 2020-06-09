@@ -207,6 +207,11 @@ ignition::math::Vector3d AnemometerSensor::TrueWindVelocity() const
 ignition::math::Vector3d AnemometerSensor::ApparentWindVelocity() const
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  return ignition::math::Vector3d::Zero;
+  ignition::math::Vector3d vel(
+      this->dataPtr->anemometerMsg.wind_velocity().x(),
+      this->dataPtr->anemometerMsg.wind_velocity().y(),
+      this->dataPtr->anemometerMsg.wind_velocity().z()
+  );
+  return vel;
 }
 
