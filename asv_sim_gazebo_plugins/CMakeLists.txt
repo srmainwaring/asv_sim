@@ -10,7 +10,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 ###############################################################################
 # Other dependencies...
 
-find_package(catkin REQUIRED COMPONENTS gazebo_ros)
+find_package(catkin REQUIRED COMPONENTS
+  gazebo_ros
+  geometry_msgs
+  roscpp
+  std_msgs
+)
 find_package(gazebo REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Protobuf REQUIRED)
@@ -30,8 +35,11 @@ catkin_package(
     asv_sim_gazebo_plugins_msgs
     RegisterSensorsPlugin
     SailLiftDragPlugin
-  DEPENDS
+    DEPENDS
     gazebo_ros
+    geometry_msgs
+    roscpp
+    std_msgs
 )
 
 include_directories(
@@ -74,14 +82,20 @@ list(APPEND ASV_SIM_GAZEBO_LIBRARIES_LIST asv_sim_gazebo_plugins_msgs)
 # asv_sim_gazebo_plugins
 add_library(asv_sim_gazebo_plugins
   SHARED
+    src/AnemometerSensor.cc
     src/LiftDragModel.cc
     src/Utilities.cc
 )
 
 target_link_libraries(asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
+)
+
+add_dependencies(asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
 )
 
 target_compile_options(asv_sim_gazebo_plugins PRIVATE "-Wno-unknown-pragmas")
@@ -94,13 +108,12 @@ list(APPEND ASV_SIM_GAZEBO_LIBRARIES_LIST asv_sim_gazebo_plugins)
 # RegisterSensorsPlugin
 add_library(RegisterSensorsPlugin
   SHARED
-    src/AnemometerSensor.cc
     src/RegisterSensorsPlugin.cc
 )
 
 target_link_libraries(RegisterSensorsPlugin
-asv_sim_gazebo_plugins
-asv_sim_gazebo_plugins_msgs
+  asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
   ${Boost_LIBRARIES}
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
@@ -160,6 +173,29 @@ add_dependencies(FoilPlugin
 target_compile_options(FoilPlugin PRIVATE "-Wno-unknown-pragmas")
 
 list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST FoilPlugin)
+
+# gazebo_ros_anemometer
+add_library(gazebo_ros_anemometer
+  SHARED
+    src/GazeboRosAnemometer.cc
+)
+
+target_link_libraries(gazebo_ros_anemometer
+  asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+add_dependencies(gazebo_ros_anemometer
+  asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
+)
+
+target_compile_options(gazebo_ros_anemometer PRIVATE "-Wno-unknown-pragmas")
+
+list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST gazebo_ros_anemometer)
 
 ############################################################################### 
 # Executables...

@@ -16,7 +16,7 @@
 #ifndef _ASV_SIM_GAZEBO_PLUGINS_SAIL_PLUGIN_HH_
 #define _ASV_SIM_GAZEBO_PLUGINS_SAIL_PLUGIN_HH_
 
-#include "gazebo/common/Plugin.hh"
+#include <gazebo/common/Plugin.hh>
 
 #include <memory>
 

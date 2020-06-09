@@ -6,18 +6,15 @@
     This package contains Gazebo plugins for the simulation of 
     surface vessels and marine sensors. 
   </description>
-
   <maintainer email="rhys.mainwaring@me.com">Rhys Mainwaring</maintainer>
-
   <license>GPLv3</license>
-
   <author email="rhys.mainwaring@me.com">Rhys Mainwaring</author>
-
   <buildtool_depend>catkin</buildtool_depend>
 
-  <build_depend>gazebo_ros</build_depend>
-  
-  <exec_depend>gazebo_ros</exec_depend>
+  <depend>gazebo_ros</depend>
+  <depend>geometry_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
 
   <export>
     <gazebo_ros plugin_path="${prefix}/lib"/>

@@ -117,6 +117,11 @@ namespace gazebo
       private: std::unique_ptr<AnemometerSensorPrivate> dataPtr;
     };
     /// \}
+
+    /// \def AnemometerSensorPtr
+    /// \brief Shared pointer to AnemometerSensor
+    typedef std::shared_ptr<AnemometerSensor> AnemometerSensorPtr;
+
   } // namespace sensors
 } // namespace gazebo
 

@@ -17,7 +17,7 @@
 #include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
 #include "asv_sim_gazebo_plugins/MessageTypes.hh"
 
-#include "gazebo/msgs/MsgFactory.hh"
+#include <gazebo/msgs/MsgFactory.hh>
 
 using namespace gazebo;
 
@@ -40,6 +40,7 @@ namespace asv
     public: MsgAnemometer()
     {
       gazebo::msgs::MsgFactory::RegisterMsg("asv_msgs.msgs.Anemometer", NewAnemometer);
+      gzmsg << "RegisterMsg: Type: " << "asv_msgs.msgs.Anemometer" << std::endl;
     }
   };
   static MsgAnemometer GzAnemometerMsgInitializer;
@@ -55,6 +56,7 @@ namespace asv
     public: MsgLiftDrag()
     {
       gazebo::msgs::MsgFactory::RegisterMsg("asv_msgs.msgs.LiftDrag", NewLiftDrag);
+      gzmsg << "RegisterMsg: Type: " << "asv_msgs.msgs.LiftDrag" << std::endl;
     }
   };
   static MsgLiftDrag GzLiftDragMsgInitializer;
