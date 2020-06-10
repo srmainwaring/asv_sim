@@ -185,6 +185,20 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
     // Update the messages.
     msgs::Set(this->dataPtr->anemometerMsg.mutable_wind_velocity(),
       apparentWindRelativeLinearVel);
+
+    // DEBUG
+
+    gzmsg << "parent_link:            " << this->dataPtr->parentLink->GetName() << std::endl;
+    gzmsg << "sensor_link:            " << this->Name() << std::endl;
+    gzmsg << "sensor_world_pose:      " << sensorWorldPose << std::endl;
+    gzmsg << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << std::endl;
+    gzmsg << "link_world_ang_vel:     " << linkWorldAngularVel << std::endl;
+    gzmsg << "sensor_com_pose:        " << sensorCoMPose << std::endl;
+    gzmsg << "sensor_world_lin_vel:   " << sensorWorldLinearVel << std::endl;
+    gzmsg << "wind_world_linear_vel:  " << windWorldLinearVel << std::endl;
+    gzmsg << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << std::endl;
+    gzmsg << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel << std::endl;
+    gzmsg << std::endl;
   }
 
   // Save the time of the measurement
