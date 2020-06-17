@@ -35,6 +35,7 @@
 #include "asv_sim_gazebo_plugins/FoilPlugin.hh"
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
 #include "asv_sim_gazebo_plugins/MessageTypes.hh"
+#include "asv_sim_gazebo_plugins/PluginUtils.hh"
 
 #include <algorithm>
 #include <functional>
@@ -130,11 +131,14 @@ void FoilPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->data->world = _model->GetWorld();
 
   // Parameters
-  this->LoadParam(_sdf, "cp", this->data->cp, this->data->cp);
- 
-  // Link
   std::string linkName;
+#if (GAZEBO_MAJOR_VERSION < 11)
+  gazebo::LoadParam(this, _sdf, "cp", this->data->cp, this->data->cp);
+  gazebo::LoadParam(this, _sdf, "link_name", linkName, "");
+#else
+  this->LoadParam(_sdf, "cp", this->data->cp, this->data->cp);
   this->LoadParam(_sdf, "link_name", linkName, "");
+#endif
 
   if (!linkName.empty())
   {
@@ -176,7 +180,11 @@ void FoilPlugin::Reset()
 std::string FoilPlugin::GetTopic() const
 {
   std::string topic;
+#if (GAZEBO_MAJOR_VERSION < 11)
+  gazebo::LoadParam(this, this->data->sdf, "topic", topic, "lift_drag");
+#else
   this->LoadParam(this->data->sdf, "topic", topic, "lift_drag");
+#endif
 
   std::string topicName = "~";
   if (this->data->link != nullptr)
