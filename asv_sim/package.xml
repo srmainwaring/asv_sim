@@ -14,11 +14,6 @@
   <buildtool_depend>catkin</buildtool_depend>
 
   <exec_depend>asv_sim_gazebo</exec_depend>
-  <exec_depend>asv_teleop</exec_depend>
-  <exec_depend>bbot_description</exec_depend>
-  <exec_depend>bbot_gazebo</exec_depend>
-  <exec_depend>tug_boat_description</exec_depend>
-  <exec_depend>tug_boat_gazebo</exec_depend>
 
   <export>
     <metapackage />
