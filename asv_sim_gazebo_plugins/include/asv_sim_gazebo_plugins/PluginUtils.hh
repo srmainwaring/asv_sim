@@ -74,7 +74,7 @@ namespace gazebo
         const std::string &_name, std::string &_target,
         const char* _defaultValue)
     {
-        LoadParam<std::string>(plugin, _sdf, _name, _target, _defaultValue);
+        LoadParam<Plugin, std::string>(plugin, _sdf, _name, _target, _defaultValue);
     }
 
 } // namespace gazebo

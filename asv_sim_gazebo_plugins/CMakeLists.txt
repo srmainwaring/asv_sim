@@ -74,8 +74,6 @@ set(ASV_SIM_GAZEBO_EXECUTABLES_LIST "")
 
 add_subdirectory(msgs)
 
-list(APPEND ASV_SIM_GAZEBO_LIBRARIES_LIST asv_sim_gazebo_plugins_msgs)
-
 ############################################################################### 
 # Libraries...
 
@@ -95,7 +93,7 @@ target_link_libraries(asv_sim_gazebo_plugins
 )
 
 add_dependencies(asv_sim_gazebo_plugins
-  asv_sim_gazebo_plugins_msgs
+  ${catkin_EXPORTED_TARGETS}
 )
 
 target_compile_options(asv_sim_gazebo_plugins PRIVATE "-Wno-unknown-pragmas")
@@ -120,8 +118,7 @@ target_link_libraries(RegisterSensorsPlugin
 )
 
 add_dependencies(RegisterSensorsPlugin
-  asv_sim_gazebo_plugins
-  asv_sim_gazebo_plugins_msgs
+  ${catkin_EXPORTED_TARGETS}
 )
 
 target_compile_options(RegisterSensorsPlugin PRIVATE "-Wno-unknown-pragmas")
@@ -143,8 +140,7 @@ target_link_libraries(SailPlugin
 )
 
 add_dependencies(SailPlugin
-  asv_sim_gazebo_plugins
-  asv_sim_gazebo_plugins_msgs
+  ${catkin_EXPORTED_TARGETS}
 )
 
 target_compile_options(SailPlugin PRIVATE "-Wno-unknown-pragmas")
@@ -166,8 +162,7 @@ target_link_libraries(FoilPlugin
 )
 
 add_dependencies(FoilPlugin
-  asv_sim_gazebo_plugins
-  asv_sim_gazebo_plugins_msgs
+  ${catkin_EXPORTED_TARGETS}
 )
 
 target_compile_options(FoilPlugin PRIVATE "-Wno-unknown-pragmas")
@@ -188,9 +183,8 @@ target_link_libraries(gazebo_ros_anemometer
   ${GAZEBO_LIBRARIES}
 )
 
-add_dependencies(gazebo_ros_anemometer
-  asv_sim_gazebo_plugins
-  asv_sim_gazebo_plugins_msgs
+add_dependencies(FoilPlugin
+  ${catkin_EXPORTED_TARGETS}
 )
 
 target_compile_options(gazebo_ros_anemometer PRIVATE "-Wno-unknown-pragmas")
@@ -213,8 +207,9 @@ target_link_libraries(LiftDragMsgSubscriber
 
 target_compile_options(LiftDragMsgSubscriber PRIVATE "-Wno-unknown-pragmas")
 
+
 add_dependencies(LiftDragMsgSubscriber
-  asv_sim_gazebo_plugins_msgs
+  ${catkin_EXPORTED_TARGETS}
 )
 
 list(APPEND ASV_SIM_GAZEBO_EXECUTABLES_LIST LiftDragMsgSubscriber)
