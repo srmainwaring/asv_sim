@@ -30,3 +30,12 @@ target_link_libraries(asv_sim_gazebo_plugins_msgs
   ${GAZEBO_LIBRARIES}
   ${GAZEBO_PROTO_LIBRARIES}
 )
+
+############################################################################### 
+# Install
+
+install(TARGETS asv_sim_gazebo_plugins_msgs
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
