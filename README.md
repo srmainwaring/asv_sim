@@ -13,44 +13,41 @@ It has been tested with:
 
 ## Installation
 
-### Create and configure a workspace
-
-Source your ROS installation:
+Source your ROS installation and update the Gazebo plugin path:
 
 ```bash
-source /opt/ros/melodic/setup.bash
-source /usr/local/share/gazebo/setup.bash
+# Source the ROS and Gazebo environment (add this to ~/.bash_profile)
+$ source /opt/ros/melodic/setup.bash
+$ source /usr/local/share/gazebo/setup.sh
 ```
 
-Create a catkin workspace:
+Create and configure a catkin workspace, clone and build the repo:
 
 ```bash
-mkdir -p asv_ws/src
-cd asv_ws
-catkin init
-```
+# Create a catkin workspace 
+$ mkdir -p <catkin_ws>/src
 
-Configure catkin:
+# Clone dependencies
+$ cd <catkin_ws>/src
+$ git clone https://github.com/srmainwaring/asv_wave_sim.git
 
-```bash
-mkdir -p asv_ws/src
-cd asv_ws
-catkin init
-```
+# Clone this repo
+$ git clone https://github.com/srmainwaring/asv_sim.git
 
-### Clone and build the package
+# Configure and build
+$ cd <catkin_ws>
+$ catkin config --extend /opt/ros/melodic \
+  --cmake-args -DCMAKE_CXX_STANDARD=14 -DCMAKE_BUILD_TYPE=RelWithDebInfo 
+$ catkin build
 
-Clone the ASV Simulator repository:
+# Source the workspace
+$ source devel/setup.bash
 
-```bash
-cd src
-git clone ssh://rhys@diskstation.local:/volume1/git/asv_sim.git
-```
+# Update the Gazebo plugin path
+$ export GAZEBO_PLUGIN_PATH=$(pwd)/devel/lib:$GAZEBO_PLUGIN_PATH
 
-Compile the packages:
-
-```bash
-catkin build
+# Check the Gazebo environment variables
+$ printenv |grep GAZEBO
 ```
 
 ## Anemometer Sensor
@@ -141,7 +138,3 @@ This software is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 [GNU General Public License](LICENSE) for more details.
-
-## Acknowledgments
-
-
