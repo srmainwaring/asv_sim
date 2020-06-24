@@ -1,0 +1,19 @@
+syntax = "proto2";
+package asv_msgs.msgs;
+
+/// \ingroup asv_msgs
+/// \interface Anemometer
+/// \brief Data from a wind velocity sensor
+
+import "time.proto";
+import "vector3d.proto";
+
+/// \brief Message that encapsulates sensor data from a anemometer.
+message Anemometer
+{
+  /// \brief Global time at which the wind velocity was sampled
+  required gazebo.msgs.Time       time            = 1;
+  
+  /// \brief Wind velocity along body-frame axis
+  optional gazebo.msgs.Vector3d   wind_velocity   = 2;
+}

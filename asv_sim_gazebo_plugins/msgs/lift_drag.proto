@@ -1,0 +1,33 @@
+syntax = "proto2";
+package asv_msgs.msgs;
+
+/// \ingroup asv_msgs
+/// \interface LiftDrag
+/// \brief Data from a lift drag calculation
+
+import "time.proto";
+import "vector3d.proto";
+
+/// \brief Message that encapsulates data from a lift-drag calculation.
+message LiftDrag
+{
+  /// \brief Global time at which the lift and drag were calculated
+  required gazebo.msgs.Time       time            = 1;
+  
+  /// \brief Lift (in Newtons) in world coordinates
+  optional gazebo.msgs.Vector3d   lift            = 2;
+
+  /// \brief Drag (in Newtons) in world coordinates
+  optional gazebo.msgs.Vector3d   drag            = 3;
+
+  optional double                 alpha           = 4;
+  optional double                 speed_ld        = 5;
+  optional double                 lift_coeff      = 6;
+  optional double                 drag_coeff      = 7;
+
+  optional gazebo.msgs.Vector3d   vel             = 8;
+  optional gazebo.msgs.Vector3d   vel_ld          = 9;
+  optional gazebo.msgs.Vector3d   xr              = 10;
+  optional gazebo.msgs.Vector3d   force           = 11;
+  optional gazebo.msgs.Vector3d   torque          = 12;
+}

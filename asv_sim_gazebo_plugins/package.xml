@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>asv_sim_gazebo_plugins</name>
+  <version>0.1.1</version>
+  <description>
+    This package contains Gazebo plugins for the simulation of 
+    surface vessels and marine sensors. 
+  </description>
+  <maintainer email="rhys.mainwaring@me.com">Rhys Mainwaring</maintainer>
+  <license>GPLv3</license>
+  <author email="rhys.mainwaring@me.com">Rhys Mainwaring</author>
+  <buildtool_depend>catkin</buildtool_depend>
+  <url type="website">https://github.com/srmainwaring/asv_sim</url>
+  <url type="repository">https://github.com/srmainwaring/asv_sim</url>
+  <url type="bugtracker">https://github.com/srmainwaring/asv_sim/issues</url>
+  <depend>gazebo_ros</depend>
+  <depend>geometry_msgs</depend>
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+  <export>
+    <gazebo_ros plugin_path="${prefix}/lib"/>
+  </export>
+</package>
+
