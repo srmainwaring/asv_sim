@@ -127,6 +127,23 @@ apparent wind will be adjusted for the object's motion.
 ![Anemometer Rest](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic_view_rest.jpg)
 ![Anemometer Falling](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic_view_falling.jpg)
 
+
+## Build Status
+
+### Develop Job Status
+
+|    | Melodic |
+|--- |--- |
+| asv_sim | [![Build Status](https://travis-ci.org/srmainwaring/asv_sim.svg?branch=feature%2Fwrsc-devel)](https://travis-ci.org/srmainwaring/asv_sim) |
+
+
+### Release Job Status
+
+|    | Melodic |
+|--- |--- |
+| asv_sim | [![Build Status](https://travis-ci.org/srmainwaring/asv_sim.svg?branch=master)](https://travis-ci.org/srmainwaring/asv_sim) |
+
+
 ## License
 
 This is free software: you can redistribute it and/or modify
