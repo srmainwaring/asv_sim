@@ -134,14 +134,14 @@ apparent wind will be adjusted for the object's motion.
 
 |    | Melodic |
 |--- |--- |
-| asv_sim | [![Build Status](https://travis-ci.org/srmainwaring/asv_sim.svg?branch=feature%2Fwrsc-devel)](https://travis-ci.org/srmainwaring/asv_sim) |
+| asv_sim | [![Build Status](https://travis-ci.com/srmainwaring/asv_sim.svg?branch=feature%2Fwrsc-devel)](https://travis-ci.com/srmainwaring/asv_sim) |
 
 
 ### Release Job Status
 
 |    | Melodic |
 |--- |--- |
-| asv_sim | [![Build Status](https://travis-ci.org/srmainwaring/asv_sim.svg?branch=master)](https://travis-ci.org/srmainwaring/asv_sim) |
+| asv_sim | [![Build Status](https://travis-ci.com/srmainwaring/asv_sim.svg?branch=master)](https://travis-ci.com/srmainwaring/asv_sim) |
 
 
 ## License
