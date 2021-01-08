@@ -17,6 +17,7 @@
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
 #include "asv_sim_gazebo_plugins/Utilities.hh"
 
+#include <gazebo/common/Exception.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector3.hh>
 
@@ -29,7 +30,7 @@ namespace asv
   class LiftDragModelPrivate
   {
     /// \brief Fluid density
-    public: double fluidDensity;
+    public: double fluidDensity = 1.2;
 
     /// \brief True if the foil is symmetric about its chord.
     public: bool radialSymmetry = true;
@@ -41,9 +42,6 @@ namespace asv
     /// in the direction of positive lift for the foil in its intended configuration.
     public: ignition::math::Vector3d upward = ignition::math::Vector3d(0, 0, 1);
 
-    /// \brief Center of pressure (body frame).
-    public: ignition::math::Vector3d cp = ignition::math::Vector3d(0, 0, 0);
-
     /// \brief Foil area
     public: double area = 1.0;
 
@@ -51,16 +49,16 @@ namespace asv
     public: double alpha0 = 0.0;
 
     /// \brief Slope of lift coefficient before stall.
-    public: double cla = 4.0/M_PI;
+    public: double cla = 2.0 * M_PI;
 
     /// \brief Angle of attack at stall.
-    public: double alphaStall = M_PI/4.0;
+    public: double alphaStall = 1.0/2.0/M_PI;
 
     /// \brief Slope of lift coefficient after stall.
-    public: double claStall = -4.0/M_PI;
+    public: double claStall = -(2*M_PI)/(M_PI*M_PI - 1.0);
 
     /// \brief Slope of drag coefficient.
-    public: double cda = 0.0;
+    public: double cda = 2.0/M_PI;
   };
 
 } // namespace asv;
@@ -97,7 +95,12 @@ LiftDragModel* LiftDragModel::Create(const sdf::ElementPtr& _sdf)
   asv::LoadParam(_sdf, "cla", data->cla, data->cla);
   asv::LoadParam(_sdf, "cla_stall", data->claStall, data->claStall);
   asv::LoadParam(_sdf, "cda", data->cda, data->cda);
-  // asv::LoadParam(_sdf, "cp", data->cp, data->cp);
+
+  // Only support radially symmetric lift-drag coefficients at present
+  if (!data->radialSymmetry) {
+    gzthrow("LiftDragModel only supports radially symmetric foils");
+    return 0;
+  }
 
   // Normalise
   data->forward.Normalize();
@@ -137,25 +140,12 @@ void LiftDragModel::Compute(
 
   // Rotate forward and upward vectors into the world frame.
   auto forwardI = _bodyPose.Rot().RotateVector(this->data->forward);
-
-  ignition::math::Vector3d upwardI;
-  if (this->data->radialSymmetry)
-  {
-    // The upwards direction is given by the component of
-    // the free stream velocity perpendicular to the forward direction.
-    auto tmp = forwardI.Cross(velUnit);
-    upwardI = tmp.Cross(forwardI).Normalize();
-  }
-  else
-  {
-    upwardI = _bodyPose.Rot().RotateVector(this->data->upward);
-  }
+  auto upwardI = _bodyPose.Rot().RotateVector(this->data->upward);
 
   // The span vector is normal to lift-drag-plane (world frame)
   auto spanI = forwardI.Cross(upwardI).Normalize();
 
-  // Compute the angle of attack, alpha.
-  // 
+  // Compute the angle of attack, alpha:
   // This is the angle between the free stream velocity
   // projected into the lift-drag plane and the forward vector
   auto velLD = _velU - _velU.Dot(spanI) * velUnit;
@@ -169,15 +159,17 @@ void LiftDragModel::Compute(
   liftUnit.Normalize();
 
   // Compute angle of attack.
+  double sgnAlpha =  forwardI.Dot(liftUnit) < 0 ? -1.0 : 1.0;
   double cosAlpha = -forwardI.Dot(dragUnit);
+  // lift-drag coefficients assume alpha > 0 if foil is symmetric
   double alpha = acos(cosAlpha);
 
   // Compute dynamic pressure.
   double u = velLD.Length();
   double q = 0.5 * this->data->fluidDensity * u * u;
 
-  // Compute lift coefficient.
-  double cl = this->LiftCoefficient(alpha);
+  // Compute lift coefficient and set sign.
+  double cl = this->LiftCoefficient(alpha) * sgnAlpha;
 
   // Compute lift force.
   _lift = cl * q * this->data->area * liftUnit;
@@ -193,6 +185,26 @@ void LiftDragModel::Compute(
   _u = u;
   _cl = cl;
   _cd = cd;
+
+  // DEBUG
+#if 0
+  gzmsg << "velU:         " << _velU << "\n";
+  gzmsg << "velUnit:      " << velUnit << "\n";
+  gzmsg << "body_pos:     " << _bodyPose.Pos() << "\n";
+  gzmsg << "body_rot:     " << _bodyPose.Rot().Euler() << "\n";
+  gzmsg << "forward:      " << this->data->forward << "\n";
+  gzmsg << "upward:       " << this->data->upward << "\n";
+  gzmsg << "forwardI:     " << forwardI << "\n";
+  gzmsg << "upwardI:      " << upwardI << "\n";
+  gzmsg << "spanI:        " << spanI << "\n";
+  gzmsg << "velLD:        " << velLD << "\n"; 
+  gzmsg << "dragUnit:     " << dragUnit << "\n";
+  gzmsg << "liftUnit:     " << liftUnit << "\n";
+  gzmsg << "alpha:        " << alpha << "\n";
+  gzmsg << "lift:         " << _lift << "\n";
+  gzmsg << "drag:         " << _drag << "\n";
+ 
+#endif
 }
 
 /// Lift is piecewise linear and symmetric about alpha = PI/2

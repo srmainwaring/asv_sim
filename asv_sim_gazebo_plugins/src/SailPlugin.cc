@@ -203,6 +203,7 @@ void SailPlugin::OnUpdate()
   {
     return;
   }
+ 
   // Wind velocity at the link origin (world frame).
   // We use this to approximate the wind at the centre of pressure
   auto& wind = this->data->world->Wind();
@@ -245,40 +246,36 @@ void SailPlugin::OnUpdate()
 
   // @DEBUG_INFO
 #if 0
-  gzmsg << "Link:         " << this->data->link->GetName() << std::endl;
+  gzmsg << "Link:         " << this->data->link->GetName() << "\n";
   // Scalars
-  gzmsg << "u:            " << u                  << std::endl;
-  gzmsg << "alpha:        " << alpha              << std::endl;
-  // gzmsg << "cosAlpha:     " << cosAlpha           << std::endl;
-  gzmsg << "cl:           " << cl                 << std::endl;
-  gzmsg << "cd:           " << cd                 << std::endl;
-  gzmsg << "||velWind||:  " << velWind.Length()   << std::endl;
-  gzmsg << "||velCp||:    " << velCp.Length()     << std::endl;
-  gzmsg << "||vel||:      " << vel.Length()       << std::endl;
-  gzmsg << "||lift||:     " << lift.Length()      << std::endl;
-  gzmsg << "||drag||:     " << drag.Length()      << std::endl;
-  gzmsg << "||xr||:       " << xr.Length()        << std::endl;
-  gzmsg << "||force||:    " << force.Length()     << std::endl;
+  gzmsg << "u:            " << u                  << "\n";
+  gzmsg << "alpha:        " << alpha              << "\n";
+  gzmsg << "cl:           " << cl                 << "\n";
+  gzmsg << "cd:           " << cd                 << "\n";
+  gzmsg << "||velWind||:  " << velWind.Length()   << "\n";
+  gzmsg << "||velCp||:    " << velCp.Length()     << "\n";
+  gzmsg << "||vel||:      " << vel.Length()       << "\n";
+  gzmsg << "||lift||:     " << lift.Length()      << "\n";
+  gzmsg << "||drag||:     " << drag.Length()      << "\n";
+  gzmsg << "||xr||:       " << xr.Length()        << "\n";
+  gzmsg << "||force||:    " << force.Length()     << "\n";
   // Vectors
-  gzmsg << "velWind:      " << velWind            << std::endl;
-  gzmsg << "velCp:        " << velCp              << std::endl;
-  gzmsg << "vel:          " << vel                << std::endl;
-  // gzmsg << "velUnit:      " << velUnit            << std::endl;
-  // gzmsg << "forwardI:     " << forwardI           << std::endl;
-  // gzmsg << "upwardI:      " << upwardI            << std::endl;
-  // gzmsg << "spanI:        " << spanI              << std::endl;
-  // gzmsg << "velLD:        " << velLD              << std::endl;
-  // gzmsg << "dragUnit:     " << dragUnit           << std::endl;
-  // gzmsg << "liftUnit:     " << liftUnit           << std::endl;
-  gzmsg << "lift:         " << lift               << std::endl;
-  gzmsg << "drag:         " << drag               << std::endl;
-  gzmsg << "xr:           " << xr                 << std::endl;
-  gzmsg << "force:        " << force              << std::endl;
-  gzmsg << "torque:       " << torque             << std::endl;
-  gzmsg << "link          " << linkPose.Pos()     << std::endl;
-  gzmsg << "com:          " << com                << std::endl;
-  gzmsg << "cp:           " << cpWorld            << std::endl;
-  gzmsg << std::endl;
+  gzmsg << "link.pos:     " << linkPose.Pos()     << "\n";
+  gzmsg << "link.rot:     " << linkPose.Rot().Euler() << "\n";
+  gzmsg << "com.pos:      " << comPose.Pos()     << "\n";
+  gzmsg << "com.rot:      " << comPose.Rot().Euler() << "\n";
+  gzmsg << "velWind:      " << velWind            << "\n";
+  gzmsg << "velCp:        " << velCp              << "\n";
+  gzmsg << "vel:          " << vel                << "\n";
+  gzmsg << "lift:         " << lift               << "\n";
+  gzmsg << "drag:         " << drag               << "\n";
+  gzmsg << "xr:           " << xr                 << "\n";
+  gzmsg << "force:        " << force              << "\n";
+  gzmsg << "torque:       " << torque             << "\n";
+  gzmsg << "link          " << linkPose.Pos()     << "\n";
+  gzmsg << "com:          " << com                << "\n";
+  gzmsg << "cp:           " << cpWorld            << "\n";
+  gzmsg << "\n";
 #endif
 
   // Add force and torque to link (applied to CoM in world frame).
@@ -318,5 +315,5 @@ void SailPlugin::OnUpdate()
     this->data->liftDragPub->Publish(liftDragMsg);
   
   // @DEBUG_INFO
-  // gzmsg << liftDragMsg.DebugString() << std::endl;
+  // gzmsg << liftDragMsg.DebugString() << "\n";
 }
