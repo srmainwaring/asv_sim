@@ -9,13 +9,14 @@
   <maintainer email="rhys.mainwaring@me.com">Rhys Mainwaring</maintainer>
   <license>GPLv3</license>
   <author email="rhys.mainwaring@me.com">Rhys Mainwaring</author>
-  <buildtool_depend>catkin</buildtool_depend>
   <url type="website">https://github.com/srmainwaring/asv_sim</url>
   <url type="repository">https://github.com/srmainwaring/asv_sim</url>
   <url type="bugtracker">https://github.com/srmainwaring/asv_sim/issues</url>
+  <buildtool_depend>catkin</buildtool_depend>
   <depend>gazebo_ros</depend>
   <depend>geometry_msgs</depend>
   <depend>roscpp</depend>
+  <depend>rosunit</depend>
   <depend>std_msgs</depend>
   <export>
     <gazebo_ros plugin_path="${prefix}/lib"/>
