@@ -15,8 +15,6 @@
 
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
 
-#include <sdf/Model.hh>
-
 #include <gtest/gtest.h>
 #include <memory>
 
@@ -52,7 +50,7 @@ std::string get_sdf_string()
   return stream.str();
 }
 
-TEST(LiftDragModel, LiftCoefficients)
+TEST(LiftDragModel, Quadrants)
 {
     // create SDF data
     sdf::SDFPtr model(new sdf::SDF());
@@ -65,6 +63,7 @@ TEST(LiftDragModel, LiftCoefficients)
     // create from SDF
     std::unique_ptr<LiftDragModel> ld_model(LiftDragModel::Create(plugin));     
 
+    ignition::math::Vector3d velU(-10.0, 0.0, 0.0);
     ignition::math::Vector3d lift;
     ignition::math::Vector3d drag;
     double alpha=0.0;
@@ -72,54 +71,107 @@ TEST(LiftDragModel, LiftCoefficients)
     double cl=0.0;
     double cd=0.0;
 
-    { // Case alpha = 0
-        ignition::math::Vector3d velU(-10.0, 0.0, 0.0);
+    { // Case AoA = 0
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
-        EXPECT_EQ(alpha, 0.0);
-        EXPECT_EQ(u, 10.0);
-        EXPECT_EQ(cl, 0.0);
-        EXPECT_EQ(cd, 0.0);
-        EXPECT_EQ(lift.X(), 0.0);
-        EXPECT_EQ(lift.Y(), 0.0);
-        EXPECT_EQ(lift.Z(), 0.0);
-        EXPECT_EQ(drag.X(), 0.0);
-        EXPECT_EQ(drag.Y(), 0.0);
-        EXPECT_EQ(drag.Z(), 0.0);
+        EXPECT_DOUBLE_EQ(alpha, 0.0);
+        EXPECT_DOUBLE_EQ(u, 10.0);
+        EXPECT_DOUBLE_EQ(cl, 0.0);
+        EXPECT_DOUBLE_EQ(cd, 0.0);
+
+        EXPECT_DOUBLE_EQ(lift.X(), 0.0);
+        EXPECT_DOUBLE_EQ(lift.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(lift.Z(), 0.0);
+
+        EXPECT_DOUBLE_EQ(drag.X(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 
-    { // Case alpha = 45 deg
-        ignition::math::Vector3d velU(-10.0, 0.0, 0.0);
+    { // Case AoA = 45 deg
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
-        EXPECT_GE(alpha, 0.0);
-        EXPECT_EQ(u, 10.0);
+        EXPECT_DOUBLE_EQ(alpha, M_PI/4.0);
+        EXPECT_DOUBLE_EQ(u, 10.0);
         EXPECT_GE(cl, 0.0);
         EXPECT_GE(cd, 0.0);
-        EXPECT_EQ(lift.X(), 0.0);
+
+        EXPECT_DOUBLE_EQ(lift.X(), 0.0);
         EXPECT_GE(lift.Y(), 0.0);
-        EXPECT_EQ(lift.Z(), 0.0);
+        EXPECT_DOUBLE_EQ(lift.Z(), 0.0);
+
         EXPECT_LE(drag.X(), 0.0);
-        EXPECT_EQ(drag.Y(), 0.0);
-        EXPECT_EQ(drag.Z(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 
-    { // Case alpha = 135 deg
-        ignition::math::Vector3d velU(-10.0, 0.0, 0.0);
+    { // Case AoA = 135 deg
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, 3*M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
-        EXPECT_GE(alpha, 0.0);
-        EXPECT_EQ(u, 10.0);
-        EXPECT_GE(cl, 0.0);
+        EXPECT_DOUBLE_EQ(alpha, 3*M_PI/4);
+        EXPECT_DOUBLE_EQ(u, 10.0);
+        EXPECT_LE(cl, 0.0);
         EXPECT_GE(cd, 0.0);
-        EXPECT_EQ(lift.X(), 0.0);
-        EXPECT_GE(lift.Y(), 0.0);
-        EXPECT_EQ(lift.Z(), 0.0);
+
+        EXPECT_DOUBLE_EQ(lift.X(), 0.0);
+        EXPECT_LE(lift.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(lift.Z(), 0.0);
+
         EXPECT_LE(drag.X(), 0.0);
-        EXPECT_EQ(drag.Y(), 0.0);
-        EXPECT_EQ(drag.Z(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 
+    { // Case AoA = 180 deg
+        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, M_PI);
+        ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
+        EXPECT_DOUBLE_EQ(alpha, M_PI);
+        EXPECT_DOUBLE_EQ(u, 10.0);
+        EXPECT_DOUBLE_EQ(cl, 0.0);
+        EXPECT_DOUBLE_EQ(cd, 0.0);
+
+        EXPECT_DOUBLE_EQ(lift.X(), 0.0);
+        EXPECT_DOUBLE_EQ(lift.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(lift.Z(), 0.0);
+
+        EXPECT_DOUBLE_EQ(drag.X(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
+    }
+
+    { // Case AoA = -45 deg
+        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, -M_PI/4.0);
+        ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
+        EXPECT_DOUBLE_EQ(alpha, M_PI/4.0);
+        EXPECT_DOUBLE_EQ(u, 10.0);
+        EXPECT_LE(cl, 0.0);
+        EXPECT_GE(cd, 0.0);
+
+        EXPECT_DOUBLE_EQ(lift.X(), 0.0);
+        EXPECT_LE(lift.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(lift.Z(), 0.0);
+
+        EXPECT_LE(drag.X(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
+    }
+
+    { // Case AoA = -135 deg
+        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, -3*M_PI/4.0);
+        ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
+        EXPECT_DOUBLE_EQ(alpha, 3*M_PI/4);
+        EXPECT_DOUBLE_EQ(u, 10.0);
+        EXPECT_GE(cl, 0.0);
+        EXPECT_GE(cd, 0.0);
+
+        EXPECT_DOUBLE_EQ(lift.X(), 0.0);
+        EXPECT_GE(lift.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(lift.Z(), 0.0);
+
+        EXPECT_LE(drag.X(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Y(), 0.0);
+        EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
