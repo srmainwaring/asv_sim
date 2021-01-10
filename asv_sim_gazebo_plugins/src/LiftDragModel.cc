@@ -203,7 +203,6 @@ void LiftDragModel::Compute(
   gzmsg << "alpha:        " << alpha << "\n";
   gzmsg << "lift:         " << _lift << "\n";
   gzmsg << "drag:         " << _drag << "\n";
- 
 #endif
 }
 
@@ -235,7 +234,7 @@ double LiftDragModel::LiftCoefficient(double _alpha) const
   }
   else
   {
-    cl = f2(M_PI - _alpha);
+    cl = -f2(M_PI - _alpha);
   }
 
   return cl;
