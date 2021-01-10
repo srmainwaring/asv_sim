@@ -21,12 +21,15 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/msgs/msgs.hh>
 
+#include <boost/program_options.hpp>
+
 #include <atomic>
 #include <chrono>
 #include <csignal>
 #include <thread>
 
 using namespace gazebo;
+namespace po = boost::program_options;
 
 ///////////////////////////////////////////////////////////////////////////////
 /// Ignition Transport Tutorial
@@ -44,11 +47,11 @@ void signal_handler(int _signal)
 ///////////////////////////////////////////////////////////////////////////////
 /// \brief Callback for topic "~/lift_drag".
 ///
+
 void OnLiftDragMsg(asv::LiftDragPtr &_msg)
 {
-  std::string topic("~/lift_drag");
-  std::cout << "Received message on topic [" << topic << "]" << std::endl;
-  std::cout << _msg->DebugString() << std::endl;
+  std::cout <<  "---\n";
+  std::cout <<  _msg->DebugString();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,6 +65,33 @@ int main(int _argc, char **_argv)
       << "Copyright (C) 2019  Rhys Mainwaring.\n"
       << "Released under the GNU General Public License.\n\n";
 
+    // Program options
+    po::options_description options("Subscribe to lift drag messages (asv_msgs/LiftDrag)");
+
+    options.add_options()
+      ("help,h", 
+        "Dispay this help screen.")
+      ("topic,t", po::value<std::string>(),
+        "The topic to subscribe to.");
+
+    po::variables_map vm;
+    po::store(po::parse_command_line(_argc, _argv, options), vm);
+    po::notify(vm);
+
+    if (vm.count("help") || vm.empty())
+    { 
+      std::cout << options << std::endl;
+      return 0;
+    }
+
+    // get the topic
+    if (!vm.count("topic"))
+    {
+        std::cout << "No topic provided" << std::endl;
+        return 0;
+    }
+    auto topic = vm["topic"].as<std::string>();
+ 
     // Signal handler
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
@@ -72,7 +102,6 @@ int main(int _argc, char **_argv)
     transport::NodePtr node(new transport::Node());
     node->Init();
 
-    std::string topic("~/lift_drag");
     transport::SubscriberPtr liftDragSub =
       node->Subscribe(topic, &OnLiftDragMsg);
 
