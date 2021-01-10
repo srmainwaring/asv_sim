@@ -222,7 +222,9 @@ list(APPEND ASV_SIM_GAZEBO_EXECUTABLES_LIST LiftDragMsgSubscriber)
 # 
 
 if(CATKIN_ENABLE_TESTING)
-
+    catkin_add_gtest(UNIT_LiftDragModel_TEST src/LiftDragModel_TEST.cc)
+    target_link_libraries(UNIT_LiftDragModel_TEST asv_sim_gazebo_plugins)
+    target_compile_options(UNIT_LiftDragModel_TEST PRIVATE "-Wno-unknown-pragmas")  
 endif()
 
 ############################################################################### 
