@@ -82,7 +82,7 @@ add_subdirectory(msgs)
 # asv_sim_gazebo_plugins
 add_library(asv_sim_gazebo_plugins
   SHARED
-    src/AnemometerSensor.cc
+    # src/AnemometerSensor.cc
     src/LiftDragModel.cc
     src/Utilities.cc
 )
@@ -172,26 +172,26 @@ target_compile_options(FoilPlugin PRIVATE "-Wno-unknown-pragmas")
 list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST FoilPlugin)
 
 # gazebo_ros_anemometer
-add_library(gazebo_ros_anemometer
-  SHARED
-    src/GazeboRosAnemometer.cc
-)
+# add_library(gazebo_ros_anemometer
+#   SHARED
+#     src/GazeboRosAnemometer.cc
+# )
 
-target_link_libraries(gazebo_ros_anemometer
-  asv_sim_gazebo_plugins
-  asv_sim_gazebo_plugins_msgs
-  ${Boost_LIBRARIES}
-  ${catkin_LIBRARIES}
-  ${GAZEBO_LIBRARIES}
-)
+# target_link_libraries(gazebo_ros_anemometer
+#   asv_sim_gazebo_plugins
+#   asv_sim_gazebo_plugins_msgs
+#   ${Boost_LIBRARIES}
+#   ${catkin_LIBRARIES}
+#   ${GAZEBO_LIBRARIES}
+# )
 
-add_dependencies(FoilPlugin
-  ${catkin_EXPORTED_TARGETS}
-)
+# add_dependencies(gazebo_ros_anemometer
+#   ${catkin_EXPORTED_TARGETS}
+# )
 
-target_compile_options(gazebo_ros_anemometer PRIVATE "-Wno-unknown-pragmas")
+# target_compile_options(gazebo_ros_anemometer PRIVATE "-Wno-unknown-pragmas")
 
-list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST gazebo_ros_anemometer)
+# list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST gazebo_ros_anemometer)
 
 ############################################################################### 
 # Executables...

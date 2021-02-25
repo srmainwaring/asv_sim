@@ -16,7 +16,7 @@
 #ifndef _ASV_SIM_GAZEBO_PLUGINS_MESSAGE_TYPES_HH_
 #define _ASV_SIM_GAZEBO_PLUGINS_MESSAGE_TYPES_HH_
 
-#include "anemometer.pb.h"
+// #include "anemometer.pb.h"
 #include "lift_drag.pb.h"
 
 #include <boost/shared_ptr.hpp>
@@ -24,9 +24,9 @@
 namespace asv
 {
   /// \brief Type definition for a pointer to a Anemometer message.
-  typedef const boost::shared_ptr<
-    const asv_msgs::msgs::Anemometer>
-      AnemometerPtr;
+//   typedef const boost::shared_ptr<
+//     const asv_msgs::msgs::Anemometer>
+//       AnemometerPtr;
 
   /// \brief Type definition for a pointer to a LiftDrag message.
   typedef const boost::shared_ptr<

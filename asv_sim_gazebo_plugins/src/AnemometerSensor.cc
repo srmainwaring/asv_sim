@@ -188,17 +188,16 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
 
     // DEBUG
 
-    gzmsg << "parent_link:            " << this->dataPtr->parentLink->GetName() << std::endl;
-    gzmsg << "sensor_link:            " << this->Name() << std::endl;
-    gzmsg << "sensor_world_pose:      " << sensorWorldPose << std::endl;
-    gzmsg << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << std::endl;
-    gzmsg << "link_world_ang_vel:     " << linkWorldAngularVel << std::endl;
-    gzmsg << "sensor_com_pose:        " << sensorCoMPose << std::endl;
-    gzmsg << "sensor_world_lin_vel:   " << sensorWorldLinearVel << std::endl;
-    gzmsg << "wind_world_linear_vel:  " << windWorldLinearVel << std::endl;
-    gzmsg << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << std::endl;
-    gzmsg << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel << std::endl;
-    gzmsg << std::endl;
+    // gzmsg << "parent_link:            " << this->dataPtr->parentLink->GetName() << "\n";
+    // gzmsg << "sensor_link:            " << this->Name() << "\n";
+    // gzmsg << "sensor_world_pose:      " << sensorWorldPose << "\n";
+    // gzmsg << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << "\n";
+    // gzmsg << "link_world_ang_vel:     " << linkWorldAngularVel << "\n";
+    // gzmsg << "sensor_com_pose:        " << sensorCoMPose << "\n";
+    // gzmsg << "sensor_world_lin_vel:   " << sensorWorldLinearVel << "\n";
+    // gzmsg << "wind_world_linear_vel:  " << windWorldLinearVel << "\n";
+    // gzmsg << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << "\n";
+    // gzmsg << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel << "\n\n";
   }
 
   // Save the time of the measurement

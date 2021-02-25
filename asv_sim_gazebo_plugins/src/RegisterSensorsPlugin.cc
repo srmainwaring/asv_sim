@@ -14,7 +14,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "asv_sim_gazebo_plugins/RegisterSensorsPlugin.hh"
-#include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
+// #include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
 #include "asv_sim_gazebo_plugins/MessageTypes.hh"
 
 #include <gazebo/msgs/MsgFactory.hh>
@@ -30,20 +30,20 @@ namespace asv
 // Register Messages
 
   // GZ_REGISTER_STATIC_MSG("asv_msgs.msgs.Anemometer", Anemometer)
-  GAZEBO_VISIBLE boost::shared_ptr<google::protobuf::Message> NewAnemometer()
-  {
-    return boost::shared_ptr<asv_msgs::msgs::Anemometer>(
-      new asv_msgs::msgs::Anemometer());
-  } 
-  class GAZEBO_VISIBLE MsgAnemometer
-  {
-    public: MsgAnemometer()
-    {
-      gazebo::msgs::MsgFactory::RegisterMsg("asv_msgs.msgs.Anemometer", NewAnemometer);
-      gzmsg << "RegisterMsg: Type: " << "asv_msgs.msgs.Anemometer" << std::endl;
-    }
-  };
-  static MsgAnemometer GzAnemometerMsgInitializer;
+//   GAZEBO_VISIBLE boost::shared_ptr<google::protobuf::Message> NewAnemometer()
+//   {
+//     return boost::shared_ptr<asv_msgs::msgs::Anemometer>(
+//       new asv_msgs::msgs::Anemometer());
+//   } 
+//   class GAZEBO_VISIBLE MsgAnemometer
+//   {
+//     public: MsgAnemometer()
+//     {
+//       gazebo::msgs::MsgFactory::RegisterMsg("asv_msgs.msgs.Anemometer", NewAnemometer);
+//       gzmsg << "RegisterMsg: Type: " << "asv_msgs.msgs.Anemometer" << std::endl;
+//     }
+//   };
+//   static MsgAnemometer GzAnemometerMsgInitializer;
 
   // GZ_REGISTER_STATIC_MSG("asv_msgs.msgs.LiftDrag", LiftDrag)
   GAZEBO_VISIBLE boost::shared_ptr<google::protobuf::Message> NewLiftDrag()
@@ -76,8 +76,8 @@ namespace asv
   void RegisterSensorsPlugin::Load(int _argc, char** _argv)
   {
     // Register the sensor with the server.
-    gazebo::sensors::RegisterAnemometerSensor();
-    gzmsg << "RegisterSensor: Type: " << "Anemometer" << std::endl;
+    // gazebo::sensors::RegisterAnemometerSensor();
+    // gzmsg << "RegisterSensor: Type: " << "Anemometer" << std::endl;
   }
 
   void RegisterSensorsPlugin::Init()

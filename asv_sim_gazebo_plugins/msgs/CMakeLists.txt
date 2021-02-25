@@ -18,7 +18,7 @@ link_directories(
 
 set (msgs
   lift_drag.proto
-  anemometer.proto
+#   anemometer.proto
 )
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
