@@ -2,9 +2,9 @@ cmake_minimum_required(VERSION 2.8.3)
 project(asv_sim_gazebo_plugins)
 
 ###############################################################################
-# Compile as C++11, supported in ROS Kinetic and newer
+# Compile as C++17, required by Gazebo11
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 ###############################################################################
@@ -19,27 +19,28 @@ find_package(catkin REQUIRED COMPONENTS
 find_package(gazebo REQUIRED)
 find_package(Boost REQUIRED)
 find_package(Protobuf REQUIRED)
+# find_package(GTest REQUIRED)
 
 ############################################################################### 
 # Catkin...
 
 catkin_package(
-  INCLUDE_DIRS
-    include
-    ${Boost_INCLUDE_DIRS}
-    ${catkin_INCLUDE_DIRS}
-    ${GAZEBO_INCLUDE_DIRS}
-    ${GAZEBO_PROTO_INCLUDE_DIRS}
+    INCLUDE_DIRS
+        include
+        ${Boost_INCLUDE_DIRS}
+        ${catkin_INCLUDE_DIRS}
+        ${GAZEBO_INCLUDE_DIRS}
+        ${GAZEBO_PROTO_INCLUDE_DIRS}
     LIBRARIES
-    asv_sim_gazebo_plugins
-    asv_sim_gazebo_plugins_msgs
-    RegisterSensorsPlugin
-    SailLiftDragPlugin
+        asv_sim_gazebo_plugins
+        asv_sim_gazebo_plugins_msgs
+        RegisterSensorsPlugin
+        SailLiftDragPlugin
     DEPENDS
-    gazebo_ros
-    geometry_msgs
-    roscpp
-    std_msgs
+        gazebo_ros
+        geometry_msgs
+        roscpp
+        std_msgs
 )
 
 include_directories(
@@ -48,6 +49,7 @@ include_directories(
   ${Boost_INCLUDE_DIRS}
   ${catkin_INCLUDE_DIRS}
   ${GAZEBO_INCLUDE_DIRS}
+  ${GAZEBO_MSG_INCLUDE_DIRS}
   ${GAZEBO_PROTO_INCLUDE_DIRS}
   ${IGNITION-COMMON_INCLUDE_DIRS}
   ${IGNITION-MATHS_INCLUDE_DIRS}
