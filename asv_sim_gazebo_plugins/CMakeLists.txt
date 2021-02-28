@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(asv_sim_gazebo_plugins)
 
 ###############################################################################
-# Compile as C++11, required by Gazebo11
+# Compile as C++17, required by Gazebo11
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
