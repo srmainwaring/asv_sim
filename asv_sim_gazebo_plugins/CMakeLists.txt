@@ -35,7 +35,9 @@ catkin_package(
         asv_sim_gazebo_plugins
         asv_sim_gazebo_plugins_msgs
         RegisterSensorsPlugin
-        SailLiftDragPlugin
+        JetDrivePlugin
+        LiftDragPlugin
+        SailPlugin
     DEPENDS
         gazebo_ros
         geometry_msgs
@@ -126,6 +128,28 @@ add_dependencies(RegisterSensorsPlugin
 target_compile_options(RegisterSensorsPlugin PRIVATE "-Wno-unknown-pragmas")
 
 list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST RegisterSensorsPlugin)
+
+# JetDrivePlugin
+add_library(JetDrivePlugin
+  SHARED
+    src/JetDrivePlugin.cc
+)
+
+target_link_libraries(JetDrivePlugin
+  asv_sim_gazebo_plugins
+  asv_sim_gazebo_plugins_msgs
+  ${Boost_LIBRARIES}
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+add_dependencies(JetDrivePlugin
+  ${catkin_EXPORTED_TARGETS}
+)
+
+target_compile_options(JetDrivePlugin PRIVATE "-Wno-unknown-pragmas")
+
+list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST JetDrivePlugin)
 
 # SailPlugin
 add_library(SailPlugin
