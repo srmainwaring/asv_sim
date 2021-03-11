@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <functional>
 #include <string>
+#include <sstream>
 
 #include <ignition/math.hh>
 #include <ignition/msgs.hh>
@@ -76,6 +77,10 @@ class JetDrivePluginPrivate
     public: transport::PublisherPtr visualPub;
 
     public: msgs::Visual visualMsg;
+
+    // ignition markers (for movable text)
+    // ignition::transport::Node ignNode;
+    // ignition::msgs::Marker markerMsg;
 
     /// \brief Previous update time for publisher throttle.  
     public: common::Time lastDebugPubTime;
@@ -197,8 +202,22 @@ void JetDrivePlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf
 
     // Don't cast shadows
     this->data->visualMsg.set_cast_shadows(false);
-}
 
+    // markers (text)
+    // ignition::transport::Node node;
+
+    // this->data->markerMsg.set_ns(this->data->directionUnitLink->GetScopedName());
+    // this->data->markerMsg.set_id(0);
+    // this->data->markerMsg.set_action(ignition::msgs::Marker::ADD_MODIFY);
+    // this->data->markerMsg.set_type(ignition::msgs::Marker::SPHERE);
+    // this->data->markerMsg.set_visibility(ignition::msgs::Marker_Visibility_GUI);
+    // auto *matMsg = this->data->markerMsg.mutable_material();
+    // matMsg->mutable_script()->set_name("Gazebo/Green");
+    // ignition::msgs::Set(data->markerMsg.mutable_scale(),
+    //                     ignition::math::Vector3d(0.2, 0.2, 0.2));
+
+}
+ 
 void JetDrivePlugin::Reset()
 {
     // Reset Time
@@ -224,56 +243,79 @@ void JetDrivePlugin::OnUpdate()
     this->data->thrust = this->data->thrustMax
         * ignition::math::clamp(std::fabs(impellerRpm / this->data->impellerRpmMax), 0.0, 1.0);
 
-    // Pose of link origin and CoM (world frame).
-    auto dirUnitLinkWorldPose = this->data->directionUnitLink->WorldPose();
-    auto dirUnitLinkCoMWorldPose  = this->data->directionUnitLink->WorldCoGPose();
+    // thrust reverse joint angle and limits
+    const double theta_min = this->data->thrustReverserJoint->LowerLimit();
+    const double theta_max = this->data->thrustReverserJoint->UpperLimit();
+    const double theta = this->data->thrustReverserJoint->Position(); 
 
-    // Create unit thrust vector
+    // fraction of reverse thrust (alpha in [0, 1])
+    double alpha = std::fabs(theta / (theta_max - theta_min));
+
+    // friction reduction factor that reduces thrust when reversed
+    double s_f = 0.5;
+
     // TODO - get thrust alignment from params
-    auto unitThrustBody = ignition::math::Vector3d(1, 0, 0);
+
+    // create unit thrust vector
+    auto unitThrustFwdBody = ignition::math::Vector3d(1, 0, 0);
+    auto unitThrustRvsBody = ignition::math::Vector3d(0, 0, -1);
+
+    // thrust is directed in the opposite direction to the link rotation
+    auto rot = ignition::math::Quaterniond(0, -theta, 0);
+    unitThrustRvsBody = rot.RotateVector(unitThrustRvsBody);
+
+    // Compute resultant thrust vector in body frame (direction unit link frame)
+    auto thrustBody = (unitThrustFwdBody * (1.0 - alpha) + unitThrustRvsBody * alpha * s_f)
+        * this->data->thrust;
 
     // Rotate into world frame
-    auto unitThrustForceWorld = dirUnitLinkCoMWorldPose.Rot().RotateVector(unitThrustBody);
-
-    // Scale by thrust magnitude
-    auto thrustForceWorld = unitThrustForceWorld * this->data->thrust;
+    auto dirUnitLinkCoMWorldPose = this->data->directionUnitLink->WorldCoGPose();
+    auto thrustWorld = dirUnitLinkCoMWorldPose.Rot().RotateVector(thrustBody);
 
     // Ensure no overflow.
-    thrustForceWorld.Correct();
+    thrustWorld.Correct();
 
     // Add force and torque to link (applied to CoM in world frame).
-    this->data->directionUnitLink->AddForce(thrustForceWorld);
+    this->data->directionUnitLink->AddForce(thrustWorld);
 
-    auto simTime = this->data->world->SimTime();
 
     // Publish message / debug info at 2Hz
-    const double debugUpdateRate = 2.0;
+    auto simTime = this->data->world->SimTime();
+    const double debugUpdateRate = 1.0;
     const double debugUpdateInterval = 1.0/debugUpdateRate;
-    if ((simTime - this->data->lastDebugPubTime).Double() < debugUpdateInterval)
+    if ((simTime - this->data->lastDebugPubTime).Double() > debugUpdateInterval)
     {
         this->data->lastDebugPubTime = simTime;
-#if 0
+#if 1
         gzdbg << "\n"
             << "impellerJoint:        " << this->data->impellerJoint->GetName() << "\n"
             << "impellerAngVel:       " << impellerAngVel << "\n"
             << "impellerRpm:          " << impellerRpm << "\n"
             << "thrustMin:            " << this->data->thrustMin << "\n"
             << "thrustMax:            " << this->data->thrustMax << "\n"
-            << "||thrust||:           " << thrustForceWorld.Length() << "\n"
-            << "thrust:               " << thrustForceWorld << "\n"
+            << "theta_min:            " << theta_min << "\n"
+            << "theta_max:            " << theta_max << "\n"
+            << "theta:                " << theta << "\n"
+            << "alpha:                " << alpha << "\n"
+            << "s_f:                  " << s_f << "\n"
+            << "unit_thrust_fwd_body: " << unitThrustFwdBody << "\n"
+            << "unit_thrust_rvs_body: " << unitThrustRvsBody << "\n"
+            << "thrust_body:          " << thrustBody << "\n"
+            << "||thrust||:           " << thrustWorld.Length() << "\n"
+            << "thrust:               " << thrustWorld << "\n"
             << "\n";
 #endif
     }
 
-    // Publish visuals at 5Hz
-    const double visualUpdateRate = 5.0;
+    // Publish visuals at 1Hz
+    const double visualUpdateRate = 10.0;
     const double visualUpdateInterval = 1.0/visualUpdateRate;
-    if ((simTime - this->data->lastVisualPubTime).Double() < visualUpdateInterval)
+    if ((simTime - this->data->lastVisualPubTime).Double() > visualUpdateInterval)
     {
         this->data->lastVisualPubTime = simTime;
         UpdateVisuals();
-        // this->data->visualPub->Publish(this->data->visualMsg);
-        // gzdbg << this->data->visualMsg.DebugString();
+        this->data->visualPub->Publish(this->data->visualMsg);
+        // this->data->ignNode.Request("/marker", this->data->markerMsg);
     }
 }
 
@@ -303,4 +345,25 @@ void JetDrivePlugin::UpdateVisuals()
     // Set pose relative to parent
     msgs::Set(this->data->visualMsg.mutable_pose(),
         ignition::math::Pose3d(offset, 0, 0, 0, 0.5 * M_PI, 0));
+
+
+    // marker visual to display the force text...
+    // auto dirUnitLinkCoMWorldPose  = this->data->directionUnitLink->WorldCoGPose();
+
+    // std::stringstream ss;
+    // ss << std::fixed << std::setprecision(2) << this->data->thrust << " N";
+
+    // // this->data->markerMsg.mutable_text()->clear();
+    // // this->data->markerMsg.set_text(ss.str());
+    // ignition::msgs::Set(this->data->markerMsg.mutable_pose(),
+    //     ignition::math::Pose3d(
+    //         dirUnitLinkCoMWorldPose.Pos().X(),
+    //         dirUnitLinkCoMWorldPose.Pos().Y(),
+    //         dirUnitLinkCoMWorldPose.Pos().Z(),
+    //         dirUnitLinkCoMWorldPose.Rot().W(),
+    //         dirUnitLinkCoMWorldPose.Rot().X(),
+    //         dirUnitLinkCoMWorldPose.Rot().Y(),
+    //         dirUnitLinkCoMWorldPose.Rot().Z()));
+
+    // this->data->ignNode.Request("/marker", this->data->markerMsg);
 }
