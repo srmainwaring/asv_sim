@@ -89,10 +89,15 @@ class JetDrivePluginPrivate
     // Parameters
     public: double impellerRpmMax = 100.0;
     public: double thrustMin = 0.0;
-    public: double thrustMax = 20.0; 
+    public: double thrustMax = 20.0;
+    public: double reverseThrustScaling = 0.5;
+
+    // Constants - initial directions vectors for thrust / reverse thrust
+    public: ignition::math::Vector3d unitThrustFwdBody = ignition::math::Vector3d(1, 0, 0);
+    public: ignition::math::Vector3d unitThrustRvsBody = ignition::math::Vector3d(0, 0, -1);
 
     // Variables
-    public: double thrust = 0.0; 
+    public: ignition::math::Vector3d thrustBody = ignition::math::Vector3d(0, 0, 0);
 };
 }
 
@@ -131,6 +136,7 @@ void JetDrivePlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf
     gazebo::LoadParam(this, _sdf, "impellerRpmMax", this->data->impellerRpmMax, this->data->impellerRpmMax);
     gazebo::LoadParam(this, _sdf, "thrustMin", this->data->thrustMin, this->data->thrustMin);
     gazebo::LoadParam(this, _sdf, "thrustMax", this->data->thrustMax, this->data->thrustMax);
+    gazebo::LoadParam(this, _sdf, "reverseThrustScaling", this->data->reverseThrustScaling, this->data->reverseThrustScaling);
 
     gazebo::LoadParam(this, _sdf, "impellerLinkName", impellerLinkName, "impeller_link");
     gazebo::LoadParam(this, _sdf, "impellerJointName", impellerJointName, "impeller_joint");
@@ -235,49 +241,44 @@ void JetDrivePlugin::OnUpdate()
         return;
     }
 
-    // thrust magnitude is determined from the velocity of the impeller
-    const double impellerAngVel = this->data->impellerJoint->GetVelocity(0); 
-
-    // rpm = ang_vel * 60 / (2 pi) 
+    // thrust magnitude is determined from the angular velocity of the impeller
+    // the impeller rpm = ang_vel * 60 / (2 pi) 
+    const double impellerAngVel = this->data->impellerJoint->GetVelocity(0);
     const double impellerRpm = impellerAngVel * 30.0 / M_PI;
-    this->data->thrust = this->data->thrustMax
+    const double thrust = this->data->thrustMax
         * ignition::math::clamp(std::fabs(impellerRpm / this->data->impellerRpmMax), 0.0, 1.0);
 
     // thrust reverse joint angle and limits
-    const double theta_min = this->data->thrustReverserJoint->LowerLimit();
-    const double theta_max = this->data->thrustReverserJoint->UpperLimit();
+    const double thetaMin = this->data->thrustReverserJoint->LowerLimit();
+    const double thetaMax = this->data->thrustReverserJoint->UpperLimit();
     const double theta = this->data->thrustReverserJoint->Position(); 
 
     // fraction of reverse thrust (alpha in [0, 1])
-    double alpha = std::fabs(theta / (theta_max - theta_min));
+    const double alpha = std::fabs(theta / (thetaMax - thetaMin));
 
     // friction reduction factor that reduces thrust when reversed
-    double s_f = 0.5;
+    const double scale = this->data->reverseThrustScaling;
 
-    // TODO - get thrust alignment from params
-
-    // create unit thrust vector
-    auto unitThrustFwdBody = ignition::math::Vector3d(1, 0, 0);
-    auto unitThrustRvsBody = ignition::math::Vector3d(0, 0, -1);
+    // create unit thrust vectors in body frame
+    auto unitThrustFwdBody = this->data->unitThrustFwdBody;
+    auto unitThrustRvsBody = this->data->unitThrustRvsBody;
 
     // thrust is directed in the opposite direction to the link rotation
     auto rot = ignition::math::Quaterniond(0, -theta, 0);
     unitThrustRvsBody = rot.RotateVector(unitThrustRvsBody);
 
     // Compute resultant thrust vector in body frame (direction unit link frame)
-    auto thrustBody = (unitThrustFwdBody * (1.0 - alpha) + unitThrustRvsBody * alpha * s_f)
-        * this->data->thrust;
+    this->data->thrustBody = (unitThrustFwdBody * (1.0 - alpha) + unitThrustRvsBody * alpha * scale) * thrust;
 
     // Rotate into world frame
     auto dirUnitLinkCoMWorldPose = this->data->directionUnitLink->WorldCoGPose();
-    auto thrustWorld = dirUnitLinkCoMWorldPose.Rot().RotateVector(thrustBody);
+    auto thrustWorld = dirUnitLinkCoMWorldPose.Rot().RotateVector(this->data->thrustBody);
 
     // Ensure no overflow.
     thrustWorld.Correct();
 
     // Add force and torque to link (applied to CoM in world frame).
     this->data->directionUnitLink->AddForce(thrustWorld);
-
 
     // Publish message / debug info at 2Hz
     auto simTime = this->data->world->SimTime();
@@ -293,14 +294,14 @@ void JetDrivePlugin::OnUpdate()
             << "impellerRpm:          " << impellerRpm << "\n"
             << "thrustMin:            " << this->data->thrustMin << "\n"
             << "thrustMax:            " << this->data->thrustMax << "\n"
-            << "theta_min:            " << theta_min << "\n"
-            << "theta_max:            " << theta_max << "\n"
+            << "thetaMin:             " << thetaMin << "\n"
+            << "thetaMax:             " << thetaMax << "\n"
             << "theta:                " << theta << "\n"
             << "alpha:                " << alpha << "\n"
-            << "s_f:                  " << s_f << "\n"
+            << "scale:                " << scale << "\n"
             << "unit_thrust_fwd_body: " << unitThrustFwdBody << "\n"
             << "unit_thrust_rvs_body: " << unitThrustRvsBody << "\n"
-            << "thrust_body:          " << thrustBody << "\n"
+            << "thrust_body:          " << this->data->thrustBody << "\n"
             << "||thrust||:           " << thrustWorld.Length() << "\n"
             << "thrust:               " << thrustWorld << "\n"
             << "\n";
@@ -319,7 +320,6 @@ void JetDrivePlugin::OnUpdate()
     }
 }
 
-
 // create visualization message for thrust
 //
 // See for example:
@@ -327,7 +327,8 @@ void JetDrivePlugin::OnUpdate()
 //
 void JetDrivePlugin::UpdateVisuals()
 {
-    double scaledThrust = this->data->thrust / this->data->thrustMax;
+    const double thrust = this->data->thrustBody.Length();
+    double scaledThrust = thrust / this->data->thrustMax;
     scaledThrust *= 0.5;
 
     msgs::Geometry *geomMsg = this->data->visualMsg.mutable_geometry();
@@ -342,17 +343,35 @@ void JetDrivePlugin::UpdateVisuals()
         offset = 0.5 * scaledThrust * -1.0;
     }
 
-    // Set pose relative to parent
-    msgs::Set(this->data->visualMsg.mutable_pose(),
-        ignition::math::Pose3d(offset, 0, 0, 0, 0.5 * M_PI, 0));
+    // calculate visual pose relative to the direction unit link
+    auto cyl2BodyRot = ignition::math::Quaterniond(0, 0.5 * M_PI, 0);
+    auto body2ThrustRot = ignition::math::Quaterniond();
+    body2ThrustRot.From2Axes(
+        this->data->unitThrustFwdBody,
+        this->data->thrustBody);
+    auto cyl2ThrustRot = cyl2BodyRot * body2ThrustRot.Inverse();
 
+    auto pose1 = ignition::math::Pose3d(
+        ignition::math::Vector3d(0, 0, 0),
+        cyl2ThrustRot
+    );
+
+    auto pose2 = ignition::math::Pose3d(
+        ignition::math::Vector3d(0, 0, offset),
+        ignition::math::Quaterniond()
+    );
+
+    auto pose = pose1 * pose2;
+
+    // Set pose relative to parent
+    msgs::Set(this->data->visualMsg.mutable_pose(), pose);
 
     // marker visual to display the force text...
     // auto dirUnitLinkCoMWorldPose  = this->data->directionUnitLink->WorldCoGPose();
-
+    //
     // std::stringstream ss;
     // ss << std::fixed << std::setprecision(2) << this->data->thrust << " N";
-
+    //
     // // this->data->markerMsg.mutable_text()->clear();
     // // this->data->markerMsg.set_text(ss.str());
     // ignition::msgs::Set(this->data->markerMsg.mutable_pose(),
