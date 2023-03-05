@@ -32,44 +32,45 @@
  *
 */
 
-#include "FoilPlugin.hh"
+#include "FoilLiftDrag.hh"
 
-#include <algorithm>
-#include <functional>
+// #include <algorithm>
+// #include <functional>
+#include <mutex>
 #include <string>
 
-#include <boost/algorithm/string.hpp>
+#include <gz/common/Profiler.hh>
+#include <gz/plugin/Register.hh>
 
-#include <ignition/math/Pose3.hh>
+// #include <boost/algorithm/string.hpp>
 
-#include <gazebo/common/Assert.hh>
-#include <gazebo/msgs/msgs.hh>
-#include <gazebo/physics/physics.hh>
-#include <gazebo/sensors/sensors.hh>
-#include <gazebo/transport/transport.hh>
+// #include <gz/math/Pose3.hh>
 
-#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
-#include "asv_sim_gazebo_plugins/MessageTypes.hh"
-#include "asv_sim_gazebo_plugins/PluginUtils.hh"
+// #include <gazebo/common/Assert.hh>
+// #include <gazebo/msgs/msgs.hh>
+// #include <gazebo/physics/physics.hh>
+// #include <gazebo/sensors/sensors.hh>
+// #include <gazebo/transport/transport.hh>
 
-// using namespace asv;
-// using namespace gazebo;
+// #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
+// #include "asv_sim_gazebo_plugins/MessageTypes.hh"
+// #include "asv_sim_gazebo_plugins/PluginUtils.hh"
 
-GZ_REGISTER_MODEL_PLUGIN(FoilPlugin)
-
-///////////////////////////////////////////////////////////////////////////////
-// FoilPluginPrivate
-
-namespace asv
-{
 /// \brief Type definition for a pointer to a LiftDrag message.
-typedef const boost::shared_ptr<
-  const asv_msgs::msgs::LiftDrag>
-    LiftDragPtr;
+// typedef const boost::shared_ptr<
+//   const asv_msgs::msgs::LiftDrag>
+//     LiftDragPtr;
 
-
-class FoilPluginPrivate
+namespace gz
 {
+namespace sim
+{
+namespace systems
+{
+/////////////////////////////////////////////////
+class FoilLiftDragPrivate
+{
+#if 0
   /// \brief SDF for this plugin;
   public: sdf::ElementPtr sdf;
 
@@ -100,96 +101,92 @@ class FoilPluginPrivate
   public: ignition::math::Vector3d cp = ignition::math::Vector3d(0, 0, 0);
 
   public: std::unique_ptr<LiftDragModel> liftDrag;
+#endif
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// FoilPlugin
+/////////////////////////////////////////////////
+FoilLiftDrag::~FoilLiftDrag() = default;
 
-FoilPlugin::~FoilPlugin()
-{
-  // Reset connections and transport.
-  this->data->updateConnection.reset();
-  this->data->liftDragPub.reset();
-  this->data->node->Fini();
-}
-
-FoilPlugin::FoilPlugin()
-  : gazebo::ModelPlugin(),
-  data(new FoilPluginPrivate())
+/////////////////////////////////////////////////
+FoilLiftDrag::FoilLiftDrag()
+  : System(), dataPtr(std::make_unique<FoilLiftDragPrivate>())
 {
 }
 
-void FoilPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
+#if 0
+/////////////////////////////////////////////////
+void FoilLiftDrag::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   GZ_ASSERT(_sdf, "Invalid parameter _sdf");
   GZ_ASSERT(_model, "Invalid parameter _model");
   GZ_ASSERT(_model->GetWorld(), "Model has invalid world");
 
   // Capture model and sdf.
-  this->data->sdf = _sdf;
-  this->data->model = _model;
-  this->data->world = _model->GetWorld();
+  this->dataPtr->sdf = _sdf;
+  this->dataPtr->model = _model;
+  this->dataPtr->world = _model->GetWorld();
 
   // Parameters
   std::string linkName;
 #if (GAZEBO_MAJOR_VERSION < 11)
-  gazebo::LoadParam(this, _sdf, "cp", this->data->cp, this->data->cp);
+  gazebo::LoadParam(this, _sdf, "cp", this->dataPtr->cp, this->dataPtr->cp);
   gazebo::LoadParam(this, _sdf, "link_name", linkName, "");
 #else
-  this->LoadParam(_sdf, "cp", this->data->cp, this->data->cp);
+  this->LoadParam(_sdf, "cp", this->dataPtr->cp, this->dataPtr->cp);
   this->LoadParam(_sdf, "link_name", linkName, "");
 #endif
 
   if (!linkName.empty())
   {
-    this->data->link = this->data->model->GetLink(linkName);
-    if (this->data->link == nullptr)
+    this->dataPtr->link = this->dataPtr->model->GetLink(linkName);
+    if (this->dataPtr->link == nullptr)
     {
       gzerr << "Link with name[" << linkName << "] not found. "
-        << "The FoilPlugin will not generate forces\n";
+        << "The FoilLiftDrag will not generate forces\n";
     }
     else
     {
-      this->data->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          std::bind(&FoilPlugin::OnUpdate, this));
+      this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
+          std::bind(&FoilLiftDrag::OnUpdate, this));
     }
   }
 
   // Transport
-  this->data->node = transport::NodePtr(new transport::Node());
-  this->data->node->Init(this->data->model->GetName());
+  this->dataPtr->node = transport::NodePtr(new transport::Node());
+  this->dataPtr->node->Init(this->dataPtr->model->GetName());
 
   // Publishers
   std::string topic = this->GetTopic();
-  this->data->liftDragPub
-    = this->data->node->Advertise<asv_msgs::msgs::LiftDrag>(topic);
+  this->dataPtr->liftDragPub
+    = this->dataPtr->node->Advertise<asv_msgs::msgs::LiftDrag>(topic);
 
   // Time
-  this->data->prevTime = this->data->world->SimTime();
+  this->dataPtr->prevTime = this->dataPtr->world->SimTime();
 
   // Lift / Drag model
-  this->data->liftDrag.reset(LiftDragModel::Create(_sdf));
+  this->dataPtr->liftDrag.reset(LiftDragModel::Create(_sdf));
 }
 
-void FoilPlugin::Reset()
+void FoilLiftDrag::Reset()
 {
   // Reset Time
-  this->data->prevTime = this->data->world->SimTime();
+  this->dataPtr->prevTime = this->dataPtr->world->SimTime();
 }
 
-std::string FoilPlugin::GetTopic() const
+/////////////////////////////////////////////////
+std::string FoilLiftDrag::GetTopic() const
 {
   std::string topic;
 #if (GAZEBO_MAJOR_VERSION < 11)
-  gazebo::LoadParam(this, this->data->sdf, "topic", topic, "lift_drag");
+  gazebo::LoadParam(this, this->dataPtr->sdf, "topic", topic, "lift_drag");
 #else
-  this->LoadParam(this->data->sdf, "topic", topic, "lift_drag");
+  this->LoadParam(this->dataPtr->sdf, "topic", topic, "lift_drag");
 #endif
 
   std::string topicName = "~";
-  if (this->data->link != nullptr)
+  if (this->dataPtr->link != nullptr)
   {
-    topicName += '/' + this->data->link->GetName();
+    topicName += '/' + this->dataPtr->link->GetName();
   }
   topicName += '/' + topic;
   boost::replace_all(topicName, "::", "/");
@@ -197,21 +194,22 @@ std::string FoilPlugin::GetTopic() const
   return topicName;
 }
 
-void FoilPlugin::OnUpdate()
+/////////////////////////////////////////////////
+void FoilLiftDrag::OnUpdate()
 {
-  if (this->data->link == nullptr)
+  if (this->dataPtr->link == nullptr)
   {
     return;
   }
   // Linear velocity at the centre of pressure (world frame).
-  auto velCp = this->data->link->WorldLinearVel(this->data->cp);
+  auto velCp = this->dataPtr->link->WorldLinearVel(this->dataPtr->cp);
 
   // Free stream velocity at centre of pressure (world frame).
   auto vel = - velCp;
 
   // Pose of link origin and link CoM (world frame).
-  auto linkPose = this->data->link->WorldPose();
-  auto comPose  = this->data->link->WorldCoGPose();
+  auto linkPose = this->dataPtr->link->WorldPose();
+  auto comPose  = this->dataPtr->link->WorldCoGPose();
 
   // Compute lift and drag
   double alpha = 0;
@@ -220,7 +218,7 @@ void FoilPlugin::OnUpdate()
   double cd = 0;
   ignition::math::Vector3d lift = ignition::math::Vector3d::Zero;
   ignition::math::Vector3d drag = ignition::math::Vector3d::Zero;
-  this->data->liftDrag->Compute(vel, linkPose, lift, drag, alpha, u, cl, cd);
+  this->dataPtr->liftDrag->Compute(vel, linkPose, lift, drag, alpha, u, cl, cd);
 
   // Resultant force arising from lift and drag (world frame).
   auto force = lift + drag;
@@ -229,7 +227,7 @@ void FoilPlugin::OnUpdate()
   auto com = comPose.Pos();
 
   // Rotate the centre of pressure (CP) into the world frame.
-  auto cpWorld = linkPose.Rot().RotateVector(this->data->cp);
+  auto cpWorld = linkPose.Rot().RotateVector(this->dataPtr->cp);
 
   // Vector from CoM to CP.
   auto xr  = linkPose.Pos() + cpWorld - com;
@@ -242,18 +240,18 @@ void FoilPlugin::OnUpdate()
   torque.Correct();
 
   // Add force and torque to link (applied to CoM in world frame).
-  this->data->link->AddForce(force);
-  this->data->link->AddTorque(torque);
+  this->dataPtr->link->AddForce(force);
+  this->dataPtr->link->AddTorque(torque);
 
   // Publish message
   const double updateRate = 50.0;
   const double updateInterval = 1.0/updateRate;
-  common::Time simTime = this->data->world->SimTime();
-  if ((simTime - this->data->prevTime).Double() < updateInterval)
+  common::Time simTime = this->dataPtr->world->SimTime();
+  if ((simTime - this->dataPtr->prevTime).Double() < updateInterval)
   {
     return;
   }
-  this->data->prevTime = simTime;
+  this->dataPtr->prevTime = simTime;
 
   // Save the time of the measurement
   asv_msgs::msgs::LiftDrag liftDragMsg;
@@ -274,11 +272,40 @@ void FoilPlugin::OnUpdate()
   msgs::Set(liftDragMsg.mutable_torque(), torque);
 
   // Publish the message if needed
-  if (this->data->liftDragPub)
-    this->data->liftDragPub->Publish(liftDragMsg);
+  if (this->dataPtr->liftDragPub)
+    this->dataPtr->liftDragPub->Publish(liftDragMsg);
 
   // @DEBUG_INFO
   // gzmsg << liftDragMsg.DebugString() << std::endl;
 }
+#endif
 
-}  // namespace asv
+/////////////////////////////////////////////////
+void FoilLiftDrag::Configure(
+    const Entity &_entity,
+    const std::shared_ptr<const sdf::Element> &_sdf,
+    EntityComponentManager &_ecm,
+    EventManager &_eventMgr)
+{
+}
+
+/////////////////////////////////////////////////
+void FoilLiftDrag::PreUpdate(
+    const UpdateInfo &_info,
+    EntityComponentManager &_ecm)
+{
+}
+
+}  // namespace systems
+}  // namespace sim
+}  // namespace gz
+
+GZ_ADD_PLUGIN(
+    gz::sim::systems::FoilLiftDrag,
+    gz::sim::System,
+    gz::sim::systems::FoilLiftDrag::ISystemConfigure,
+    gz::sim::systems::FoilLiftDrag::ISystemPreUpdate)
+
+GZ_ADD_PLUGIN_ALIAS(
+    gz::sim::systems::FoilLiftDrag,
+    "gz::sim::systems::FoilLiftDrag")

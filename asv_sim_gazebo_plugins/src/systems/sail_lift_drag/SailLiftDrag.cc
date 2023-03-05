@@ -32,44 +32,47 @@
  *
 */
 
-#include "SailPlugin.hh"
+#include "SailLiftDrag.hh"
 
-#include <algorithm>
-#include <functional>
+#include <mutex>
 #include <string>
 
-#include <boost/algorithm/string.hpp>
+#include <gz/common/Profiler.hh>
+#include <gz/plugin/Register.hh>
 
-#include <gazebo/common/Assert.hh>
-#include <gazebo/msgs/msgs.hh>
-#include <gazebo/physics/physics.hh>
-#include <gazebo/sensors/sensors.hh>
-#include <gazebo/transport/transport.hh>
+// #include <algorithm>
+// #include <functional>
+// #include <string>
 
-#include <ignition/math/Pose3.hh>
+// #include <boost/algorithm/string.hpp>
 
-#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
-#include "asv_sim_gazebo_plugins/MessageTypes.hh"
-#include "asv_sim_gazebo_plugins/PluginUtils.hh"
+// #include <gazebo/common/Assert.hh>
+// #include <gazebo/msgs/msgs.hh>
+// #include <gazebo/physics/physics.hh>
+// #include <gazebo/sensors/sensors.hh>
+// #include <gazebo/transport/transport.hh>
 
-// using namespace asv;
-// using namespace gazebo;
+// #include <ignition/math/Pose3.hh>
 
-GZ_REGISTER_MODEL_PLUGIN(SailPlugin)
+// #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
+// #include "asv_sim_gazebo_plugins/MessageTypes.hh"
+// #include "asv_sim_gazebo_plugins/PluginUtils.hh"
 
-///////////////////////////////////////////////////////////////////////////////
-// SailPluginPrivate
+// /// \brief Type definition for a pointer to a LiftDrag message.
+// typedef const boost::shared_ptr<
+//   const asv_msgs::msgs::LiftDrag>
+//     LiftDragPtr;
 
-namespace asv
+namespace gz
 {
-/// \brief Type definition for a pointer to a LiftDrag message.
-typedef const boost::shared_ptr<
-  const asv_msgs::msgs::LiftDrag>
-    LiftDragPtr;
-
-
-class SailPluginPrivate
+namespace sim
 {
+namespace systems
+{
+/////////////////////////////////////////////////
+class SailLiftDragPrivate
+{
+#if 0
   /// \brief SDF for this plugin;
   public: sdf::ElementPtr sdf;
 
@@ -100,96 +103,93 @@ class SailPluginPrivate
   public: ignition::math::Vector3d cp = ignition::math::Vector3d(0, 0, 0);
 
   public: std::unique_ptr<LiftDragModel> liftDrag;
+#endif
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// SailPlugin
+/////////////////////////////////////////////////
+SailLiftDrag::~SailLiftDrag() = default;
 
-SailPlugin::~SailPlugin()
-{
-  // Reset connections and transport.
-  this->data->updateConnection.reset();
-  this->data->liftDragPub.reset();
-  this->data->node->Fini();
-}
-
-SailPlugin::SailPlugin()
-  : gazebo::ModelPlugin(),
-  data(new SailPluginPrivate())
+/////////////////////////////////////////////////
+SailLiftDrag::SailLiftDrag()
+  : System(), dataPtr(std::make_unique<SailLiftDragPrivate>())
 {
 }
 
-void SailPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
+#if 0
+/////////////////////////////////////////////////
+void SailLiftDrag::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 {
   GZ_ASSERT(_sdf, "Invalid parameter _sdf");
   GZ_ASSERT(_model, "Invalid parameter _model");
   GZ_ASSERT(_model->GetWorld(), "Model has invalid world");
 
   // Capture model and sdf.
-  this->data->sdf = _sdf;
-  this->data->model = _model;
-  this->data->world = _model->GetWorld();
+  this->dataPtr->sdf = _sdf;
+  this->dataPtr->model = _model;
+  this->dataPtr->world = _model->GetWorld();
 
   // Parameters
   std::string linkName;
 #if (GAZEBO_MAJOR_VERSION < 11)
-  gazebo::LoadParam(this, _sdf, "cp", this->data->cp, this->data->cp);
+  gazebo::LoadParam(this, _sdf, "cp", this->dataPtr->cp, this->dataPtr->cp);
   gazebo::LoadParam(this, _sdf, "link_name", linkName, "");
 #else
-  this->LoadParam(_sdf, "cp", this->data->cp, this->data->cp);
+  this->LoadParam(_sdf, "cp", this->dataPtr->cp, this->dataPtr->cp);
   this->LoadParam(_sdf, "link_name", linkName, "");
 #endif
 
   if (!linkName.empty())
   {
-    this->data->link = this->data->model->GetLink(linkName);
-    if (this->data->link == nullptr)
+    this->dataPtr->link = this->dataPtr->model->GetLink(linkName);
+    if (this->dataPtr->link == nullptr)
     {
       gzerr << "Link with name[" << linkName << "] not found. "
-        << "The SailPlugin will not generate forces\n";
+        << "The SailLiftDrag will not generate forces\n";
     }
     else
     {
-      this->data->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          std::bind(&SailPlugin::OnUpdate, this));
+      this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
+          std::bind(&SailLiftDrag::OnUpdate, this));
     }
   }
 
   // Transport
-  this->data->node = transport::NodePtr(new transport::Node());
-  this->data->node->Init(this->data->model->GetName());
+  this->dataPtr->node = transport::NodePtr(new transport::Node());
+  this->dataPtr->node->Init(this->dataPtr->model->GetName());
 
   // Publishers
   std::string topic = this->GetTopic();
-  this->data->liftDragPub
-    = this->data->node->Advertise<asv_msgs::msgs::LiftDrag>(topic);
+  this->dataPtr->liftDragPub
+    = this->dataPtr->node->Advertise<asv_msgs::msgs::LiftDrag>(topic);
 
   // Time
-  this->data->prevTime = this->data->world->SimTime();
+  this->dataPtr->prevTime = this->dataPtr->world->SimTime();
 
   // Lift / Drag model
-  this->data->liftDrag.reset(LiftDragModel::Create(_sdf));
+  this->dataPtr->liftDrag.reset(LiftDragModel::Create(_sdf));
 }
 
-void SailPlugin::Reset()
+/////////////////////////////////////////////////
+void SailLiftDrag::Reset()
 {
   // Reset Time
-  this->data->prevTime = this->data->world->SimTime();
+  this->dataPtr->prevTime = this->dataPtr->world->SimTime();
 }
 
-std::string SailPlugin::GetTopic() const
+/////////////////////////////////////////////////
+std::string SailLiftDrag::GetTopic() const
 {
   std::string topic;
 #if (GAZEBO_MAJOR_VERSION < 11)
-  gazebo::LoadParam(this, this->data->sdf, "topic", topic, "lift_drag");
+  gazebo::LoadParam(this, this->dataPtr->sdf, "topic", topic, "lift_drag");
 #else
-  this->LoadParam(this->data->sdf, "topic", topic, "lift_drag");
+  this->LoadParam(this->dataPtr->sdf, "topic", topic, "lift_drag");
 #endif
 
   std::string topicName = "~";
-  if (this->data->link != nullptr)
+  if (this->dataPtr->link != nullptr)
   {
-    topicName += '/' + this->data->link->GetName();
+    topicName += '/' + this->dataPtr->link->GetName();
   }
   topicName += '/' + topic;
   boost::replace_all(topicName, "::", "/");
@@ -197,27 +197,28 @@ std::string SailPlugin::GetTopic() const
   return topicName;
 }
 
-void SailPlugin::OnUpdate()
+/////////////////////////////////////////////////
+void SailLiftDrag::OnUpdate()
 {
-  if (this->data->link == nullptr)
+  if (this->dataPtr->link == nullptr)
   {
     return;
   }
 
   // Wind velocity at the link origin (world frame).
   // We use this to approximate the wind at the centre of pressure
-  auto& wind = this->data->world->Wind();
-  auto velWind = wind.WorldLinearVel(this->data->link.get());
+  auto& wind = this->dataPtr->world->Wind();
+  auto velWind = wind.WorldLinearVel(this->dataPtr->link.get());
 
   // Linear velocity at the centre of pressure (world frame).
-  auto velCp = this->data->link->WorldLinearVel(this->data->cp);
+  auto velCp = this->dataPtr->link->WorldLinearVel(this->dataPtr->cp);
 
   // Free stream velocity at centre of pressure (world frame).
   auto vel = velWind - velCp;
 
   // Pose of link origin and link CoM (world frame).
-  auto linkPose = this->data->link->WorldPose();
-  auto comPose  = this->data->link->WorldCoGPose();
+  auto linkPose = this->dataPtr->link->WorldPose();
+  auto comPose  = this->dataPtr->link->WorldCoGPose();
 
   // Compute lift and drag
   double alpha = 0;
@@ -226,7 +227,7 @@ void SailPlugin::OnUpdate()
   double cd = 0;
   ignition::math::Vector3d lift = ignition::math::Vector3d::Zero;
   ignition::math::Vector3d drag = ignition::math::Vector3d::Zero;
-  this->data->liftDrag->Compute(vel, linkPose, lift, drag, alpha, u, cl, cd);
+  this->dataPtr->liftDrag->Compute(vel, linkPose, lift, drag, alpha, u, cl, cd);
 
   // Resultant force arising from lift and drag (world frame).
   auto force = lift + drag;
@@ -235,7 +236,7 @@ void SailPlugin::OnUpdate()
   auto com = comPose.Pos();
 
   // Rotate the centre of pressure (CP) into the world frame.
-  auto cpWorld = linkPose.Rot().RotateVector(this->data->cp);
+  auto cpWorld = linkPose.Rot().RotateVector(this->dataPtr->cp);
 
   // Vector from CoM to CP.
   auto xr  = linkPose.Pos() + cpWorld - com;
@@ -249,7 +250,7 @@ void SailPlugin::OnUpdate()
 
   // @DEBUG_INFO
 #if 0
-  gzmsg << "Link:         " << this->data->link->GetName() << "\n";
+  gzmsg << "Link:         " << this->dataPtr->link->GetName() << "\n";
   // Scalars
   gzmsg << "u:            " << u                  << "\n";
   gzmsg << "alpha:        " << alpha              << "\n";
@@ -282,18 +283,18 @@ void SailPlugin::OnUpdate()
 #endif
 
   // Add force and torque to link (applied to CoM in world frame).
-  this->data->link->AddForce(force);
-  this->data->link->AddTorque(torque);
+  this->dataPtr->link->AddForce(force);
+  this->dataPtr->link->AddTorque(torque);
 
   // Publish message
   const double updateRate = 50.0;
   const double updateInterval = 1.0/updateRate;
-  common::Time simTime = this->data->world->SimTime();
-  if ((simTime - this->data->prevTime).Double() < updateInterval)
+  common::Time simTime = this->dataPtr->world->SimTime();
+  if ((simTime - this->dataPtr->prevTime).Double() < updateInterval)
   {
     return;
   }
-  this->data->prevTime = simTime;
+  this->dataPtr->prevTime = simTime;
 
   // Save the time of the measurement
   asv_msgs::msgs::LiftDrag liftDragMsg;
@@ -314,11 +315,40 @@ void SailPlugin::OnUpdate()
   msgs::Set(liftDragMsg.mutable_torque(), torque);
 
   // Publish the message if needed
-  if (this->data->liftDragPub)
-    this->data->liftDragPub->Publish(liftDragMsg);
+  if (this->dataPtr->liftDragPub)
+    this->dataPtr->liftDragPub->Publish(liftDragMsg);
 
   // @DEBUG_INFO
   // gzmsg << liftDragMsg.DebugString() << "\n";
 }
+#endif
 
-}  // namespace asv
+/////////////////////////////////////////////////
+void SailLiftDrag::Configure(
+    const Entity &_entity,
+    const std::shared_ptr<const sdf::Element> &_sdf,
+    EntityComponentManager &_ecm,
+    EventManager &_eventMgr)
+{
+}
+
+/////////////////////////////////////////////////
+void SailLiftDrag::PreUpdate(
+    const UpdateInfo &_info,
+    EntityComponentManager &_ecm)
+{
+}
+
+}  // namespace systems
+}  // namespace sim
+}  // namespace gz
+
+GZ_ADD_PLUGIN(
+    gz::sim::systems::SailLiftDrag,
+    gz::sim::System,
+    gz::sim::systems::SailLiftDrag::ISystemConfigure,
+    gz::sim::systems::SailLiftDrag::ISystemPreUpdate)
+
+GZ_ADD_PLUGIN_ALIAS(
+    gz::sim::systems::SailLiftDrag,
+    "gz::sim::systems::SailLiftDrag")
