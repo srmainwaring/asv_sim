@@ -61,7 +61,7 @@ class AnemometerPrivate
 
   /// \todo(srmainwaring) enable
   /// \brief Publish to topic "~/anemometer".
-  //public: transport::PublisherPtr anemometerPub;
+  // public: transport::PublisherPtr anemometerPub;
 
   /// \brief Communication node.
   public: transport::Node node;
