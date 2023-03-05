@@ -32,16 +32,11 @@
  *
 */
 
-#include "asv_sim_gazebo_plugins/SailPlugin.hh"
-#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
-#include "asv_sim_gazebo_plugins/MessageTypes.hh"
-#include "asv_sim_gazebo_plugins/PluginUtils.hh"
-
 #include <algorithm>
 #include <functional>
 #include <string>
 
-#include <ignition/math/Pose3.hh>
+#include <boost/algorithm/string.hpp>
 
 #include <gazebo/common/Assert.hh>
 #include <gazebo/msgs/msgs.hh>
@@ -49,10 +44,15 @@
 #include <gazebo/sensors/sensors.hh>
 #include <gazebo/transport/transport.hh>
 
-#include <boost/algorithm/string.hpp>
+#include <ignition/math/Pose3.hh>
 
-using namespace asv;
-using namespace gazebo;
+#include "asv_sim_gazebo_plugins/SailPlugin.hh"
+#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
+#include "asv_sim_gazebo_plugins/MessageTypes.hh"
+#include "asv_sim_gazebo_plugins/PluginUtils.hh"
+
+// using namespace asv;
+// using namespace gazebo;
 
 GZ_REGISTER_MODEL_PLUGIN(SailPlugin)
 
@@ -61,46 +61,45 @@ GZ_REGISTER_MODEL_PLUGIN(SailPlugin)
 
 namespace asv
 {
-  /// \brief Type definition for a pointer to a LiftDrag message.
-  typedef const boost::shared_ptr<
-    const asv_msgs::msgs::LiftDrag>
-      LiftDragPtr;
+/// \brief Type definition for a pointer to a LiftDrag message.
+typedef const boost::shared_ptr<
+  const asv_msgs::msgs::LiftDrag>
+    LiftDragPtr;
 
 
-  class SailPluginPrivate
-  {
-    /// \brief SDF for this plugin;
-    public: sdf::ElementPtr sdf;
+class SailPluginPrivate
+{
+  /// \brief SDF for this plugin;
+  public: sdf::ElementPtr sdf;
 
-    /// \brief Pointer to model containing plugin.
-    public: physics::ModelPtr model;
+  /// \brief Pointer to model containing plugin.
+  public: physics::ModelPtr model;
 
-    /// \brief Pointer to link currently targeted by mud joint.
-    public: physics::LinkPtr link;
+  /// \brief Pointer to link currently targeted by mud joint.
+  public: physics::LinkPtr link;
 
-    /// \brief Pointer to world.
-    public: physics::WorldPtr world;
+  /// \brief Pointer to world.
+  public: physics::WorldPtr world;
 
-    /// \brief Connection to World Update events.
-    public: event::ConnectionPtr updateConnection;
+  /// \brief Connection to World Update events.
+  public: event::ConnectionPtr updateConnection;
 
-    /// \brief Gazebo transport node.
-    public: transport::NodePtr node;
+  /// \brief Gazebo transport node.
+  public: transport::NodePtr node;
 
-    /// \brief Publish to topic "~/lift_drag".
-    public: transport::PublisherPtr liftDragPub;
+  /// \brief Publish to topic "~/lift_drag".
+  public: transport::PublisherPtr liftDragPub;
 
-    /// \brief Previous update time for publisher throttle.  
-    public: common::Time prevTime;
+  /// \brief Previous update time for publisher throttle.
+  public: common::Time prevTime;
 
-    // Parameters
+  // Parameters
 
-    /// \brief center of pressure in link local coordinates
-    public: ignition::math::Vector3d cp = ignition::math::Vector3d(0, 0, 0);
+  /// \brief center of pressure in link local coordinates
+  public: ignition::math::Vector3d cp = ignition::math::Vector3d(0, 0, 0);
 
-    public: std::unique_ptr<LiftDragModel> liftDrag;
-  };
-}
+  public: std::unique_ptr<LiftDragModel> liftDrag;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // SailPlugin
@@ -161,7 +160,7 @@ void SailPlugin::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   // Publishers
   std::string topic = this->GetTopic();
-  this->data->liftDragPub 
+  this->data->liftDragPub
     = this->data->node->Advertise<asv_msgs::msgs::LiftDrag>(topic);
 
   // Time
@@ -203,7 +202,7 @@ void SailPlugin::OnUpdate()
   {
     return;
   }
- 
+
   // Wind velocity at the link origin (world frame).
   // We use this to approximate the wind at the centre of pressure
   auto& wind = this->data->world->Wind();
@@ -220,7 +219,10 @@ void SailPlugin::OnUpdate()
   auto comPose  = this->data->link->WorldCoGPose();
 
   // Compute lift and drag
-  double alpha=0, u=0, cl=0, cd=0;
+  double alpha = 0;
+  double u = 0;
+  double cl = 0;
+  double cd = 0;
   ignition::math::Vector3d lift = ignition::math::Vector3d::Zero;
   ignition::math::Vector3d drag = ignition::math::Vector3d::Zero;
   this->data->liftDrag->Compute(vel, linkPose, lift, drag, alpha, u, cl, cd);
@@ -313,7 +315,9 @@ void SailPlugin::OnUpdate()
   // Publish the message if needed
   if (this->data->liftDragPub)
     this->data->liftDragPub->Publish(liftDragMsg);
-  
+
   // @DEBUG_INFO
   // gzmsg << liftDragMsg.DebugString() << "\n";
 }
+
+}  // namespace asv

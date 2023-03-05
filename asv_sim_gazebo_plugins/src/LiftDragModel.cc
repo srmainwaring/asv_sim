@@ -15,53 +15,55 @@
 
 
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
-#include "asv_sim_gazebo_plugins/Utilities.hh"
+
+#include <string>
 
 #include <gazebo/common/Exception.hh>
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector3.hh>
 
-#include <string>
+#include "asv_sim_gazebo_plugins/Utilities.hh"
 
-using namespace asv;
 
 namespace asv
 {
-  class LiftDragModelPrivate
-  {
-    /// \brief Fluid density
-    public: double fluidDensity = 1.2;
+class LiftDragModelPrivate
+{
+  /// \brief Fluid density
+  public: double fluidDensity = 1.2;
 
-    /// \brief True if the foil is symmetric about its chord.
-    public: bool radialSymmetry = true;
+  /// \brief True if the foil is symmetric about its chord.
+  public: bool radialSymmetry = true;
 
-    /// \brief Foil forward direction (body frame), usually parallel to the foil chord.
-    public: ignition::math::Vector3d forward = ignition::math::Vector3d(1, 0, 0);
+  /// \brief Foil forward direction (body frame), usually parallel
+  /// to the foil chord.
+  public: ignition::math::Vector3d forward =
+      ignition::math::Vector3d(1, 0, 0);
 
-    /// \brief Foil upward direction (body frame), usually perpendicular to the foil chord
-    /// in the direction of positive lift for the foil in its intended configuration.
-    public: ignition::math::Vector3d upward = ignition::math::Vector3d(0, 0, 1);
+  /// \brief Foil upward direction (body frame), usually perpendicular
+  /// to the foil chord in the direction of positive lift for the foil
+  /// in its intended configuration.
+  public: ignition::math::Vector3d upward =
+      ignition::math::Vector3d(0, 0, 1);
 
-    /// \brief Foil area
-    public: double area = 1.0;
+  /// \brief Foil area
+  public: double area = 1.0;
 
-    /// \brief Angle of attack at zero lift.
-    public: double alpha0 = 0.0;
+  /// \brief Angle of attack at zero lift.
+  public: double alpha0 = 0.0;
 
-    /// \brief Slope of lift coefficient before stall.
-    public: double cla = 2.0 * M_PI;
+  /// \brief Slope of lift coefficient before stall.
+  public: double cla = 2.0 * M_PI;
 
-    /// \brief Angle of attack at stall.
-    public: double alphaStall = 1.0/2.0/M_PI;
+  /// \brief Angle of attack at stall.
+  public: double alphaStall = 1.0/2.0/M_PI;
 
-    /// \brief Slope of lift coefficient after stall.
-    public: double claStall = -(2*M_PI)/(M_PI*M_PI - 1.0);
+  /// \brief Slope of lift coefficient after stall.
+  public: double claStall = -(2*M_PI)/(M_PI*M_PI - 1.0);
 
-    /// \brief Slope of drag coefficient.
-    public: double cda = 2.0/M_PI;
-  };
-
-} // namespace asv;
+  /// \brief Slope of drag coefficient.
+  public: double cda = 2.0/M_PI;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // LiftDragModel
@@ -85,8 +87,10 @@ LiftDragModel* LiftDragModel::Create(const sdf::ElementPtr& _sdf)
   std::unique_ptr<LiftDragModelPrivate> data(new LiftDragModelPrivate());
 
   // Parameters
-  asv::LoadParam(_sdf, "fluid_density", data->fluidDensity, data->fluidDensity);
-  asv::LoadParam(_sdf, "radial_symmetry", data->radialSymmetry, data->radialSymmetry);
+  asv::LoadParam(_sdf, "fluid_density", data->fluidDensity,
+      data->fluidDensity);
+  asv::LoadParam(_sdf, "radial_symmetry", data->radialSymmetry,
+      data->radialSymmetry);
   asv::LoadParam(_sdf, "forward", data->forward, data->forward);
   asv::LoadParam(_sdf, "upward", data->upward, data->upward);
   asv::LoadParam(_sdf, "area", data->area, data->area);
@@ -127,8 +131,7 @@ void LiftDragModel::Compute(
   double& _alpha,
   double& _u,
   double& _cl,
-  double& _cd
-  ) const
+  double& _cd) const
 {
   // Unit free stream velocity (world frame).
   auto velUnit = _velU;
@@ -197,7 +200,7 @@ void LiftDragModel::Compute(
   gzmsg << "forwardI:     " << forwardI << "\n";
   gzmsg << "upwardI:      " << upwardI << "\n";
   gzmsg << "spanI:        " << spanI << "\n";
-  gzmsg << "velLD:        " << velLD << "\n"; 
+  gzmsg << "velLD:        " << velLD << "\n";
   gzmsg << "dragUnit:     " << dragUnit << "\n";
   gzmsg << "liftUnit:     " << liftUnit << "\n";
   gzmsg << "alpha:        " << alpha << "\n";
@@ -262,3 +265,5 @@ double LiftDragModel::DragCoefficient(double _alpha) const
 
   return cd;
 }
+
+}  // namespace asv
