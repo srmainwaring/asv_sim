@@ -32,10 +32,12 @@ jobs:
           sudo apt-get install gz-garden
 
       - name: Build
-        # run: |
+        run: |
+        echo Placeholder for build
         #   colcon build --symlink-install --merge-install --cmake-args -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_CXX_STANDARD=17 -DBUILD_TESTING=ON
 
       - name: Test
-        # run: |
+        run: |
+        echo Placeholder for Test
         #   colcon test --merge-install
         #   colcon test-result --all --verbose
