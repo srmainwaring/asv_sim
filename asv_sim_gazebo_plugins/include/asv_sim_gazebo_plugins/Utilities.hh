@@ -62,7 +62,7 @@ namespace asv
 /// \param[in] _msgPrefix A prefix for the message. Default value is "".
 template <typename V>
 void LoadParam(
-  const sdf::ElementPtr &_sdf,
+  const std::shared_ptr<const sdf::Element> &_sdf,
   const std::string &_name,
   V& _target,
   V _defaultValue = V(),

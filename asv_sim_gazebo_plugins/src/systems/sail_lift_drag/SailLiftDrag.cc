@@ -47,6 +47,11 @@
 // #include <gz/physics/physics.hh>
 #include <gz/plugin/Register.hh>
 // #include <gz/sensors/sensors.hh>
+
+#include <gz/sim/Link.hh>
+#include <gz/sim/Model.hh>
+#include <gz/sim/Util.hh>
+
 #include <gz/transport/Node.hh>
 
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
@@ -68,13 +73,13 @@ namespace systems
 class SailLiftDragPrivate
 {
   /// \brief Copy of the SDF for this plugin;
-  public: sdf::ElementPtr sdf;
+  // public: sdf::ElementPtr sdf;
 
-  /// \brief Model entity containing the plugin.
-  public: Entity model{kNullEntity};;
+  /// \brief Model interface
+  public: Model model{kNullEntity};
 
-  /// \brief Link entity specified by the plugin.
-  public: Entity link{kNullEntity};;
+  /// \brief Link interface.
+  public: Link link{kNullEntity};;
 
   /// \brief Pointer to world.
   // public: physics::WorldPtr world;
@@ -114,41 +119,45 @@ void SailLiftDrag::Configure(
     EntityComponentManager &_ecm,
     EventManager &_eventMgr)
 {
-#if 0
-  // Capture model and sdf.
-  this->dataPtr->sdf = _sdf;
-  this->dataPtr->model = _model;
-  this->dataPtr->world = _model->GetWorld();
+  this->dataPtr->model = Model(_entity);
 
-  // Parameters
-  std::string linkName;
-#if (GAZEBO_MAJOR_VERSION < 11)
-  gazebo::LoadParam(this, _sdf, "cp", this->dataPtr->cp, this->dataPtr->cp);
-  gazebo::LoadParam(this, _sdf, "link_name", linkName, "");
-#else
-  this->LoadParam(_sdf, "cp", this->dataPtr->cp, this->dataPtr->cp);
-  this->LoadParam(_sdf, "link_name", linkName, "");
-#endif
-
-  if (!linkName.empty())
+  if (!this->dataPtr->model.Valid(_ecm))
   {
-    this->dataPtr->link = this->dataPtr->model->GetLink(linkName);
-    if (this->dataPtr->link == nullptr)
-    {
-      gzerr << "Link with name[" << linkName << "] not found. "
-        << "The SailLiftDrag will not generate forces\n";
-    }
-    else
-    {
-      this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          std::bind(&SailLiftDrag::OnUpdate, this));
-    }
+    gzerr << "SailLiftDrag plugin should be attached to a model "
+           << "entity. Failed to initialize.\n";
+    return;
   }
 
-  // Transport
-  this->dataPtr->node = transport::NodePtr(new transport::Node());
-  this->dataPtr->node->Init(this->dataPtr->model->GetName());
+  // Get params from SDF
+  {
+    if (!_sdf->HasElement("link_name"))
+    {
+      gzerr << "You must specify a <link_name> for the SailLiftDrag"
+            << " plugin to act upon.\n";
+      return;
+    }
+    auto linkName = _sdf->Get<std::string>();
+    auto linkEntity = this->dataPtr->model.LinkByName(_ecm, linkName);
+    if (!_ecm.HasEntity(linkEntity))
+    {
+      gzerr << "Link name" << linkName << "does not exist";
+      return;
+    }
+    this->dataPtr->link = Link(linkEntity);
+  }
 
+  {
+    if (!_sdf->HasElement("cp"))
+    {
+      gzerr << "You must specify a <cp> for the SailLiftDrag"
+            << " plugin forces to act at.\n";
+      return;
+    }
+    this->dataPtr->cp = _sdf->Get<gz::math::Vector3d>();
+  }
+
+  /// \todo(srmainwaring) implement publishing forces.
+#if 0
   auto getTopic = [&, this]() -> std::string
   {
     std::string topic;
@@ -166,7 +175,6 @@ void SailLiftDrag::Configure(
     return topicName;
   }
 
-
   // Publishers
   std::string topic = this->GetTopic();
   this->dataPtr->liftDragPub
@@ -174,10 +182,10 @@ void SailLiftDrag::Configure(
 
   // Time
   this->dataPtr->prevTime = this->dataPtr->world->SimTime();
+#endif
 
   // Lift / Drag model
-  this->dataPtr->liftDrag.reset(LiftDragModel::Create(_sdf));
-#endif
+  this->dataPtr->liftDrag.reset(asv::LiftDragModel::Create(_sdf));
 }
 
 /////////////////////////////////////////////////

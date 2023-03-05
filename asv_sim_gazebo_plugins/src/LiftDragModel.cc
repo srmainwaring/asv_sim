@@ -94,7 +94,8 @@ LiftDragModel::LiftDragModel(std::unique_ptr<LiftDragModelPrivate> &_data)
 }
 
 /////////////////////////////////////////////////
-LiftDragModel* LiftDragModel::Create(const sdf::ElementPtr &_sdf)
+LiftDragModel* LiftDragModel::Create(
+    const std::shared_ptr<const sdf::Element> &_sdf)
 {
   std::unique_ptr<LiftDragModelPrivate> data(
       std::make_unique<LiftDragModelPrivate>());
