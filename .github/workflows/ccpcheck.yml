@@ -19,3 +19,15 @@ jobs:
         run: |
           cppcheck --std=c++17 ./asv_sim_gazebo_plugins/include/asv_sim_gazebo_plugins/*.hh
           cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/*.cc
+      - name: Cppcheck Anemometer Plugin
+        run: |
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/systems/anemometer/*.hh
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/systems/anemometer/*.cc
+      - name: Cppcheck FoilLiftDrag Plugin
+        run: |
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.cc
+      - name: Cppcheck SailLiftDrag Plugin
+        run: |
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.cc

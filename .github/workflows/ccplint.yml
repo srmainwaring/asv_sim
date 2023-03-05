@@ -26,3 +26,15 @@ jobs:
         run: |
           cpplint ./asv_sim_gazebo_plugins/include/asv_sim_gazebo_plugins/*.hh
           cpplint ./asv_sim_gazebo_plugins/src/*.cc
+      - name: Cpplint Anemometer Plugin
+        run: |
+          cpplint ./asv_sim_gazebo_plugins/src/systems/anemometer/*.hh
+          cpplint ./asv_sim_gazebo_plugins/src/systems/anemometer/*.cc
+      - name: Cpplint FoilLiftDrag Plugin
+        run: |
+          cpplint ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh
+          cpplint ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.cc
+      - name: Cpplint SailLiftDrag Plugin
+        run: |
+          cpplint ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh
+          cpplint ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.cc
