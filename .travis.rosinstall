@@ -1,4 +1,0 @@
-- git:
-    uri: https://github.com/srmainwaring/asv_wave_sim.git
-    local-name: asv_wave_sim
-    version: feature/fft_waves
