@@ -14,8 +14,12 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
-#include "asv_sim_gazebo_plugins/MessageTypes.hh"
-#include "asv_sim_gazebo_plugins/Utilities.hh"
+
+#include <mutex>
+#include <iostream>
+#include <string>
+
+#include <boost/algorithm/string.hpp>
 
 #include <gazebo/common/Assert.hh>
 #include <gazebo/physics/Link.hh>
@@ -31,15 +35,10 @@
 #include <ignition/math/Pose3.hh>
 #include <ignition/math/Vector3.hh>
 
-#include <boost/algorithm/string.hpp>
+#include "asv_sim_gazebo_plugins/MessageTypes.hh"
+#include "asv_sim_gazebo_plugins/Utilities.hh"
 
-#include <mutex>
-#include <iostream>
-#include <string>
-
-using namespace asv;
-using namespace gazebo;
-using namespace sensors;
+// using namespace asv;
 
 ///////////////////////////////////////////////////////////////////////////////
 // AnemometerSensorPrivate
@@ -48,51 +47,54 @@ using namespace sensors;
 
 namespace gazebo
 {
-  namespace sensors
-  {
-    /// \internal
-    /// \brief Create a new AnemometerSensor.
-    Sensor* NewAnemometerSensor()
-    {
-      return new gazebo::sensors::AnemometerSensor();
-    }
+namespace sensors
+{
+/// \internal
+/// \brief Create a new AnemometerSensor.
+Sensor* NewAnemometerSensor()
+{
+  return new gazebo::sensors::AnemometerSensor();
+}
 
-    /// \brief Register an AnemometerSensor with the gazebo SensorFactory.
-    void RegisterAnemometerSensor()
-    {
-      SensorFactory::RegisterSensor("anemometer", NewAnemometerSensor);
-    }
+/// \brief Register an AnemometerSensor with the gazebo SensorFactory.
+void RegisterAnemometerSensor()
+{
+  SensorFactory::RegisterSensor("anemometer", NewAnemometerSensor);
+}
 
-    /// \internal
-    /// \brief Private data for the AnemometerSensor
-    class AnemometerSensorPrivate
-    {
-      /// \brief Mutex to protect read and writes
-      public: std::mutex mutex;
+/// \internal
+/// \brief Private data for the AnemometerSensor
+class AnemometerSensorPrivate
+{
+  /// \brief Mutex to protect read and writes
+  public: std::mutex mutex;
 
-      /// \brief Publish to topic "~/anemometer".
-      public: transport::PublisherPtr anemometerPub;
+  /// \brief Publish to topic "~/anemometer".
+  public: transport::PublisherPtr anemometerPub;
 
-      /// \brief Parent link of this sensor.
-      public: physics::LinkPtr parentLink;
+  /// \brief Parent link of this sensor.
+  public: physics::LinkPtr parentLink;
 
-      /// \brief Store the most recent anemometer message.
-      public: asv_msgs::msgs::Anemometer anemometerMsg;
-    };
-  } // sensors
-} // gazebo
+  /// \brief Store the most recent anemometer message.
+  public: asv_msgs::msgs::Anemometer anemometerMsg;
+};
+}  // namespace sensors
+}  // namespace gazebo
 
 ///////////////////////////////////////////////////////////////////////////////
 // AnemometerSensor
-
+namespace gazebo
+{
+namespace sensors
+{
 AnemometerSensor::~AnemometerSensor()
 {
   // Clean up.
   this->Fini();
 }
 
-AnemometerSensor::AnemometerSensor() : 
-  Sensor(sensors::OTHER), 
+AnemometerSensor::AnemometerSensor() :
+  Sensor(sensors::OTHER),
   dataPtr(new AnemometerSensorPrivate())
 {
 }
@@ -108,12 +110,13 @@ void AnemometerSensor::Load(const std::string& _worldName)
 
   physics::EntityPtr parentEntity =
     this->world->EntityByName(this->ParentName());
-  
+
   this->dataPtr->parentLink =
     boost::dynamic_pointer_cast<physics::Link>(parentEntity);
 
-  this->dataPtr->anemometerPub = this->node->Advertise<asv_msgs::msgs::Anemometer>(
-      this->GetTopic(), 50);
+  this->dataPtr->anemometerPub =
+      this->node->Advertise<asv_msgs::msgs::Anemometer>(
+          this->GetTopic(), 50);
 }
 
 void AnemometerSensor::Init()
@@ -173,7 +176,7 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
       = wind.WorldLinearVel(this->dataPtr->parentLink.get());
 
     // Apparent wind velocity at the sensor origin in the world frame.
-    ignition::math::Vector3d apparentWindWorldLinearVel 
+    ignition::math::Vector3d apparentWindWorldLinearVel
       = windWorldLinearVel - sensorWorldLinearVel;
 
     // Apparent wind velocity at the sensor origin in the sensor frame.
@@ -188,17 +191,19 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
 
     // DEBUG
 
-    gzmsg << "parent_link:            " << this->dataPtr->parentLink->GetName() << std::endl;
-    gzmsg << "sensor_link:            " << this->Name() << std::endl;
-    gzmsg << "sensor_world_pose:      " << sensorWorldPose << std::endl;
-    gzmsg << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << std::endl;
-    gzmsg << "link_world_ang_vel:     " << linkWorldAngularVel << std::endl;
-    gzmsg << "sensor_com_pose:        " << sensorCoMPose << std::endl;
-    gzmsg << "sensor_world_lin_vel:   " << sensorWorldLinearVel << std::endl;
-    gzmsg << "wind_world_linear_vel:  " << windWorldLinearVel << std::endl;
-    gzmsg << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << std::endl;
-    gzmsg << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel << std::endl;
-    gzmsg << std::endl;
+    gzmsg << "parent_link:            " << this->dataPtr->parentLink->GetName()
+          << "\n";
+    gzmsg << "sensor_link:            " << this->Name() << "\n";
+    gzmsg << "sensor_world_pose:      " << sensorWorldPose << "\n";
+    gzmsg << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << "\n";
+    gzmsg << "link_world_ang_vel:     " << linkWorldAngularVel << "\n";
+    gzmsg << "sensor_com_pose:        " << sensorCoMPose << "\n";
+    gzmsg << "sensor_world_lin_vel:   " << sensorWorldLinearVel << "\n";
+    gzmsg << "wind_world_linear_vel:  " << windWorldLinearVel << "\n";
+    gzmsg << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << "\n";
+    gzmsg << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel
+          << "\n";
+    gzmsg << "\n";
   }
 
   // Save the time of the measurement
@@ -209,7 +214,7 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
   if (this->dataPtr->anemometerPub)
     this->dataPtr->anemometerPub->Publish(this->dataPtr->anemometerMsg);
 
-  return true;    
+  return true;
 }
 
 ignition::math::Vector3d AnemometerSensor::TrueWindVelocity() const
@@ -224,8 +229,8 @@ ignition::math::Vector3d AnemometerSensor::ApparentWindVelocity() const
   ignition::math::Vector3d vel(
       this->dataPtr->anemometerMsg.wind_velocity().x(),
       this->dataPtr->anemometerMsg.wind_velocity().y(),
-      this->dataPtr->anemometerMsg.wind_velocity().z()
-  );
+      this->dataPtr->anemometerMsg.wind_velocity().z());
   return vel;
 }
-
+}  // namespace sensors
+}  // namespace gazebo

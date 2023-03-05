@@ -13,12 +13,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
-
 #include <gtest/gtest.h>
+
 #include <memory>
 
-using namespace asv;
+#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
+
+// using namespace asv;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Define tests
@@ -59,19 +60,19 @@ TEST(LiftDragModel, Quadrants)
 
     sdf::ElementPtr plugin
         = model->Root()->GetElement("model")->GetElement("plugin");
-    
+
     // create from SDF
-    std::unique_ptr<LiftDragModel> ld_model(LiftDragModel::Create(plugin));     
+    std::unique_ptr<LiftDragModel> ld_model(LiftDragModel::Create(plugin));
 
     ignition::math::Vector3d velU(-10.0, 0.0, 0.0);
     ignition::math::Vector3d lift;
     ignition::math::Vector3d drag;
-    double alpha=0.0;
-    double u=0.0;
-    double cl=0.0;
-    double cd=0.0;
+    double alpha = 0.0;
+    double u = 0.0;
+    double cl = 0.0;
+    double cd = 0.0;
 
-    { // Case AoA = 0
+    {  // Case AoA = 0
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, 0.0);
@@ -88,7 +89,7 @@ TEST(LiftDragModel, Quadrants)
         EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 
-    { // Case AoA = 45 deg
+    {  // Case AoA = 45 deg
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, M_PI/4.0);
@@ -105,7 +106,7 @@ TEST(LiftDragModel, Quadrants)
         EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 
-    { // Case AoA = 135 deg
+    {  // Case AoA = 135 deg
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, 3*M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, 3*M_PI/4);
@@ -122,7 +123,7 @@ TEST(LiftDragModel, Quadrants)
         EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 
-    { // Case AoA = 180 deg
+    {  // Case AoA = 180 deg
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, M_PI);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, M_PI);
@@ -139,7 +140,7 @@ TEST(LiftDragModel, Quadrants)
         EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 
-    { // Case AoA = -45 deg
+    {  // Case AoA = -45 deg
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, -M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, M_PI/4.0);
@@ -156,7 +157,7 @@ TEST(LiftDragModel, Quadrants)
         EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 
-    { // Case AoA = -135 deg
+    {  // Case AoA = -135 deg
         ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, -3*M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, 3*M_PI/4);
@@ -182,4 +183,3 @@ int main(int argc, char **argv)
   testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
-
