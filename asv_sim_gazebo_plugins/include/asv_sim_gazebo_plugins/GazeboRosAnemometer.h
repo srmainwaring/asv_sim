@@ -13,48 +13,49 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef _ASV_SIM_GAZEBO_PLUGINS_GAZEBO_ROS_ANEMOMETER_HH_
-#define _ASV_SIM_GAZEBO_PLUGINS_GAZEBO_ROS_ANEMOMETER_HH_
+#ifndef ASV_SIM_GAZEBO_PLUGINS_GAZEBOROSANEMOMETER_H_
+#define ASV_SIM_GAZEBO_PLUGINS_GAZEBOROSANEMOMETER_H_
 
-#include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
-
-#include <gazebo/common/Plugin.hh>
-
-#include <ros/ros.h>
 #include <geometry_msgs/Vector3Stamped.h>
+#include <ros/ros.h>
 
 #include <memory>
 #include <string>
 
+#include <gazebo/common/Plugin.hh>
+
+#include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
+
+
 namespace asv
 {
-
 class GAZEBO_VISIBLE GazeboRosAnemometer : public gazebo::SensorPlugin
 {
-public: 
-    virtual ~GazeboRosAnemometer();
-    GazeboRosAnemometer();
-    void Load(gazebo::sensors::SensorPtr _sensor, sdf::ElementPtr _sdf) override;
-    void Reset() override;
+ public:
+  virtual ~GazeboRosAnemometer();
+  GazeboRosAnemometer();
+  void Load(gazebo::sensors::SensorPtr _sensor,
+      sdf::ElementPtr _sdf) override;
+  void Reset() override;
 
-private:
-    void OnUpdate();
+ private:
+  void OnUpdate();
 
-    gazebo::physics::WorldPtr world_;
-    gazebo::sensors::AnemometerSensorPtr sensor_;
+  gazebo::physics::WorldPtr world_;
+  gazebo::sensors::AnemometerSensorPtr sensor_;
 
-    std::unique_ptr<ros::NodeHandle> nh_;
-    ros::Publisher publisher_;
+  std::unique_ptr<ros::NodeHandle> nh_;
+  ros::Publisher publisher_;
 
-    geometry_msgs::Vector3Stamped apparent_wind_;
+  geometry_msgs::Vector3Stamped apparent_wind_;
 
-    std::string namespace_;
-    std::string topic_;
-    std::string frame_id_;
+  std::string namespace_;
+  std::string topic_;
+  std::string frame_id_;
 
-    gazebo::event::ConnectionPtr update_connection_;
+  gazebo::event::ConnectionPtr update_connection_;
 };
 
-} // namespace asv
+}  // namespace asv
 
-#endif // _ASV_SIM_GAZEBO_PLUGINS_GAZEBO_ROS_ANEMOMETER_HH_
+#endif  // ASV_SIM_GAZEBO_PLUGINS_GAZEBOROSANEMOMETER_H_

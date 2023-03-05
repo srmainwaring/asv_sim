@@ -18,65 +18,66 @@
 // LoadParam template functions adapted from gazebo/common/Plugin.hh
 // for use when GAZEBO_MAJOR_VERSION < 11
 
-#ifndef _ASV_SIM_GAZEBO_PLUGINS_PLUGIN_UTILS_HH_
-#define _ASV_SIM_GAZEBO_PLUGINS_PLUGIN_UTILS_HH_
+#ifndef ASV_SIM_GAZEBO_PLUGINS_PLUGINUTILS_HH_
+#define ASV_SIM_GAZEBO_PLUGINS_PLUGINUTILS_HH_
+
+#include <string>
 
 #include <sdf/sdf.hh>
 #include <gazebo/common/Plugin.hh>
 
-#include <string>
 
 namespace gazebo
 {
-    /// \brief Load parameter value from _sdf and store it to the given
-    ///        reference, using the supplied default value if the element in
-    ///        _sdf is not found. A message is written using gzmsg reporting
-    ///       whether the default value was used or not.
-    /// \param[in] _sdf The SDF element of the plugin.
-    /// \param[in] _name Name of a tag inside the SDF.
-    /// \param[out] _target The reference to store the param value to.
-    /// \param[in] _defaultValue The default value.
-    template <typename Plugin, typename V> void LoadParam(
-        Plugin *plugin,
-        const sdf::ElementPtr &_sdf,
-        const std::string &_name, V &_target,
-        V _defaultValue = V())
+/// \brief Load parameter value from _sdf and store it to the given
+///        reference, using the supplied default value if the element in
+///        _sdf is not found. A message is written using gzmsg reporting
+///       whether the default value was used or not.
+/// \param[in] _sdf The SDF element of the plugin.
+/// \param[in] _name Name of a tag inside the SDF.
+/// \param[out] _target The reference to store the param value to.
+/// \param[in] _defaultValue The default value.
+template <typename Plugin, typename V> void LoadParam(
+    Plugin *plugin,
+    const sdf::ElementPtr &_sdf,
+    const std::string &_name, V &_target,
+    V _defaultValue = V())
+{
+    auto result = _sdf->Get<V>(_name, _defaultValue);
+
+    if (!result.second)
     {
-        auto result = _sdf->Get<V>(_name, _defaultValue);
-
-        if (!result.second)
-        {
-            gzmsg << plugin->GetHandle().c_str() << " Plugin missing <"
-                << _name.c_str() << ">, defaults to "
-                << result.first << std::endl;
-        }
-        else
-        {
-            gzmsg << plugin->GetHandle().c_str() << " Plugin <"
-                << _name.c_str() << "> set to "
-                << result.first << std::endl;
-        }
-        _target = result.first;
+        gzmsg << plugin->GetHandle().c_str() << " Plugin missing <"
+            << _name.c_str() << ">, defaults to "
+            << result.first << std::endl;
     }
-
-    /// \brief Load parameter value from _sdf and store it to the given
-    ///        reference, using the supplied default value if the element in
-    ///        _sdf is not found. A message is written using gzmsg reporting
-    ///        whether the default value was used or not. String specialization
-    ///        to allow accepting const char* values for std::string parameters.
-    /// \param[in] _sdf The SDF element of the plugin.
-    /// \param[in] _name Name of a tag inside the SDF.
-    /// \param[out] _target The reference to store the param value to.
-    /// \param[in] _defaultValue The default value.
-    template <typename Plugin> void LoadParam(
-        Plugin* plugin, 
-        sdf::ElementPtr &_sdf,
-        const std::string &_name, std::string &_target,
-        const char* _defaultValue)
+    else
     {
-        LoadParam<Plugin, std::string>(plugin, _sdf, _name, _target, _defaultValue);
+        gzmsg << plugin->GetHandle().c_str() << " Plugin <"
+            << _name.c_str() << "> set to "
+            << result.first << std::endl;
     }
+    _target = result.first;
+}
 
-} // namespace gazebo
+/// \brief Load parameter value from _sdf and store it to the given
+///        reference, using the supplied default value if the element in
+///        _sdf is not found. A message is written using gzmsg reporting
+///        whether the default value was used or not. String specialization
+///        to allow accepting const char* values for std::string parameters.
+/// \param[in] _sdf The SDF element of the plugin.
+/// \param[in] _name Name of a tag inside the SDF.
+/// \param[out] _target The reference to store the param value to.
+/// \param[in] _defaultValue The default value.
+template <typename Plugin> void LoadParam(
+    Plugin* plugin,
+    sdf::ElementPtr &_sdf,
+    const std::string &_name, std::string &_target,
+    const char* _defaultValue)
+{
+    LoadParam<Plugin, std::string>(plugin, _sdf, _name, _target, _defaultValue);
+}
 
-#endif // _ASV_SIM_GAZEBO_PLUGINS_PLUGIN_UTILS_HH_
+}  // namespace gazebo
+
+#endif  // ASV_SIM_GAZEBO_PLUGINS_PLUGINUTILS_HH_

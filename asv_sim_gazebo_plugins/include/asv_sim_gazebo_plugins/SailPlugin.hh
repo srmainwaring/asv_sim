@@ -13,43 +13,46 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef _ASV_SIM_GAZEBO_PLUGINS_SAIL_PLUGIN_HH_
-#define _ASV_SIM_GAZEBO_PLUGINS_SAIL_PLUGIN_HH_
+#ifndef ASV_SIM_GAZEBO_PLUGINS_SAILPLUGIN_HH_
+#define ASV_SIM_GAZEBO_PLUGINS_SAILPLUGIN_HH_
+
+#include <memory>
+#include <string>
 
 #include <gazebo/common/Plugin.hh>
 
-#include <memory>
 
 namespace asv
 {
-  class SailPluginPrivate;
+class SailPluginPrivate;
 
-  /// \brief A plugin that simulates lift and drag on a sail in the presence of wind.
-  class GAZEBO_VISIBLE SailPlugin : public gazebo::ModelPlugin
-  {
-    /// \brief Destructor.
-    public: virtual ~SailPlugin();
+/// \brief A plugin that simulates lift and drag on a sail
+/// in the presence of wind.
+class GAZEBO_VISIBLE SailPlugin : public gazebo::ModelPlugin
+{
+  /// \brief Destructor.
+  public: virtual ~SailPlugin();
 
-    /// \brief Constructor.
-    public: SailPlugin();
+  /// \brief Constructor.
+  public: SailPlugin();
 
-    // Documentation Inherited.
-    public: void Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf) override;
+  // Documentation Inherited.
+  public: void Load(gazebo::physics::ModelPtr _model,
+      sdf::ElementPtr _sdf) override;
 
-    // Documentation Inherited.
-    public: void Reset() override;
+  // Documentation Inherited.
+  public: void Reset() override;
 
-    /// \brief Create a topic string for the sensor.
-    public: virtual std::string GetTopic() const;
+  /// \brief Create a topic string for the sensor.
+  public: virtual std::string GetTopic() const;
 
-    /// \brief Callback for World Update events.
-    protected: virtual void OnUpdate();
- 
-    /// \internal
-    /// \brief Pointer to the class private data.
-    private: std::unique_ptr<SailPluginPrivate> data;
-  };
+  /// \brief Callback for World Update events.
+  protected: virtual void OnUpdate();
 
-} // namespace asv
+  /// \internal
+  /// \brief Pointer to the class private data.
+  private: std::unique_ptr<SailPluginPrivate> data;
+};
+}  // namespace asv
 
-#endif // _ASV_SIM_GAZEBO_PLUGINS_SAIL_PLUGIN_HH_
+#endif  // ASV_SIM_GAZEBO_PLUGINS_SAILPLUGIN_HH_
