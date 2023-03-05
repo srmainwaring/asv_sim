@@ -15,9 +15,12 @@
 
 #include "Anemometer.hh"
 
-#include <gz/common/Profiler.hh>
+#include <mutex>
+#include <string>
 
+#include <gz/common/Profiler.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/transport.hh>
 
 // #include <mutex>
 // #include <iostream>
@@ -53,80 +56,75 @@ namespace systems
 /// \brief Private Anemometer data class.
 class AnemometerPrivate
 {
-  /// \brief Mutex to protect read and writes
-  // public: std::mutex mutex;
-
-  /// \brief Publish to topic "~/anemometer".
-  // public: transport::PublisherPtr anemometerPub;
-
   /// \brief Parent link of this sensor.
-  // public: physics::LinkPtr parentLink;
+  public: Entity parentLink;
 
+  /// \todo(srmainwaring) enable
+  /// \brief Publish to topic "~/anemometer".
+  //public: transport::PublisherPtr anemometerPub;
+
+  /// \brief Communication node.
+  public: transport::Node node;
+
+   /// \brief Mutex to protect read and writes
+  public: std::mutex mutex;
+
+  /// \todo(srmainwaring) enable
   /// \brief Store the most recent anemometer message.
   // public: asv_msgs::msgs::Anemometer anemometerMsg;
 };
 
-#if 0
+/////////////////////////////////////////////////
+Anemometer::~Anemometer() = default;
 
 /////////////////////////////////////////////////
-AnemometerSensor::~AnemometerSensor()
-{
-  // Clean up.
-  this->Fini();
-}
+Anemometer::Anemometer()
+  : System(), dataPtr(std::make_unique<AnemometerPrivate>())
 
-AnemometerSensor::AnemometerSensor() :
-  Sensor(sensors::OTHER),
-  dataPtr(new AnemometerSensorPrivate())
 {
 }
 
-void AnemometerSensor::Load(const std::string& _worldName, sdf::ElementPtr _sdf)
+/////////////////////////////////////////////////
+void Anemometer::Configure(
+    const Entity &_entity,
+    const std::shared_ptr<const sdf::Element> &_sdf,
+    EntityComponentManager &_ecm,
+    EventManager &_eventMgr)
 {
-  Sensor::Load(_worldName, _sdf);
-}
-
-void AnemometerSensor::Load(const std::string& _worldName)
-{
-  Sensor::Load(_worldName);
-
+  /// \todo(srmainwaring) implement
+#if 0
   physics::EntityPtr parentEntity =
     this->world->EntityByName(this->ParentName());
 
   this->dataPtr->parentLink =
     boost::dynamic_pointer_cast<physics::Link>(parentEntity);
 
+  auto getTopic = [&, this]() -> std::string
+  {
+    std::string topicName = "~/" + this->ParentName() + '/' + this->Name();
+    if (this->sdf->HasElement("topic"))
+      topicName += '/' + this->sdf->Get<std::string>("topic");
+    boost::replace_all(topicName, "::", "/");
+
+    return topicName;
+  }
+
   this->dataPtr->anemometerPub =
       this->node->Advertise<asv_msgs::msgs::Anemometer>(
-          this->GetTopic(), 50);
+          getTopic(), 50);
+
+#endif
 }
 
-void AnemometerSensor::Init()
-{
-  Sensor::Init();
-}
-
-void AnemometerSensor::Fini()
-{
-  this->dataPtr->anemometerPub.reset();
-  this->dataPtr->parentLink.reset();
-  Sensor::Fini();
-}
-
-std::string AnemometerSensor::GetTopic() const
-{
-  std::string topicName = "~/" + this->ParentName() + '/' + this->Name();
-  if (this->sdf->HasElement("topic"))
-    topicName += '/' + this->sdf->Get<std::string>("topic");
-  boost::replace_all(topicName, "::", "/");
-
-  return topicName;
-}
-
-bool AnemometerSensor::UpdateImpl(const bool _force)
+/////////////////////////////////////////////////
+void Anemometer::PreUpdate(
+    const UpdateInfo &_info,
+    EntityComponentManager &_ecm)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
+  /// \todo(srmainwaring) implement
+#if 0
   // Get latest pose information
   if (this->dataPtr->parentLink)
   {
@@ -171,8 +169,7 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
     msgs::Set(this->dataPtr->anemometerMsg.mutable_wind_velocity(),
       apparentWindRelativeLinearVel);
 
-    // DEBUG
-
+    // debug info
     gzmsg << "parent_link:            " << this->dataPtr->parentLink->GetName()
           << "\n";
     gzmsg << "sensor_link:            " << this->Name() << "\n";
@@ -196,47 +193,7 @@ bool AnemometerSensor::UpdateImpl(const bool _force)
   if (this->dataPtr->anemometerPub)
     this->dataPtr->anemometerPub->Publish(this->dataPtr->anemometerMsg);
 
-  return true;
-}
-
-ignition::math::Vector3d AnemometerSensor::TrueWindVelocity() const
-{
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  return ignition::math::Vector3d::Zero;
-}
-
-ignition::math::Vector3d AnemometerSensor::ApparentWindVelocity() const
-{
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  ignition::math::Vector3d vel(
-      this->dataPtr->anemometerMsg.wind_velocity().x(),
-      this->dataPtr->anemometerMsg.wind_velocity().y(),
-      this->dataPtr->anemometerMsg.wind_velocity().z());
-  return vel;
-}
-
 #endif
-
-/////////////////////////////////////////////////
-Anemometer::~Anemometer() = default;
-
-/////////////////////////////////////////////////
-Anemometer::Anemometer() = default;
-
-/////////////////////////////////////////////////
-void Anemometer::Configure(
-    const Entity &_entity,
-    const std::shared_ptr<const sdf::Element> &_sdf,
-    EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
-{
-}
-
-/////////////////////////////////////////////////
-void Anemometer::PreUpdate(
-    const UpdateInfo &_info,
-    EntityComponentManager &_ecm)
-{
 }
 
 /////////////////////////////////////////////////
@@ -244,6 +201,28 @@ void Anemometer::PostUpdate(
     const UpdateInfo &_info,
     const EntityComponentManager &_ecm)
 {
+  /// \todo(srmainwaring) implement
+}
+
+/////////////////////////////////////////////////
+gz::math::Vector3d Anemometer::TrueWindVelocity() const
+{
+  /// \todo(srmainwaring) implement
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  return gz::math::Vector3d::Zero;
+}
+
+/////////////////////////////////////////////////
+gz::math::Vector3d Anemometer::ApparentWindVelocity() const
+{
+  /// \todo(srmainwaring) implement
+  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  // gz::math::Vector3d vel(
+  //     this->dataPtr->anemometerMsg.wind_velocity().x(),
+  //     this->dataPtr->anemometerMsg.wind_velocity().y(),
+  //     this->dataPtr->anemometerMsg.wind_velocity().z());
+  // return vel;
+  return gz::math::Vector3d::Zero;
 }
 
 }  // namespace systems

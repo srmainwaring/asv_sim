@@ -20,7 +20,9 @@
 #define GZ_SIM_SYSTEMS_ANEMOMETER_HH_
 
 #include <memory>
+#include <string>
 
+#include <gz/math/Vector3.hh>
 #include <gz/sim/System.hh>
 
 namespace gz
@@ -98,35 +100,13 @@ class Anemometer
       const UpdateInfo &_info,
       const EntityComponentManager &_ecm) final;
 
-#if 0
-  // Documentation inherited.
-  public: void Load(const std::string& _worldName,
-      sdf::ElementPtr _sdf) override;
-
-  // Documentation inherited.
-  public: void Load(const std::string& _worldName) override;
-
-  // Documentation inherited.
-  public: void Init() override;
-
-  // Documentation inherited.
-  public: void Fini() override;
-
-  /// \brief Create a topic string for the sensor.
-  public: virtual std::string GetTopic() const;
-
-  // Documentation inherited.
-  public: bool UpdateImpl(const bool _force) override;
-
-  /// \brief Accessor for the current true wind velocity in m s^-1.
+  /// \brief Accessor for the current true wind velocity in m/s.
   /// \return Current true wind velocity.
-  public: ignition::math::Vector3d TrueWindVelocity() const;
+  public: gz::math::Vector3d TrueWindVelocity() const;
 
-  /// \brief Accessor for the current apparent wind velocity in m s^-1.
+  /// \brief Accessor for the current apparent wind velocity in m/s.
   /// \return Current apparent wind velocity.
-  public: ignition::math::Vector3d ApparentWindVelocity() const;
-
-#endif
+  public: gz::math::Vector3d ApparentWindVelocity() const;
 
   /// \brief Private data pointer.
   private: std::unique_ptr<AnemometerPrivate> dataPtr;
