@@ -37,6 +37,18 @@ gz_find_package(gz-math7 REQUIRED COMPONENTS eigen3)
 set(GZ_MATH_VER ${gz-math7_VERSION_MAJOR})
 
 #--------------------------------------
+# Find gz-common
+gz_find_package(gz-common5
+  REQUIRED COMPONENTS graphics events
+)
+set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
+
+#--------------------------------------
+# Find gz-plugin
+gz_find_package(gz-plugin2 REQUIRED COMPONENTS loader register)
+set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
+
+#--------------------------------------
 # Find gz-sim
 gz_find_package(gz-sim7 REQUIRED)
 set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})

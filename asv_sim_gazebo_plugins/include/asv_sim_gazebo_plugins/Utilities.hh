@@ -1,4 +1,4 @@
-// Copyright (C) 2019  Rhys Mainwaring
+// Copyright (C) 2019-2023 Rhys Mainwaring
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,18 +19,19 @@
 #include <memory>
 #include <string>
 
-#include <gazebo/common/Console.hh>
-#include <gazebo/common/Time.hh>
-#include <gazebo/msgs/msgs.hh>
+// #include <gazebo/common/Console.hh>
+// #include <gazebo/common/Time.hh>
+// #include <gazebo/msgs/msgs.hh>
 
-#include <ignition/math/Pose3.hh>
-#include <ignition/math/Vector3.hh>
+// #include <ignition/math/Pose3.hh>
+// #include <ignition/math/Vector3.hh>
 
-#include <sdf/sdf.hh>
-
+// #include <sdf/sdf.hh>
 
 namespace asv
 {
+
+#if 0
 // This code modified from gazebo/common/Plugins.hh
 // https://bitbucket.org/osrf/gazebo/src
 //
@@ -182,8 +183,12 @@ void SetMsgParam(gazebo::msgs::Param_V& _msg, const std::string &_paramName,
   auto index = std::distance(std::begin(_msg.param()), it);
   auto param = _msg.mutable_param(index);
   MsgParamSetValue<T>(*param, _value);
-
 }
+#endif
+
+/// \brief Placeholder for minimal library.
+void foo();
+
 }  // namespace asv
 
 #endif  // ASV_SIM_GAZEBO_PLUGINS_UTILITIES_HH_

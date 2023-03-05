@@ -1,4 +1,4 @@
-// Copyright (C) 2019  Rhys Mainwaring
+// Copyright (C) 2019-2023 Rhys Mainwaring
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,40 +13,29 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-/// \file AnemometerSensor.hh
-/// \brief This file defines a Gazebo sensor used to measure
-/// wind speed and direction.
+/// \file Anemometer.hh
+/// \brief This file defines a sensor used to measure wind speed and direction.
 
-#ifndef ASV_SIM_GAZEBO_PLUGINS_ANEMOMETERSENSOR_HH_
-#define ASV_SIM_GAZEBO_PLUGINS_ANEMOMETERSENSOR_HH_
+#ifndef GZ_SIM_SYSTEMS_ANEMOMETER_HH_
+#define GZ_SIM_SYSTEMS_ANEMOMETER_HH_
 
 #include <memory>
-#include <string>
 
-#include <gz/math/Vector3.hh>
+#include <gz/sim/System.hh>
 
-#include <gazebo/sensors/Sensor.hh>
-#include <gazebo/sensors/SensorTypes.hh>
-#include <gazebo/util/system.hh>
-
-#include <sdf/sdf.hh>
-
-
-namespace gazebo
+namespace gz
 {
-namespace sensors
+namespace sim
 {
-/// \brief Register the sensor with the server.
-GZ_SENSORS_VISIBLE void RegisterAnemometerSensor();
+// Inline bracket to help doxygen filtering.
+inline namespace GZ_SIM_VERSION_NAMESPACE {
+namespace systems
+{
 
-/// \internal
-/// \brief Class to hold private data for the AnemometerSensor.
-class AnemometerSensorPrivate;
+// Forward declarations.
+class AnemometerPrivate;
 
-/// \addtogroup gazebo_sensors
-/// \{
-
-/// \brief AnemometerSensor to measure wind speed and direction.
+/// \brief Anemometer to measure wind speed and direction.
 ///
 /// #Usage
 ///
@@ -80,14 +69,36 @@ class AnemometerSensorPrivate;
 /// 3. <topic> (string, default: ~/anemometer)
 ///   Standard <sensor> parameter. See SDF documentation for details.
 ///
-class GZ_SENSORS_VISIBLE AnemometerSensor: public Sensor
+class Anemometer
+    : public System,
+      public ISystemConfigure,
+      public ISystemPreUpdate,
+      public ISystemPostUpdate
 {
   /// \brief Destructor.
-  public: virtual ~AnemometerSensor() override;
+  public: ~Anemometer() override;
 
   /// \brief Constructor.
-  public: AnemometerSensor();
+  public: Anemometer();
 
+  // Documentation inherited
+  public: void Configure(
+      const Entity &_entity,
+      const std::shared_ptr<const sdf::Element> &_sdf,
+      EntityComponentManager &_ecm,
+      EventManager &_eventMgr) final;
+
+  /// Documentation inherited
+  public: void PreUpdate(
+      const UpdateInfo &_info,
+      EntityComponentManager &_ecm) override;
+
+  /// Documentation inherited
+  public: void PostUpdate(
+      const UpdateInfo &_info,
+      const EntityComponentManager &_ecm) final;
+
+#if 0
   // Documentation inherited.
   public: void Load(const std::string& _worldName,
       sdf::ElementPtr _sdf) override;
@@ -115,17 +126,19 @@ class GZ_SENSORS_VISIBLE AnemometerSensor: public Sensor
   /// \return Current apparent wind velocity.
   public: ignition::math::Vector3d ApparentWindVelocity() const;
 
-  /// \internal
-  /// \brief Pointer to the class private data.
-  private: std::unique_ptr<AnemometerSensorPrivate> dataPtr;
+#endif
+
+  /// \brief Private data pointer.
+  private: std::unique_ptr<AnemometerPrivate> dataPtr;
 };
-/// \}
 
-/// \def AnemometerSensorPtr
-/// \brief Shared pointer to AnemometerSensor
-typedef std::shared_ptr<AnemometerSensor> AnemometerSensorPtr;
+/// \def AnemometerPtr
+/// \brief Shared pointer to Anemometer
+using AnemometerPtr = std::shared_ptr<Anemometer>;
 
-}  // namespace sensors
-}  // namespace gazebo
+}  // namespace systems
+}
+}  // namespace sim
+}  // namespace gz
 
-#endif  // ASV_SIM_GAZEBO_PLUGINS_ANEMOMETERSENSOR_HH_
+#endif  // GZ_SIM_SYSTEMS_ANEMOMETER_HH_

@@ -1,4 +1,4 @@
-// Copyright (C) 2019  Rhys Mainwaring
+// Copyright (C) 2019-2023 Rhys Mainwaring
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 namespace asv
 {
+#if 0
 template <>
 void MsgParamSetValue<bool>(gazebo::msgs::Param& _param, const bool& _value)
 {
@@ -65,6 +66,12 @@ void MsgParamSetValue<ignition::math::Vector3d>(gazebo::msgs::Param& _param,
   _param.mutable_value()->mutable_vector3d_value()->set_x(_value.X());
   _param.mutable_value()->mutable_vector3d_value()->set_y(_value.Y());
   _param.mutable_value()->mutable_vector3d_value()->set_z(_value.Z());
+}
+#endif
+
+/////////////////////////////////////////////////
+void foo()
+{
 }
 
 }  // namespace asv

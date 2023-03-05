@@ -1,4 +1,4 @@
-// Copyright (C) 2019  Rhys Mainwaring
+// Copyright (C) 2019-2023 Rhys Mainwaring
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,80 +13,62 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "AnemometerSensor.hh"
+#include "Anemometer.hh"
 
-#include <mutex>
-#include <iostream>
-#include <string>
+#include <gz/common/Profiler.hh>
 
-#include <boost/algorithm/string.hpp>
+#include <gz/plugin/Register.hh>
 
-#include <gazebo/common/Assert.hh>
-#include <gazebo/physics/Link.hh>
-#include <gazebo/physics/PhysicsTypes.hh>
-#include <gazebo/physics/World.hh>
-#include <gazebo/sensors/Noise.hh>
-#include <gazebo/sensors/SensorFactory.hh>
-#include <gazebo/transport/Node.hh>
-#include <gazebo/transport/TransportTypes.hh>
+// #include <mutex>
+// #include <iostream>
+// #include <string>
+// #include <boost/algorithm/string.hpp>
 
-#include <gazebo/msgs/msgs.hh>
+// #include <gazebo/common/Assert.hh>
+// #include <gazebo/physics/Link.hh>
+// #include <gazebo/physics/PhysicsTypes.hh>
+// #include <gazebo/physics/World.hh>
+// #include <gazebo/sensors/Noise.hh>
+// #include <gazebo/sensors/SensorFactory.hh>
+// #include <gazebo/transport/Node.hh>
+// #include <gazebo/transport/TransportTypes.hh>
 
-#include <ignition/math/Pose3.hh>
-#include <ignition/math/Vector3.hh>
+// #include <gazebo/msgs/msgs.hh>
 
-#include "asv_sim_gazebo_plugins/MessageTypes.hh"
-#include "asv_sim_gazebo_plugins/Utilities.hh"
+// #include <ignition/math/Pose3.hh>
+// #include <ignition/math/Vector3.hh>
+
+// #include "asv_sim_gazebo_plugins/MessageTypes.hh"
+// #include "asv_sim_gazebo_plugins/Utilities.hh"
 
 // using namespace asv;
 
-///////////////////////////////////////////////////////////////////////////////
-// AnemometerSensorPrivate
-
-// GZ_REGISTER_STATIC_SENSOR("anemometer", AnemometerSensor)
-
-namespace gazebo
+namespace gz
 {
-namespace sensors
+namespace sim
 {
-/// \internal
-/// \brief Create a new AnemometerSensor.
-Sensor* NewAnemometerSensor()
+namespace systems
 {
-  return new gazebo::sensors::AnemometerSensor();
-}
 
-/// \brief Register an AnemometerSensor with the gazebo SensorFactory.
-void RegisterAnemometerSensor()
-{
-  SensorFactory::RegisterSensor("anemometer", NewAnemometerSensor);
-}
-
-/// \internal
-/// \brief Private data for the AnemometerSensor
-class AnemometerSensorPrivate
+/// \brief Private Anemometer data class.
+class AnemometerPrivate
 {
   /// \brief Mutex to protect read and writes
-  public: std::mutex mutex;
+  // public: std::mutex mutex;
 
   /// \brief Publish to topic "~/anemometer".
-  public: transport::PublisherPtr anemometerPub;
+  // public: transport::PublisherPtr anemometerPub;
 
   /// \brief Parent link of this sensor.
-  public: physics::LinkPtr parentLink;
+  // public: physics::LinkPtr parentLink;
 
   /// \brief Store the most recent anemometer message.
-  public: asv_msgs::msgs::Anemometer anemometerMsg;
+  // public: asv_msgs::msgs::Anemometer anemometerMsg;
 };
-}  // namespace sensors
-}  // namespace gazebo
 
-///////////////////////////////////////////////////////////////////////////////
-// AnemometerSensor
-namespace gazebo
-{
-namespace sensors
-{
+#if 0
+
+/////////////////////////////////////////////////
 AnemometerSensor::~AnemometerSensor()
 {
   // Clean up.
@@ -232,5 +214,49 @@ ignition::math::Vector3d AnemometerSensor::ApparentWindVelocity() const
       this->dataPtr->anemometerMsg.wind_velocity().z());
   return vel;
 }
-}  // namespace sensors
-}  // namespace gazebo
+
+#endif
+
+/////////////////////////////////////////////////
+Anemometer::~Anemometer() = default;
+
+/////////////////////////////////////////////////
+Anemometer::Anemometer() = default;
+
+/////////////////////////////////////////////////
+void Anemometer::Configure(
+    const Entity &_entity,
+    const std::shared_ptr<const sdf::Element> &_sdf,
+    EntityComponentManager &_ecm,
+    EventManager &_eventMgr)
+{
+}
+
+/////////////////////////////////////////////////
+void Anemometer::PreUpdate(
+    const UpdateInfo &_info,
+    EntityComponentManager &_ecm)
+{
+}
+
+/////////////////////////////////////////////////
+void Anemometer::PostUpdate(
+    const UpdateInfo &_info,
+    const EntityComponentManager &_ecm)
+{
+}
+
+}  // namespace systems
+}  // namespace sim
+}  // namespace gz
+
+GZ_ADD_PLUGIN(
+    gz::sim::systems::Anemometer,
+    gz::sim::System,
+    gz::sim::systems::Anemometer::ISystemConfigure,
+    gz::sim::systems::Anemometer::ISystemPreUpdate,
+    gz::sim::systems::Anemometer::ISystemPostUpdate)
+
+GZ_ADD_PLUGIN_ALIAS(
+    gz::sim::systems::Anemometer,
+    "gz::sim::systems::Anemometer")
