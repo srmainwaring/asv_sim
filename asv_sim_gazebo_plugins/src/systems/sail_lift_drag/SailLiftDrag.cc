@@ -34,27 +34,22 @@
 
 #include "SailLiftDrag.hh"
 
+// #include <algorithm>
+// #include <functional>
 #include <mutex>
 #include <string>
 
-#include <gz/common/Profiler.hh>
-#include <gz/plugin/Register.hh>
-
-// #include <algorithm>
-// #include <functional>
-// #include <string>
-
 // #include <boost/algorithm/string.hpp>
 
-// #include <gazebo/common/Assert.hh>
-// #include <gazebo/msgs/msgs.hh>
-// #include <gazebo/physics/physics.hh>
-// #include <gazebo/sensors/sensors.hh>
-// #include <gazebo/transport/transport.hh>
+#include <gz/common/Profiler.hh>
+#include <gz/math/Pose3.hh>
+// #include <gz/msgs/msgs.hh>
+// #include <gz/physics/physics.hh>
+#include <gz/plugin/Register.hh>
+// #include <gz/sensors/sensors.hh>
+#include <gz/transport/Node.hh>
 
-// #include <ignition/math/Pose3.hh>
-
-// #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
+#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
 // #include "asv_sim_gazebo_plugins/MessageTypes.hh"
 // #include "asv_sim_gazebo_plugins/PluginUtils.hh"
 
@@ -72,38 +67,35 @@ namespace systems
 /////////////////////////////////////////////////
 class SailLiftDragPrivate
 {
-#if 0
-  /// \brief SDF for this plugin;
+  /// \brief Copy of the SDF for this plugin;
   public: sdf::ElementPtr sdf;
 
-  /// \brief Pointer to model containing plugin.
-  public: physics::ModelPtr model;
+  /// \brief Model entity containing the plugin.
+  public: Entity model{kNullEntity};;
 
-  /// \brief Pointer to link currently targeted by mud joint.
-  public: physics::LinkPtr link;
+  /// \brief Link entity specified by the plugin.
+  public: Entity link{kNullEntity};;
 
   /// \brief Pointer to world.
-  public: physics::WorldPtr world;
+  // public: physics::WorldPtr world;
 
-  /// \brief Connection to World Update events.
-  public: event::ConnectionPtr updateConnection;
+  /// \brief Gazebo communication node.
+  public: transport::Node node;
 
-  /// \brief Gazebo transport node.
-  public: transport::NodePtr node;
+  /// \brief Publish to topic "/model/<model>/link/<link>/sail_lift_drag".
+  public: transport::Node::Publisher liftDragPub;
 
-  /// \brief Publish to topic "~/lift_drag".
-  public: transport::PublisherPtr liftDragPub;
+  /// \brief Update period calculated from <update_rate>.
+  public: std::chrono::steady_clock::duration updatePeriod{0};
 
   /// \brief Previous update time for publisher throttle.
-  public: common::Time prevTime;
+  public: std::chrono::steady_clock::duration prevTime{0};
 
-  // Parameters
+  /// \brief Center of pressure in link local coordinates.
+  public: gz::math::Vector3d cp = gz::math::Vector3d::Zero;
 
-  /// \brief center of pressure in link local coordinates
-  public: ignition::math::Vector3d cp = ignition::math::Vector3d(0, 0, 0);
-
-  public: std::unique_ptr<LiftDragModel> liftDrag;
-#endif
+  /// \brief Lift drag model.
+  public: std::unique_ptr<asv::LiftDragModel> liftDrag;
 };
 
 /////////////////////////////////////////////////
@@ -115,14 +107,14 @@ SailLiftDrag::SailLiftDrag()
 {
 }
 
-#if 0
 /////////////////////////////////////////////////
-void SailLiftDrag::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void SailLiftDrag::Configure(
+    const Entity &_entity,
+    const std::shared_ptr<const sdf::Element> &_sdf,
+    EntityComponentManager &_ecm,
+    EventManager &_eventMgr)
 {
-  GZ_ASSERT(_sdf, "Invalid parameter _sdf");
-  GZ_ASSERT(_model, "Invalid parameter _model");
-  GZ_ASSERT(_model->GetWorld(), "Model has invalid world");
-
+#if 0
   // Capture model and sdf.
   this->dataPtr->sdf = _sdf;
   this->dataPtr->model = _model;
@@ -157,6 +149,24 @@ void SailLiftDrag::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
   this->dataPtr->node = transport::NodePtr(new transport::Node());
   this->dataPtr->node->Init(this->dataPtr->model->GetName());
 
+  auto getTopic = [&, this]() -> std::string
+  {
+    std::string topic;
+
+    this->LoadParam(this->dataPtr->sdf, "topic", topic, "lift_drag");
+
+    std::string topicName = "~";
+    if (this->dataPtr->link != nullptr)
+    {
+      topicName += '/' + this->dataPtr->link->GetName();
+    }
+    topicName += '/' + topic;
+    boost::replace_all(topicName, "::", "/");
+
+    return topicName;
+  }
+
+
   // Publishers
   std::string topic = this->GetTopic();
   this->dataPtr->liftDragPub
@@ -167,39 +177,15 @@ void SailLiftDrag::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   // Lift / Drag model
   this->dataPtr->liftDrag.reset(LiftDragModel::Create(_sdf));
-}
-
-/////////////////////////////////////////////////
-void SailLiftDrag::Reset()
-{
-  // Reset Time
-  this->dataPtr->prevTime = this->dataPtr->world->SimTime();
-}
-
-/////////////////////////////////////////////////
-std::string SailLiftDrag::GetTopic() const
-{
-  std::string topic;
-#if (GAZEBO_MAJOR_VERSION < 11)
-  gazebo::LoadParam(this, this->dataPtr->sdf, "topic", topic, "lift_drag");
-#else
-  this->LoadParam(this->dataPtr->sdf, "topic", topic, "lift_drag");
 #endif
-
-  std::string topicName = "~";
-  if (this->dataPtr->link != nullptr)
-  {
-    topicName += '/' + this->dataPtr->link->GetName();
-  }
-  topicName += '/' + topic;
-  boost::replace_all(topicName, "::", "/");
-
-  return topicName;
 }
 
 /////////////////////////////////////////////////
-void SailLiftDrag::OnUpdate()
+void SailLiftDrag::PreUpdate(
+    const UpdateInfo &_info,
+    EntityComponentManager &_ecm)
 {
+#if 0
   if (this->dataPtr->link == nullptr)
   {
     return;
@@ -225,8 +211,8 @@ void SailLiftDrag::OnUpdate()
   double u = 0;
   double cl = 0;
   double cd = 0;
-  ignition::math::Vector3d lift = ignition::math::Vector3d::Zero;
-  ignition::math::Vector3d drag = ignition::math::Vector3d::Zero;
+  gz::math::Vector3d lift = gz::math::Vector3d::Zero;
+  gz::math::Vector3d drag = gz::math::Vector3d::Zero;
   this->dataPtr->liftDrag->Compute(vel, linkPose, lift, drag, alpha, u, cl, cd);
 
   // Resultant force arising from lift and drag (world frame).
@@ -320,23 +306,7 @@ void SailLiftDrag::OnUpdate()
 
   // @DEBUG_INFO
   // gzmsg << liftDragMsg.DebugString() << "\n";
-}
 #endif
-
-/////////////////////////////////////////////////
-void SailLiftDrag::Configure(
-    const Entity &_entity,
-    const std::shared_ptr<const sdf::Element> &_sdf,
-    EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
-{
-}
-
-/////////////////////////////////////////////////
-void SailLiftDrag::PreUpdate(
-    const UpdateInfo &_info,
-    EntityComponentManager &_ecm)
-{
 }
 
 }  // namespace systems
