@@ -24,7 +24,7 @@ using namespace gazebo;
 namespace asv
 {
 
-  GZ_REGISTER_SYSTEM_PLUGIN(RegisterSensorsPlugin)
+  // GZ_REGISTER_SYSTEM_PLUGIN(RegisterSensorsPlugin)
 
 ////////////////////////////////////////////////////////////////////////////////
 // Register Messages
