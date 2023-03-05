@@ -32,7 +32,7 @@
  *
 */
 
-#include "asv_sim_gazebo_plugins/FoilPlugin.hh"
+#include "FoilPlugin.hh"
 
 #include <algorithm>
 #include <functional>

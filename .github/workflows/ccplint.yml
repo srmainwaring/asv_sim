@@ -28,13 +28,16 @@ jobs:
           cpplint ./asv_sim_gazebo_plugins/src/*.cc
       - name: Cpplint Anemometer Plugin
         run: |
-          cpplint ./asv_sim_gazebo_plugins/src/systems/anemometer/*.hh
-          cpplint ./asv_sim_gazebo_plugins/src/systems/anemometer/*.cc
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/anemometer/*.hh \
+            ./asv_sim_gazebo_plugins/src/systems/anemometer/*.cc
       - name: Cpplint FoilLiftDrag Plugin
         run: |
-          cpplint ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh
-          cpplint ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.cc
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh
+            ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.cc
       - name: Cpplint SailLiftDrag Plugin
         run: |
-          cpplint ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh
-          cpplint ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.cc
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh
+            ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.cc

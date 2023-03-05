@@ -32,6 +32,8 @@
  *
 */
 
+#include "SailPlugin.hh"
+
 #include <algorithm>
 #include <functional>
 #include <string>
@@ -46,7 +48,6 @@
 
 #include <ignition/math/Pose3.hh>
 
-#include "asv_sim_gazebo_plugins/SailPlugin.hh"
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
 #include "asv_sim_gazebo_plugins/MessageTypes.hh"
 #include "asv_sim_gazebo_plugins/PluginUtils.hh"
