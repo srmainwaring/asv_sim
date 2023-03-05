@@ -19,19 +19,16 @@
 #include <memory>
 #include <string>
 
-// #include <gazebo/common/Console.hh>
-// #include <gazebo/common/Time.hh>
-// #include <gazebo/msgs/msgs.hh>
+#include <gz/common/Console.hh>
+#include <gz/math/Pose3.hh>
+#include <gz/math/Vector3.hh>
+#include <gz/msgs.hh>
 
-// #include <ignition/math/Pose3.hh>
-// #include <ignition/math/Vector3.hh>
-
-// #include <sdf/sdf.hh>
+#include <sdf/sdf.hh>
 
 namespace asv
 {
 
-#if 0
 // This code modified from gazebo/common/Plugins.hh
 // https://bitbucket.org/osrf/gazebo/src
 //
@@ -65,8 +62,8 @@ namespace asv
 /// \param[in] _msgPrefix A prefix for the message. Default value is "".
 template <typename V>
 void LoadParam(
-  const sdf::ElementPtr& _sdf,
-  const std::string& _name,
+  const sdf::ElementPtr &_sdf,
+  const std::string &_name,
   V& _target,
   V _defaultValue = V(),
   const std::string& _msgPrefix = "")
@@ -94,7 +91,8 @@ void LoadParam(
 /// \param[out] _param Parameter message to set.
 /// \param[in] _value A value to store in the parameter message.
 template <typename T>
-void MsgParamSetValue(gazebo::msgs::Param& _param, const T& _value)
+void MsgParamSetValue(gz::msgs::Param &_param,
+    const std::string &_name, const T &_value)
 {
   gzwarn << "Using default template for MsgParamSetValue" << std::endl;
 }
@@ -104,90 +102,89 @@ void MsgParamSetValue(gazebo::msgs::Param& _param, const T& _value)
 /// \param[out] _param Parameter message to set.
 /// \param[in] _value A bool value to store in the parameter message.
 template <>
-void MsgParamSetValue<bool>(gazebo::msgs::Param& _param, const bool& _value);
+void MsgParamSetValue<bool>(gz::msgs::Param &_param,
+    const std::string &_name, const bool &_value);
 
 /// \brief Template function specialisation for setting a value in
 /// parameter message.
 /// \param[out] _param Parameter message to set.
 /// \param[in] _value An int value to store in the parameter message.
 template <>
-void MsgParamSetValue<int>(gazebo::msgs::Param& _param, const int& _value);
+void MsgParamSetValue<int>(gz::msgs::Param &_param,
+    const std::string &_name, const int &_value);
 
 /// \brief Template function specialisation for setting a value in
 /// parameter message.
 /// \param[out] _param Parameter message to set.
 /// \param[in] _value A size_t value to store in the parameter message.
 template <>
-void MsgParamSetValue<size_t>(gazebo::msgs::Param& _param,
-    const size_t& _value);
+void MsgParamSetValue<size_t>(gz::msgs::Param &_param,
+    const std::string &_name, const size_t& _value);
 
 /// \brief Template function specialisation for setting a value in
 /// parameter message.
 /// \param[out] _param Parameter message to set.
 /// \param[in] _value A double value to store in the parameter message.
 template <>
-void MsgParamSetValue<double>(gazebo::msgs::Param& _param,
-    const double& _value);
+void MsgParamSetValue<double>(gz::msgs::Param &_param,
+    const std::string &_name, const double& _value);
 
 /// \brief Template function specialisation for setting a value in
 /// parameter message.
 /// \param[out] _param Parameter message to set.
 /// \param[in] _value A std::string value to store in the parameter message.
 template <>
-void MsgParamSetValue<std::string>(gazebo::msgs::Param& _param,
-    const std::string& _value);
+void MsgParamSetValue<std::string>(gz::msgs::Param &_param,
+    const std::string &_name, const std::string &_value);
 
 /// \brief Template function specialisation for setting a value in
 /// parameter message.
 /// \param[out] _param Parameter message to set.
 /// \param[in] _value A Time value to store in the parameter message.
-template <>
-void MsgParamSetValue<gazebo::common::Time>(gazebo::msgs::Param& _param,
-    const gazebo::common::Time& _value);
+// template <>
+// void MsgParamSetValue<gz::common::Time>(gz::msgs::Param &_param,
+//     const std::string &_name, const gz::common::Time &_value);
 
 /// \brief Template function specialisation for setting a value in
 /// parameter message.
 /// \param[out] _param Parameter message to set.
-/// \param[in] _value A ignition::math::Vector3d value to store in the
+/// \param[in] _value A gz::math::Vector3d value to store in the
 /// parameter message.
 template <>
-void MsgParamSetValue<ignition::math::Vector3d>(gazebo::msgs::Param& _param,
-    const ignition::math::Vector3d& _value);
+void MsgParamSetValue<gz::math::Vector3d>(gz::msgs::Param &_param,
+    const std::string &_name, const gz::math::Vector3d &_value);
 
 /// \brief Template function for setting a value in parameter message.
 /// \param[out] _param Parameter vector message to set.
 /// \param[in] _paramName Parameter name whose value will be set.
 /// \param[in] _value A value to store in the parameter message.
-template <typename T>
-void SetMsgParam(gazebo::msgs::Param_V& _msg, const std::string &_paramName,
-    const T& _value)
-{
-  // Custom compare for params
-  auto compare = [=](auto& _param)
-  {
-    return _param.name() == _paramName;
-  };
+// template <typename T>
+// void SetMsgParam(gz::msgs::Param_V &_msg,
+//     const std::string &_paramName,
+//     const T &_value)
+// {
+//   // Custom compare for params
+//   auto compare = [=](auto& _param)
+//   {
+//     return _param.name() == _paramName;
+//   };
 
-  auto it = std::find_if(std::begin(_msg.param()),
-      std::end(_msg.param()), compare);
+//   auto it = std::find_if(std::begin(_msg.param()),
+//       std::end(_msg.param()), compare);
 
-  // Not found
-  if (it == std::end(_msg.param()))
-  {
-    gzwarn << "Parameter <" << _paramName << "> not found: "
-      <<  "Cannot set to " << _value << std::endl;
-    return;
-  }
+//   // Not found
+//   if (it == std::end(_msg.param()))
+//   {
+//     gzwarn << "Parameter <" << _paramName << "> not found: "
+//            <<  "Cannot set to " << _value << std::endl;
+//     return;
+//   }
 
-  // Found
-  auto index = std::distance(std::begin(_msg.param()), it);
-  auto param = _msg.mutable_param(index);
-  MsgParamSetValue<T>(*param, _value);
-}
-#endif
-
-/// \brief Placeholder for minimal library.
-void foo();
+//   // Found
+//   auto index = std::distance(std::begin(_msg.param()), it);
+//   auto param = _msg.mutable_param(index);
+//   MsgParamSetValue<T>(*param, _value);
+// }
 
 }  // namespace asv
 

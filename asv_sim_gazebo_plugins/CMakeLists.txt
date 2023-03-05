@@ -44,6 +44,16 @@ gz_find_package(gz-common5
 set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 
 #--------------------------------------
+# Find gz-msgs
+gz_find_package(gz-msgs9 REQUIRED)
+set(GZ_MSGS_VER ${gz-msgs9_VERSION_MAJOR})
+
+#--------------------------------------
+# Find gz-transport
+gz_find_package(gz-transport12 REQUIRED)
+set(GZ_TRANSPORT_VER ${gz-transport12_VERSION_MAJOR})
+
+#--------------------------------------
 # Find gz-plugin
 gz_find_package(gz-plugin2 REQUIRED COMPONENTS loader register)
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
@@ -52,6 +62,11 @@ set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 # Find gz-sim
 gz_find_package(gz-sim7 REQUIRED)
 set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
+
+#--------------------------------------
+# Find SDFormat
+gz_find_package(sdformat13 REQUIRED)
+set(SDF_VER ${sdformat13_VERSION_MAJOR})
 
 #============================================================================
 # Configure the build
@@ -64,69 +79,12 @@ gz_configure_build(QUIT_IF_BUILD_ERRORS)
 #============================================================================
 gz_create_packages()
 
+# TODO(srmainwaring) - remove ROS / gazebo11 build below when migrated
 ###############################################################################
 # Other dependencies...
 
-# find_package(catkin REQUIRED COMPONENTS
-#   gazebo_ros
-#   geometry_msgs
-#   roscpp
-#   std_msgs
-# )
-# find_package(gazebo REQUIRED)
 # find_package(Boost REQUIRED)
 # find_package(Protobuf REQUIRED)
-# find_package(GTest REQUIRED)
-
-############################################################################### 
-# Catkin...
-
-# catkin_package(
-#     INCLUDE_DIRS
-#         include
-#         ${Boost_INCLUDE_DIRS}
-#         ${catkin_INCLUDE_DIRS}
-#         ${GAZEBO_INCLUDE_DIRS}
-#         ${GAZEBO_PROTO_INCLUDE_DIRS}
-#     LIBRARIES
-#         asv_sim_gazebo_plugins
-#         asv_sim_gazebo_plugins_msgs
-#         RegisterSensorsPlugin
-#         SailLiftDragPlugin
-#     DEPENDS
-#         gazebo_ros
-#         geometry_msgs
-#         roscpp
-#         std_msgs
-# )
-
-# include_directories(
-#   ${PROJECT_SOURCE_DIR}/include
-#   ${CMAKE_CURRENT_BINARY_DIR}/msgs
-#   ${Boost_INCLUDE_DIRS}
-#   ${catkin_INCLUDE_DIRS}
-#   ${GAZEBO_INCLUDE_DIRS}
-#   ${GAZEBO_MSG_INCLUDE_DIRS}
-#   ${GAZEBO_PROTO_INCLUDE_DIRS}
-#   ${IGNITION-COMMON_INCLUDE_DIRS}
-#   ${IGNITION-MATHS_INCLUDE_DIRS}
-#   ${IGNITION-MSGS_INCLUDE_DIRS}
-#   )
-
-# link_directories(
-#   ${GAZEBO_LIBRARY_DIRS}
-#   ${IGNITION-COMMON_LIBRARY_DIRS}
-#   ${IGNITION-MATHS_LIBRARY_DIRS}
-#   ${IGNITION-MSGS_LIBRARY_DIRS}
-#   # ${CMAKE_CURRENT_BINARY_DIR}/msgs
-#   )
-
-############################################################################### 
-# Lists
-
-# set(ASV_SIM_GAZEBO_LIBRARIES_LIST "")
-# set(ASV_SIM_GAZEBO_PLUGINS_LIST "")
-# set(ASV_SIM_GAZEBO_EXECUTABLES_LIST "")
 
 ############################################################################### 
 # Messages...
@@ -155,10 +113,6 @@ gz_create_packages()
 #   ${catkin_EXPORTED_TARGETS}
 # )
 
-# target_compile_options(asv_sim_gazebo_plugins PRIVATE "-Wno-unknown-pragmas")
-
-# list(APPEND ASV_SIM_GAZEBO_LIBRARIES_LIST asv_sim_gazebo_plugins)
-
 ############################################################################### 
 # Plugins...
 
@@ -180,10 +134,6 @@ gz_create_packages()
 #   ${catkin_EXPORTED_TARGETS}
 # )
 
-# target_compile_options(RegisterSensorsPlugin PRIVATE "-Wno-unknown-pragmas")
-
-# list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST RegisterSensorsPlugin)
-
 # SailPlugin
 # add_library(SailPlugin
 #   SHARED
@@ -201,10 +151,6 @@ gz_create_packages()
 # add_dependencies(SailPlugin
 #   ${catkin_EXPORTED_TARGETS}
 # )
-
-# target_compile_options(SailPlugin PRIVATE "-Wno-unknown-pragmas")
-
-# list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST SailPlugin)
 
 # FoilPlugin
 # add_library(FoilPlugin
@@ -224,10 +170,6 @@ gz_create_packages()
 #   ${catkin_EXPORTED_TARGETS}
 # )
 
-# target_compile_options(FoilPlugin PRIVATE "-Wno-unknown-pragmas")
-
-# list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST FoilPlugin)
-
 # gazebo_ros_anemometer
 # add_library(gazebo_ros_anemometer
 #   SHARED
@@ -246,10 +188,6 @@ gz_create_packages()
 #   ${catkin_EXPORTED_TARGETS}
 # )
 
-# target_compile_options(gazebo_ros_anemometer PRIVATE "-Wno-unknown-pragmas")
-
-# list(APPEND ASV_SIM_GAZEBO_PLUGINS_LIST gazebo_ros_anemometer)
-
 ############################################################################### 
 # Executables...
 
@@ -264,63 +202,6 @@ gz_create_packages()
 #   ${GAZEBO_LIBRARIES}
 # )
 
-# target_compile_options(LiftDragMsgSubscriber PRIVATE "-Wno-unknown-pragmas")
-
-
 # add_dependencies(LiftDragMsgSubscriber
 #   ${catkin_EXPORTED_TARGETS}
 # )
-
-# list(APPEND ASV_SIM_GAZEBO_EXECUTABLES_LIST LiftDragMsgSubscriber)
-
-############################################################################### 
-# Tests...
-# 
-# Useful notes on running catkin tests:
-# http://www.personalrobotics.ri.cmu.edu/software/unit-testing
-# 
-
-# if(CATKIN_ENABLE_TESTING)
-#     catkin_add_gtest(UNIT_LiftDragModel_TEST src/LiftDragModel_TEST.cc)
-#     target_link_libraries(UNIT_LiftDragModel_TEST asv_sim_gazebo_plugins)
-#     target_compile_options(UNIT_LiftDragModel_TEST PRIVATE "-Wno-unknown-pragmas")  
-# endif()
-
-############################################################################### 
-# Install
-
-# install(TARGETS ${ASV_SIM_GAZEBO_LIBRARIES_LIST}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-# install(TARGETS ${ASV_SIM_GAZEBO_PLUGINS_LIST}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-# install(TARGETS ${ASV_SIM_GAZEBO_EXECUTABLES_LIST}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
-
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.hh"
-#   PATTERN "*~" EXCLUDE
-# )
-
-# install(DIRECTORY include/
-#    DESTINATION ${CATKIN_GLOBAL_INCLUDE_DESTINATION}
-#    FILES_MATCHING PATTERN ".hh"
-# )
-
-# install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.pb.*"
-#   PATTERN "*~" EXCLUDE
-# )
-

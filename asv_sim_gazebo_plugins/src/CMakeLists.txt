@@ -7,6 +7,7 @@ add_subdirectory(systems)
 # Collect source and test files manually
 
 set(sources
+  LiftDragModel.cc
   Utilities.cc
 )
 
@@ -19,13 +20,12 @@ gz_create_core_library(SOURCES ${sources} CXX_STANDARD ${CMAKE_CXX_STANDARD})
 
 target_link_libraries(${PROJECT_LIBRARY_TARGET_NAME}
   PUBLIC
-  # gz-math${GZ_MATH_VER}
-  # gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}
+  gz-math${GZ_MATH_VER}
+  gz-msgs${GZ_MSGS_VER}::gz-msgs${GZ_MSGS_VER}
   gz-common${GZ_COMMON_VER}::gz-common${GZ_COMMON_VER}
-  # gz-common${GZ_COMMON_VER}::graphics
   gz-common${GZ_COMMON_VER}::profiler
   # gz-transport${GZ_TRANSPORT_VER}::gz-transport${GZ_TRANSPORT_VER}
-  # sdformat${SDF_VER}::sdformat${SDF_VER}
+  sdformat${SDF_VER}::sdformat${SDF_VER}
 )
 if (UNIX AND NOT APPLE)
   target_link_libraries(${PROJECT_LIBRARY_TARGET_NAME}

@@ -35,12 +35,10 @@
 
 #include <string>
 
-#include <gazebo/common/Exception.hh>
-#include <ignition/math/Pose3.hh>
-#include <ignition/math/Vector3.hh>
+#include <gz/math/Pose3.hh>
+#include <gz/math/Vector3.hh>
 
 #include "asv_sim_gazebo_plugins/Utilities.hh"
-
 
 namespace asv
 {
@@ -54,14 +52,12 @@ class LiftDragModelPrivate
 
   /// \brief Foil forward direction (body frame), usually parallel
   /// to the foil chord.
-  public: ignition::math::Vector3d forward =
-      ignition::math::Vector3d(1, 0, 0);
+  public: gz::math::Vector3d forward = gz::math::Vector3d(1, 0, 0);
 
   /// \brief Foil upward direction (body frame), usually perpendicular
   /// to the foil chord in the direction of positive lift for the foil
   /// in its intended configuration.
-  public: ignition::math::Vector3d upward =
-      ignition::math::Vector3d(0, 0, 1);
+  public: gz::math::Vector3d upward = gz::math::Vector3d(0, 0, 1);
 
   /// \brief Foil area
   public: double area = 1.0;
@@ -70,38 +66,38 @@ class LiftDragModelPrivate
   public: double alpha0 = 0.0;
 
   /// \brief Slope of lift coefficient before stall.
-  public: double cla = 2.0 * M_PI;
+  public: double cla = 2.0 * GZ_PI;
 
   /// \brief Angle of attack at stall.
-  public: double alphaStall = 1.0/2.0/M_PI;
+  public: double alphaStall = 1.0 / 2.0 / GZ_PI;
 
   /// \brief Slope of lift coefficient after stall.
-  public: double claStall = -(2*M_PI)/(M_PI*M_PI - 1.0);
+  public: double claStall = -(2 * GZ_PI) / (GZ_PI * GZ_PI - 1.0);
 
   /// \brief Slope of drag coefficient.
-  public: double cda = 2.0/M_PI;
+  public: double cda = 2.0 / GZ_PI;
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// LiftDragModel
+/////////////////////////////////////////////////
+LiftDragModel::~LiftDragModel() = default;
 
-LiftDragModel::~LiftDragModel()
+/////////////////////////////////////////////////
+LiftDragModel::LiftDragModel()
+    : data(std::make_unique<LiftDragModelPrivate>())
 {
 }
 
-LiftDragModel::LiftDragModel() :
-  data(new LiftDragModelPrivate())
+/////////////////////////////////////////////////
+LiftDragModel::LiftDragModel(std::unique_ptr<LiftDragModelPrivate> &_data)
+    : data(std::move(_data))
 {
 }
 
-LiftDragModel::LiftDragModel(std::unique_ptr<LiftDragModelPrivate>& data)
+/////////////////////////////////////////////////
+LiftDragModel* LiftDragModel::Create(const sdf::ElementPtr &_sdf)
 {
-  this->data = std::move(data);
-}
-
-LiftDragModel* LiftDragModel::Create(const sdf::ElementPtr& _sdf)
-{
-  std::unique_ptr<LiftDragModelPrivate> data(new LiftDragModelPrivate());
+  std::unique_ptr<LiftDragModelPrivate> data(
+      std::make_unique<LiftDragModelPrivate>());
 
   // Parameters
   asv::LoadParam(_sdf, "fluid_density", data->fluidDensity,
@@ -118,8 +114,9 @@ LiftDragModel* LiftDragModel::Create(const sdf::ElementPtr& _sdf)
   asv::LoadParam(_sdf, "cda", data->cda, data->cda);
 
   // Only support radially symmetric lift-drag coefficients at present
-  if (!data->radialSymmetry) {
-    gzthrow("LiftDragModel only supports radially symmetric foils");
+  if (!data->radialSymmetry)
+  {
+    gzerr << "LiftDragModel only supports radially symmetric foils\n";
     return 0;
   }
 
@@ -130,25 +127,27 @@ LiftDragModel* LiftDragModel::Create(const sdf::ElementPtr& _sdf)
   return new LiftDragModel(data);
 }
 
+/////////////////////////////////////////////////
 void LiftDragModel::Compute(
-  const ignition::math::Vector3d& _velU,
-  const ignition::math::Pose3d& _bodyPose,
-  ignition::math::Vector3d& _lift,
-  ignition::math::Vector3d& _drag) const
+  const gz::math::Vector3d &_velU,
+  const gz::math::Pose3d &_bodyPose,
+  gz::math::Vector3d &_lift,
+  gz::math::Vector3d &_drag) const
 {
   double alpha, u, cl, cd;
   this->Compute(_velU, _bodyPose, _lift, _drag, alpha, u, cl, cd);
 }
 
+/////////////////////////////////////////////////
 void LiftDragModel::Compute(
-  const ignition::math::Vector3d& _velU,
-  const ignition::math::Pose3d& _bodyPose,
-  ignition::math::Vector3d& _lift,
-  ignition::math::Vector3d& _drag,
-  double& _alpha,
-  double& _u,
-  double& _cl,
-  double& _cd) const
+  const gz::math::Vector3d &_velU,
+  const gz::math::Pose3d &_bodyPose,
+  gz::math::Vector3d &_lift,
+  gz::math::Vector3d &_drag,
+  double &_alpha,
+  double &_u,
+  double &_cl,
+  double &_cd) const
 {
   // Unit free stream velocity (world frame).
   auto velUnit = _velU;
@@ -226,6 +225,7 @@ void LiftDragModel::Compute(
 #endif
 }
 
+/////////////////////////////////////////////////
 /// Lift is piecewise linear and symmetric about alpha = PI/2
 double LiftDragModel::LiftCoefficient(double _alpha) const
 {
@@ -248,18 +248,19 @@ double LiftDragModel::LiftCoefficient(double _alpha) const
   };
 
   double cl = 0.0;
-  if (_alpha < M_PI/2.0)
+  if (_alpha < GZ_PI/2.0)
   {
     cl = f2(_alpha);
   }
   else
   {
-    cl = -f2(M_PI - _alpha);
+    cl = -f2(GZ_PI - _alpha);
   }
 
   return cl;
 }
 
+/////////////////////////////////////////////////
 /// Drag is piecewise linear and symmetric about alpha = PI/2
 double LiftDragModel::DragCoefficient(double _alpha) const
 {
@@ -271,13 +272,13 @@ double LiftDragModel::DragCoefficient(double _alpha) const
   };
 
   double cd = 0.0;
-  if (_alpha < M_PI/2.0)
+  if (_alpha < GZ_PI/2.0)
   {
     cd = f1(_alpha);
   }
   else
   {
-    cd = f1(M_PI - _alpha);
+    cd = f1(GZ_PI - _alpha);
   }
 
   return cd;

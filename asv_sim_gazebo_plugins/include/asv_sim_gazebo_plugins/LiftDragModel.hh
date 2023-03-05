@@ -36,8 +36,8 @@
 
 #include <memory>
 
-#include <ignition/math/Pose3.hh>
-#include <ignition/math/Vector3.hh>
+#include <gz/math/Pose3.hh>
+#include <gz/math/Vector3.hh>
 
 #include <sdf/sdf.hh>
 
@@ -56,17 +56,17 @@ class LiftDragModel
 
   /// \brief Create a new LiftDragModel from SDF.
   /// \param[in] _sdf A pointer to an SDF element containing parameters.
-  public: static LiftDragModel* Create(const sdf::ElementPtr& _sdf);
+  public: static LiftDragModel* Create(const sdf::ElementPtr &_sdf);
 
   /// \brief Compute the lift and drag forces in the world frame.
   /// param[in] _velU     Free-stream velocity vector.
   /// param[out] _lift    Lift vector.
   /// param[out] _drag    Drag vector.
   public: void Compute(
-    const ignition::math::Vector3d& _velU,
-    const ignition::math::Pose3d& _bodyPose,
-    ignition::math::Vector3d& _lift,
-    ignition::math::Vector3d& _drag) const;
+    const gz::math::Vector3d &_velU,
+    const gz::math::Pose3d &_bodyPose,
+    gz::math::Vector3d &_lift,
+    gz::math::Vector3d &_drag) const;
 
   /// \brief Compute the lift and drag forces in the world frame.
   /// param[in] _velU     Free-stream velocity vector.
@@ -77,14 +77,14 @@ class LiftDragModel
   /// param[out] _cd      Lift coefficient.
   /// param[out] _cd      Drag coefficient.
   public: void Compute(
-    const ignition::math::Vector3d& _velU,
-    const ignition::math::Pose3d& _bodyPose,
-    ignition::math::Vector3d& _lift,
-    ignition::math::Vector3d& _drag,
-    double& _alpha,
-    double& _u,
-    double& _cl,
-    double& _cd) const;
+    const gz::math::Vector3d &_velU,
+    const gz::math::Pose3d &_bodyPose,
+    gz::math::Vector3d &_lift,
+    gz::math::Vector3d &_drag,
+    double &_alpha,
+    double &_u,
+    double &_cl,
+    double &_cd) const;
 
   /// \brief The lift coefficient as a function of the angle of attack.
   /// \param[in] _alpha Angle of attack in radians.
@@ -96,7 +96,7 @@ class LiftDragModel
 
   /// \internal
   /// \brief Constructor, ownership transferred from data.
-  private: LiftDragModel(std::unique_ptr<LiftDragModelPrivate>& data);
+  private: LiftDragModel(std::unique_ptr<LiftDragModelPrivate> &_data);
 
   /// \internal
   /// \brief Pointer to the class private data.
