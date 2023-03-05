@@ -47,7 +47,6 @@ std::string get_sdf_string()
   return stream.str();
 }
 
-#if 0
 /////////////////////////////////////////////////
 TEST(LiftDragModel, Quadrants)
 {
@@ -60,18 +59,19 @@ TEST(LiftDragModel, Quadrants)
         = model->Root()->GetElement("model")->GetElement("plugin");
 
     // create from SDF
-    std::unique_ptr<LiftDragModel> ld_model(LiftDragModel::Create(plugin));
+    std::unique_ptr<asv::LiftDragModel> ld_model(
+        asv::LiftDragModel::Create(plugin));
 
-    ignition::math::Vector3d velU(-10.0, 0.0, 0.0);
-    ignition::math::Vector3d lift;
-    ignition::math::Vector3d drag;
+    gz::math::Vector3d velU(-10.0, 0.0, 0.0);
+    gz::math::Vector3d lift;
+    gz::math::Vector3d drag;
     double alpha = 0.0;
     double u = 0.0;
     double cl = 0.0;
     double cd = 0.0;
 
     {  // Case AoA = 0
-        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
+        gz::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, 0.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, 0.0);
         EXPECT_DOUBLE_EQ(u, 10.0);
@@ -88,7 +88,7 @@ TEST(LiftDragModel, Quadrants)
     }
 
     {  // Case AoA = 45 deg
-        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, M_PI/4.0);
+        gz::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, M_PI/4.0);
         EXPECT_DOUBLE_EQ(u, 10.0);
@@ -105,7 +105,7 @@ TEST(LiftDragModel, Quadrants)
     }
 
     {  // Case AoA = 135 deg
-        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, 3*M_PI/4.0);
+        gz::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, 3*M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, 3*M_PI/4);
         EXPECT_DOUBLE_EQ(u, 10.0);
@@ -122,7 +122,7 @@ TEST(LiftDragModel, Quadrants)
     }
 
     {  // Case AoA = 180 deg
-        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, M_PI);
+        gz::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, M_PI);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, M_PI);
         EXPECT_DOUBLE_EQ(u, 10.0);
@@ -139,7 +139,7 @@ TEST(LiftDragModel, Quadrants)
     }
 
     {  // Case AoA = -45 deg
-        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, -M_PI/4.0);
+        gz::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, -M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, M_PI/4.0);
         EXPECT_DOUBLE_EQ(u, 10.0);
@@ -156,7 +156,7 @@ TEST(LiftDragModel, Quadrants)
     }
 
     {  // Case AoA = -135 deg
-        ignition::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, -3*M_PI/4.0);
+        gz::math::Pose3d bodyPose(0.0, 0.0, 0.0, 0.0, 0.0, -3*M_PI/4.0);
         ld_model->Compute(velU, bodyPose, lift, drag, alpha, u, cl, cd);
         EXPECT_DOUBLE_EQ(alpha, 3*M_PI/4);
         EXPECT_DOUBLE_EQ(u, 10.0);
@@ -172,7 +172,6 @@ TEST(LiftDragModel, Quadrants)
         EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 }
-#endif
 
 /////////////////////////////////////////////////
 int main(int argc, char **argv)
