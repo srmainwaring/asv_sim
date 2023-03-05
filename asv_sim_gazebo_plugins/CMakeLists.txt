@@ -39,7 +39,7 @@ set(GZ_MATH_VER ${gz-math7_VERSION_MAJOR})
 #--------------------------------------
 # Find gz-common
 gz_find_package(gz-common5
-  REQUIRED COMPONENTS graphics events
+  REQUIRED COMPONENTS events
 )
 set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 
@@ -67,6 +67,12 @@ set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
 # Find SDFormat
 gz_find_package(sdformat13 REQUIRED)
 set(SDF_VER ${sdformat13_VERSION_MAJOR})
+
+#============================================================================
+
+# Location of "fake install folder" used in tests
+# Defined here at root scope so it is available for tests in src and test folders
+set(FAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/fake/install")
 
 #============================================================================
 # Configure the build

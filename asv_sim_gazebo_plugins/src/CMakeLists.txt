@@ -13,6 +13,7 @@ set(sources
 
 set(gtest_sources
   ${gtest_sources}
+  # LiftDragModel_TEST.cc
 )
 
 # Create the library target
@@ -35,7 +36,6 @@ endif()
 target_include_directories(${PROJECT_LIBRARY_TARGET_NAME}
   PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
-  ${EIGEN3_INCLUDE_DIR}
 )
 
 include_directories(${PROJECT_SOURCE_DIR}/test)

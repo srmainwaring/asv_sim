@@ -19,11 +19,7 @@
 
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
 
-// using namespace asv;
-
-///////////////////////////////////////////////////////////////////////////////
-// Define tests
-
+/////////////////////////////////////////////////
 std::string get_sdf_string()
 {
   std::ostringstream stream;
@@ -51,6 +47,7 @@ std::string get_sdf_string()
   return stream.str();
 }
 
+/////////////////////////////////////////////////
 TEST(LiftDragModel, Quadrants)
 {
     // create SDF data
@@ -175,9 +172,7 @@ TEST(LiftDragModel, Quadrants)
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// Run tests
-
+/////////////////////////////////////////////////
 int main(int argc, char **argv)
 {
   testing::InitGoogleTest(&argc, argv);
