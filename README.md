@@ -1,53 +1,94 @@
 # ASV Simulator
 
-This package contains plugins and models for the simulation of surface vessels in Gazebo.  
+[![Ubuntu Jammy CI](https://github.com/srmainwaring/asv_sim/actions/workflows/ubuntu-jammy-ci.yml/badge.svg)](https://github.com/srmainwaring/asv_sim/actions/workflows/ubuntu-jammy-ci.yml)
+[![Cpplint](https://github.com/srmainwaring/asv_sim/actions/workflows/ccplint.yml/badge.svg)](https://github.com/srmainwaring/asv_sim/actions/workflows/ccplint.yml)
+[![Cppcheck](https://github.com/srmainwaring/asv_sim/actions/workflows/ccpcheck.yml/badge.svg)](https://github.com/srmainwaring/asv_sim/actions/workflows/ccpcheck.yml)
+
+This package contains plugins and models for the simulation of surface vessels in Gazebo.
 
 ## Dependencies
 
-You will need a working installation of ROS and Gazebo in order to use this package.
-It has been tested with:
+- A working installation of [Gazebo Garden](https://gazebosim.org/docs/garden) or later including development symbols.
 
-- Gazebo version 9.4.1
-- ROS Melodic Morenia
-- OSX 10.11.6
+### Ubuntu
+
+- Ubuntu 22.04 (Jammy)
+- Gazebo Sim, version 7.1.0 (Garden)
+
+### macOS
+
+- macOS 12.6 (Monterey)
+- Gazebo Sim, version 7.1.0 (Garden)
 
 ## Installation
 
-Source your ROS installation and update the Gazebo plugin path:
+### Create a workspace
 
 ```bash
-# Source the ROS and Gazebo environment (add this to ~/.bash_profile)
-$ source /opt/ros/melodic/setup.bash
-$ source /usr/local/share/gazebo/setup.sh
+mkdir -p gz_ws/src
 ```
 
-Create and configure a catkin workspace, clone and build the repo:
+### Clone and build the package
+
+Clone the `asv_sim` repository:
 
 ```bash
-# Create a catkin workspace 
-$ mkdir -p <catkin_ws>/src
+cd ~/gz_ws/src
+git clone https://github.com/srmainwaring/asv_sim.git
+```
 
-# Clone dependencies
-$ cd <catkin_ws>/src
-$ git clone https://github.com/srmainwaring/asv_wave_sim.git
+Compile the package:
 
-# Clone this repo
-$ git clone https://github.com/srmainwaring/asv_sim.git
+#### Ubuntu
 
-# Configure and build
-$ cd <catkin_ws>
-$ catkin config --extend /opt/ros/melodic \
-  --cmake-args -DCMAKE_CXX_STANDARD=14 -DCMAKE_BUILD_TYPE=RelWithDebInfo 
-$ catkin build
+```bash
+colcon build --symlink-install --merge-install --cmake-args \
+-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+-DBUILD_TESTING=ON \
+-DCMAKE_CXX_STANDARD=17
+```
 
-# Source the workspace
-$ source devel/setup.bash
+Source the workspace:
 
-# Update the Gazebo plugin path
-$ export GAZEBO_PLUGIN_PATH=$(pwd)/devel/lib:$GAZEBO_PLUGIN_PATH
+```bash
+source ./install/setup.bash
+```
 
-# Check the Gazebo environment variables
-$ printenv |grep GAZEBO
+#### macOS
+
+```bash
+colcon build --symlink-install --merge-install --cmake-args \
+-DCMAKE_BUILD_TYPE=RelWithDebInfo \
+-DBUILD_TESTING=ON \
+-DCMAKE_CXX_STANDARD=17 \
+-DCMAKE_MACOSX_RPATH=FALSE \
+-DCMAKE_INSTALL_NAME_DIR=$(pwd)/install/lib
+```
+
+Source the workspace:
+
+```bash
+source ./install/setup.zsh
+```
+
+## Usage
+
+### Set environment variables
+
+```bash
+# for future use - to support multiple Gazebo versions
+export GZ_VERSION=garden
+
+# not usually required as should default to localhost address
+export GZ_IP=127.0.0.1
+
+# ensure the model and world files are found
+export GZ_SIM_RESOURCE_PATH=$GZ_SIM_RESOURCE_PATH:\
+$HOME/gz_ws/src/asv_sim/asv_sim_gazebo/worlds
+
+# ensure the system plugins are found
+export GZ_SIM_SYSTEM_PLUGIN_PATH=$GZ_SIM_SYSTEM_PLUGIN_PATH:\
+$HOME/gz_ws/src/asv_sim/install/lib
 ```
 
 ## Anemometer Sensor
@@ -126,22 +167,6 @@ apparent wind will be adjusted for the object's motion.
 
 ![Anemometer Rest](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic_view_rest.jpg)
 ![Anemometer Falling](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic_view_falling.jpg)
-
-
-## Build Status
-
-### Develop Job Status
-
-|    | Melodic |
-|--- |--- |
-| asv_sim | [![Build Status](https://travis-ci.com/srmainwaring/asv_sim.svg?branch=feature%2Fwrsc-devel)](https://travis-ci.com/srmainwaring/asv_sim) |
-
-
-### Release Job Status
-
-|    | Melodic |
-|--- |--- |
-| asv_sim | [![Build Status](https://travis-ci.com/srmainwaring/asv_sim.svg?branch=master)](https://travis-ci.com/srmainwaring/asv_sim) |
 
 
 ## License
