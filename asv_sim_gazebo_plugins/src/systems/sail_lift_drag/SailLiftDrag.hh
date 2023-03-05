@@ -58,19 +58,6 @@ class SailLiftDrag
       const UpdateInfo &_info,
       EntityComponentManager &_ecm) override;
 
-  // // Documentation Inherited.
-  // public: void Load(gazebo::physics::ModelPtr _model,
-  //     sdf::ElementPtr _sdf) override;
-
-  // // Documentation Inherited.
-  // public: void Reset() override;
-
-  // /// \brief Create a topic string for the sensor.
-  // public: virtual std::string GetTopic() const;
-
-  // /// \brief Callback for World Update events.
-  // protected: virtual void OnUpdate();
-
   /// \brief Private data pointer.
   private: std::unique_ptr<SailLiftDragPrivate> dataPtr;
 };
