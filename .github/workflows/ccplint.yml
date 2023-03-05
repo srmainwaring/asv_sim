@@ -34,10 +34,10 @@ jobs:
       - name: Cpplint FoilLiftDrag Plugin
         run: |
           cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
-            ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh
+            ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh \
             ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.cc
       - name: Cpplint SailLiftDrag Plugin
         run: |
           cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
-            ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh
+            ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh \
             ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.cc
