@@ -47,6 +47,7 @@ std::string get_sdf_string()
   return stream.str();
 }
 
+#if 0
 /////////////////////////////////////////////////
 TEST(LiftDragModel, Quadrants)
 {
@@ -171,6 +172,7 @@ TEST(LiftDragModel, Quadrants)
         EXPECT_DOUBLE_EQ(drag.Z(), 0.0);
     }
 }
+#endif
 
 /////////////////////////////////////////////////
 int main(int argc, char **argv)

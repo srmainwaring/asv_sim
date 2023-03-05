@@ -13,7 +13,7 @@ set(sources
 
 set(gtest_sources
   ${gtest_sources}
-  # LiftDragModel_TEST.cc
+  LiftDragModel_TEST.cc
 )
 
 # Create the library target
