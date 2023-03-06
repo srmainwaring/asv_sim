@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ASV_SIM_GAZEBO_PLUGINS_GAZEBOROSANEMOMETER_H_
-#define ASV_SIM_GAZEBO_PLUGINS_GAZEBOROSANEMOMETER_H_
+#ifndef ASV_SIM_GAZEBOROSANEMOMETER_H_
+#define ASV_SIM_GAZEBOROSANEMOMETER_H_
 
 #include <geometry_msgs/Vector3Stamped.h>
 #include <ros/ros.h>
@@ -24,7 +24,7 @@
 
 #include <gazebo/common/Plugin.hh>
 
-#include "asv_sim_gazebo_plugins/AnemometerSensor.hh"
+#include "asv_sim/AnemometerSensor.hh"
 
 
 namespace asv
@@ -58,4 +58,4 @@ class GAZEBO_VISIBLE GazeboRosAnemometer : public gazebo::SensorPlugin
 
 }  // namespace asv
 
-#endif  // ASV_SIM_GAZEBO_PLUGINS_GAZEBOROSANEMOMETER_H_
+#endif  // ASV_SIM_GAZEBOROSANEMOMETER_H_

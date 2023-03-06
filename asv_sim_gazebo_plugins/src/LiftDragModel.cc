@@ -31,14 +31,14 @@
 *
 */
 
-#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
+#include "asv_sim/LiftDragModel.hh"
 
 #include <string>
 
 #include <gz/math/Pose3.hh>
 #include <gz/math/Vector3.hh>
 
-#include "asv_sim_gazebo_plugins/Utilities.hh"
+#include "asv_sim/Utilities.hh"
 
 namespace asv
 {

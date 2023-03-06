@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ASV_SIM_GAZEBO_PLUGINS_UTILITIES_HH_
-#define ASV_SIM_GAZEBO_PLUGINS_UTILITIES_HH_
+#ifndef ASV_SIM_UTILITIES_HH_
+#define ASV_SIM_UTILITIES_HH_
 
 #include <memory>
 #include <string>
@@ -188,4 +188,4 @@ void MsgParamSetValue<gz::math::Vector3d>(gz::msgs::Param &_param,
 
 }  // namespace asv
 
-#endif  // ASV_SIM_GAZEBO_PLUGINS_UTILITIES_HH_
+#endif  // ASV_SIM_UTILITIES_HH_

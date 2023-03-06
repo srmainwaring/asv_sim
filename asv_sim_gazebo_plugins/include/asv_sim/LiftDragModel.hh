@@ -31,8 +31,8 @@
 *
 */
 
-#ifndef ASV_SIM_GAZEBO_PLUGINS_LIFTDRAGMODEL_HH_
-#define ASV_SIM_GAZEBO_PLUGINS_LIFTDRAGMODEL_HH_
+#ifndef ASV_SIM_LIFTDRAGMODEL_HH_
+#define ASV_SIM_LIFTDRAGMODEL_HH_
 
 #include <memory>
 
@@ -106,4 +106,4 @@ class LiftDragModel
 
 }  // namespace asv
 
-#endif  // ASV_SIM_GAZEBO_PLUGINS_LIFTDRAGMODEL_HH_
+#endif  // ASV_SIM_LIFTDRAGMODEL_HH_

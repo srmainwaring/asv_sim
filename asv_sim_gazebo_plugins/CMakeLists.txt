@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10.2)
 #============================================================================
 # Initialize the project
 #============================================================================
-project(asv_sim_gazebo_plugins VERSION 2.0.0)
+project(asv_sim VERSION 2.0.0)
 
 #============================================================================
 # Find gz-cmake
@@ -100,22 +100,22 @@ gz_create_packages()
 ############################################################################### 
 # Libraries...
 
-# asv_sim_gazebo_plugins
-# add_library(asv_sim_gazebo_plugins
+# asv_sim
+# add_library(asv_sim
 #   SHARED
 #     src/AnemometerSensor.cc
 #     src/LiftDragModel.cc
 #     src/Utilities.cc
 # )
 
-# target_link_libraries(asv_sim_gazebo_plugins
-#   asv_sim_gazebo_plugins_msgs
+# target_link_libraries(asv_sim
+#   asv_sim_msgs
 #   ${Boost_LIBRARIES}
 #   ${catkin_LIBRARIES}
 #   ${GAZEBO_LIBRARIES}
 # )
 
-# add_dependencies(asv_sim_gazebo_plugins
+# add_dependencies(asv_sim
 #   ${catkin_EXPORTED_TARGETS}
 # )
 
@@ -129,8 +129,8 @@ gz_create_packages()
 # )
 
 # target_link_libraries(RegisterSensorsPlugin
-#   asv_sim_gazebo_plugins
-#   asv_sim_gazebo_plugins_msgs
+#   asv_sim
+#   asv_sim_msgs
 #   ${Boost_LIBRARIES}
 #   ${catkin_LIBRARIES}
 #   ${GAZEBO_LIBRARIES}
@@ -147,8 +147,8 @@ gz_create_packages()
 # )
 
 # target_link_libraries(SailPlugin
-#   asv_sim_gazebo_plugins
-#   asv_sim_gazebo_plugins_msgs
+#   asv_sim
+#   asv_sim_msgs
 #   ${Boost_LIBRARIES}
 #   ${catkin_LIBRARIES}
 #   ${GAZEBO_LIBRARIES}
@@ -165,8 +165,8 @@ gz_create_packages()
 # )
 
 # target_link_libraries(FoilPlugin
-#   asv_sim_gazebo_plugins
-#   asv_sim_gazebo_plugins_msgs
+#   asv_sim
+#   asv_sim_msgs
 #   ${Boost_LIBRARIES}
 #   ${catkin_LIBRARIES}
 #   ${GAZEBO_LIBRARIES}
@@ -183,8 +183,8 @@ gz_create_packages()
 # )
 
 # target_link_libraries(gazebo_ros_anemometer
-#   asv_sim_gazebo_plugins
-#   asv_sim_gazebo_plugins_msgs
+#   asv_sim
+#   asv_sim_msgs
 #   ${Boost_LIBRARIES}
 #   ${catkin_LIBRARIES}
 #   ${GAZEBO_LIBRARIES}
@@ -202,7 +202,7 @@ gz_create_packages()
 # )
 
 # target_link_libraries(LiftDragMsgSubscriber  
-#   asv_sim_gazebo_plugins_msgs
+#   asv_sim_msgs
 #   ${Boost_LIBRARIES}
 #   ${catkin_LIBRARIES}
 #   ${GAZEBO_LIBRARIES}

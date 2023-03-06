@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ASV_SIM_GAZEBO_PLUGINS_FOILLIFTDRAG_HH_
-#define ASV_SIM_GAZEBO_PLUGINS_FOILLIFTDRAG_HH_
+#ifndef ASV_SIM_FOILLIFTDRAG_HH_
+#define ASV_SIM_FOILLIFTDRAG_HH_
 
 #include <memory>
 #include <string>
@@ -67,4 +67,4 @@ class FoilLiftDrag
 }  // namespace sim
 }  // namespace gz
 
-#endif  // ASV_SIM_GAZEBO_PLUGINS_FOILLIFTDRAG_HH_
+#endif  // ASV_SIM_FOILLIFTDRAG_HH_

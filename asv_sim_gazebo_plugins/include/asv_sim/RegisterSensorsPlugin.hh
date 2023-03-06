@@ -16,8 +16,8 @@
 /// \file RegisterSensorsPlugin.hh
 /// \brief A system plugin to register custom sensors.
 
-#ifndef ASV_SIM_GAZEBO_PLUGINS_REGISTERSENSORSPLUGIN_HH_
-#define ASV_SIM_GAZEBO_PLUGINS_REGISTERSENSORSPLUGIN_HH_
+#ifndef ASV_SIM_REGISTERSENSORSPLUGIN_HH_
+#define ASV_SIM_REGISTERSENSORSPLUGIN_HH_
 
 #include <gazebo/common/Plugin.hh>
 #include <gazebo/gazebo.hh>
@@ -90,4 +90,4 @@ class GAZEBO_VISIBLE RegisterSensorsPlugin : public gazebo::SystemPlugin
 };
 }  // namespace asv
 
-#endif  // ASV_SIM_GAZEBO_PLUGINS_REGISTERSENSORSPLUGIN_HH_
+#endif  // ASV_SIM_REGISTERSENSORSPLUGIN_HH_

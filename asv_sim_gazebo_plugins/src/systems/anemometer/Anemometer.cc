@@ -41,8 +41,8 @@
 // #include <ignition/math/Pose3.hh>
 // #include <ignition/math/Vector3.hh>
 
-// #include "asv_sim_gazebo_plugins/MessageTypes.hh"
-// #include "asv_sim_gazebo_plugins/Utilities.hh"
+// #include "asv_sim/MessageTypes.hh"
+// #include "asv_sim/Utilities.hh"
 
 // using namespace asv;
 

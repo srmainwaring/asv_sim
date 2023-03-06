@@ -18,8 +18,8 @@
 // LoadParam template functions adapted from gazebo/common/Plugin.hh
 // for use when GAZEBO_MAJOR_VERSION < 11
 
-#ifndef ASV_SIM_GAZEBO_PLUGINS_PLUGINUTILS_HH_
-#define ASV_SIM_GAZEBO_PLUGINS_PLUGINUTILS_HH_
+#ifndef ASV_SIM_PLUGINUTILS_HH_
+#define ASV_SIM_PLUGINUTILS_HH_
 
 #include <string>
 
@@ -80,4 +80,4 @@ template <typename Plugin> void LoadParam(
 
 }  // namespace gazebo
 
-#endif  // ASV_SIM_GAZEBO_PLUGINS_PLUGINUTILS_HH_
+#endif  // ASV_SIM_PLUGINUTILS_HH_

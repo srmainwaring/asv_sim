@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#ifndef ASV_SIM_GAZEBO_PLUGINS_MESSAGETYPES_HH_
-#define ASV_SIM_GAZEBO_PLUGINS_MESSAGETYPES_HH_
+#ifndef ASV_SIM_MESSAGETYPES_HH_
+#define ASV_SIM_MESSAGETYPES_HH_
 
 #include <boost/shared_ptr.hpp>
 
@@ -36,4 +36,4 @@ typedef const boost::shared_ptr<
 
 }  // namespace asv
 
-#endif  // ASV_SIM_GAZEBO_PLUGINS_MESSAGETYPES_HH_
+#endif  // ASV_SIM_MESSAGETYPES_HH_
