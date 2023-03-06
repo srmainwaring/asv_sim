@@ -56,9 +56,6 @@ namespace systems
 /////////////////////////////////////////////////
 class SailLiftDragPrivate
 {
-  /// \brief Copy of the SDF for this plugin;
-  // public: sdf::ElementPtr sdf;
-
   /// \brief Model interface
   public: Model model{kNullEntity};
 
