@@ -114,11 +114,12 @@ void FoilLiftDrag::Configure(
             << " plugin to act upon.\n";
       return;
     }
-    auto linkName = _sdf->Get<std::string>();
+    auto linkName = _sdf->Get<std::string>("link_name");
     auto linkEntity = this->dataPtr->model.LinkByName(_ecm, linkName);
     if (!_ecm.HasEntity(linkEntity))
     {
-      gzerr << "Link with name [" << linkName << "] not found. "
+      gzerr << "Link with name [" << linkName << "] not found "
+            << "in model [" << this->dataPtr->model.Name(_ecm) << "]. "
             << "The FoilLiftDrag plugin will not generate forces.\n";
       return;
     }
@@ -132,7 +133,7 @@ void FoilLiftDrag::Configure(
             << " plugin forces to act at.\n";
       return;
     }
-    this->dataPtr->cp = _sdf->Get<gz::math::Vector3d>();
+    this->dataPtr->cp = _sdf->Get<gz::math::Vector3d>("cp");
   }
 
   /// \todo(srmainwaring) implement publishing forces.
