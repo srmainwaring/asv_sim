@@ -34,34 +34,18 @@
 
 #include "SailLiftDrag.hh"
 
-// #include <algorithm>
-// #include <functional>
 #include <mutex>
 #include <string>
 
-// #include <boost/algorithm/string.hpp>
-
 #include <gz/common/Profiler.hh>
 #include <gz/math/Pose3.hh>
-// #include <gz/msgs/msgs.hh>
-// #include <gz/physics/physics.hh>
 #include <gz/plugin/Register.hh>
-// #include <gz/sensors/sensors.hh>
-
 #include <gz/sim/Link.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Util.hh>
-
 #include <gz/transport/Node.hh>
 
 #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
-// #include "asv_sim_gazebo_plugins/MessageTypes.hh"
-// #include "asv_sim_gazebo_plugins/PluginUtils.hh"
-
-// /// \brief Type definition for a pointer to a LiftDrag message.
-// typedef const boost::shared_ptr<
-//   const asv_msgs::msgs::LiftDrag>
-//     LiftDragPtr;
 
 namespace gz
 {
@@ -193,26 +177,43 @@ void SailLiftDrag::PreUpdate(
     const UpdateInfo &_info,
     EntityComponentManager &_ecm)
 {
-#if 0
-  if (this->dataPtr->link == nullptr)
-  {
+  if (_info.paused)
     return;
-  }
 
+  if (!this->dataPtr->link.Valid(_ecm))
+    return;
+
+  // ensure components are available
+  this->dataPtr->link.EnableVelocityChecks(_ecm, true);
+  this->dataPtr->link.EnableAccelerationChecks(_ecm, true);
+
+  /// \todo(srmainwaring) get wind model
   // Wind velocity at the link origin (world frame).
   // We use this to approximate the wind at the centre of pressure
-  auto& wind = this->dataPtr->world->Wind();
-  auto velWind = wind.WorldLinearVel(this->dataPtr->link.get());
+  // auto& wind = this->dataPtr->world->Wind();
+  // auto velWind = wind.WorldLinearVel(this->dataPtr->link.get());
+  auto velWind = math::Vector3d::Zero;
 
   // Linear velocity at the centre of pressure (world frame).
-  auto velCp = this->dataPtr->link->WorldLinearVel(this->dataPtr->cp);
+  auto velCpComp = this->dataPtr->link.WorldLinearVelocity(
+      _ecm, this->dataPtr->cp);
+  if (!velCpComp.has_value())
+    return;
+  auto velCp = velCpComp.value();
 
   // Free stream velocity at centre of pressure (world frame).
   auto vel = velWind - velCp;
 
   // Pose of link origin and link CoM (world frame).
-  auto linkPose = this->dataPtr->link->WorldPose();
-  auto comPose  = this->dataPtr->link->WorldCoGPose();
+  auto linkPoseOpt = this->dataPtr->link.WorldPose(_ecm);
+  if (!linkPoseOpt.has_value())
+    return;
+  auto linkPose = linkPoseOpt.value();
+
+  auto comPoseOpt  = this->dataPtr->link.WorldInertialPose(_ecm);
+  if (!comPoseOpt.has_value())
+    return;
+  auto comPose = comPoseOpt.value();
 
   // Compute lift and drag
   double alpha = 0;
@@ -233,7 +234,7 @@ void SailLiftDrag::PreUpdate(
   auto cpWorld = linkPose.Rot().RotateVector(this->dataPtr->cp);
 
   // Vector from CoM to CP.
-  auto xr  = linkPose.Pos() + cpWorld - com;
+  auto xr = linkPose.Pos() + cpWorld - com;
 
   // Compute torque (about CoM in world frame)
   auto torque = xr.Cross(force);
@@ -277,9 +278,11 @@ void SailLiftDrag::PreUpdate(
 #endif
 
   // Add force and torque to link (applied to CoM in world frame).
-  this->dataPtr->link->AddForce(force);
-  this->dataPtr->link->AddTorque(torque);
+  this->dataPtr->link.AddWorldForce(_ecm, force, com);
+  this->dataPtr->link.AddWorldWrench(_ecm, math::Vector3d::Zero, torque);
 
+  /// \todo(srmainwaring) enable force publishing / visualization.
+#if 0
   // Publish message
   const double updateRate = 50.0;
   const double updateInterval = 1.0/updateRate;
@@ -311,7 +314,6 @@ void SailLiftDrag::PreUpdate(
   // Publish the message if needed
   if (this->dataPtr->liftDragPub)
     this->dataPtr->liftDragPub->Publish(liftDragMsg);
-
   // @DEBUG_INFO
   // gzmsg << liftDragMsg.DebugString() << "\n";
 #endif
