@@ -62,9 +62,6 @@ class SailLiftDragPrivate
   /// \brief Link interface.
   public: Link link{kNullEntity};;
 
-  /// \brief Pointer to world.
-  // public: physics::WorldPtr world;
-
   /// \brief Gazebo communication node.
   public: transport::Node node;
 
@@ -109,7 +106,7 @@ void SailLiftDrag::Configure(
     return;
   }
 
-  // Get params from SDF
+  // Parameters
   {
     if (!_sdf->HasElement("link_name"))
     {

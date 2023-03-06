@@ -34,32 +34,18 @@
 
 #include "FoilLiftDrag.hh"
 
-// #include <algorithm>
-// #include <functional>
 #include <mutex>
 #include <string>
 
 #include <gz/common/Profiler.hh>
+#include <gz/math/Pose3.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Link.hh>
+#include <gz/sim/Model.hh>
+#include <gz/sim/Util.hh>
+#include <gz/transport/Node.hh>
 
-// #include <boost/algorithm/string.hpp>
-
-// #include <gz/math/Pose3.hh>
-
-// #include <gazebo/common/Assert.hh>
-// #include <gazebo/msgs/msgs.hh>
-// #include <gazebo/physics/physics.hh>
-// #include <gazebo/sensors/sensors.hh>
-// #include <gazebo/transport/transport.hh>
-
-// #include "asv_sim_gazebo_plugins/LiftDragModel.hh"
-// #include "asv_sim_gazebo_plugins/MessageTypes.hh"
-// #include "asv_sim_gazebo_plugins/PluginUtils.hh"
-
-/// \brief Type definition for a pointer to a LiftDrag message.
-// typedef const boost::shared_ptr<
-//   const asv_msgs::msgs::LiftDrag>
-//     LiftDragPtr;
+#include "asv_sim_gazebo_plugins/LiftDragModel.hh"
 
 namespace gz
 {
@@ -70,38 +56,29 @@ namespace systems
 /////////////////////////////////////////////////
 class FoilLiftDragPrivate
 {
-#if 0
-  /// \brief SDF for this plugin;
-  public: sdf::ElementPtr sdf;
+  /// \brief Model interface
+  public: Model model{kNullEntity};
 
-  /// \brief Pointer to model containing plugin.
-  public: physics::ModelPtr model;
+  /// \brief Link interface.
+  public: Link link{kNullEntity};;
 
-  /// \brief Pointer to link currently targeted by mud joint.
-  public: physics::LinkPtr link;
+  /// \brief Gazebo communication node.
+  public: transport::Node node;
 
-  /// \brief Pointer to world.
-  public: physics::WorldPtr world;
+  /// \brief Publish to topic "/model/<model>/link/<link>/foil_lift_drag".
+  public: transport::Node::Publisher liftDragPub;
 
-  /// \brief Connection to World Update events.
-  public: event::ConnectionPtr updateConnection;
-
-  /// \brief Gazebo transport node.
-  public: transport::NodePtr node;
-
-  /// \brief Publish to topic "~/lift_drag".
-  public: transport::PublisherPtr liftDragPub;
+  /// \brief Update period calculated from <update_rate>.
+  public: std::chrono::steady_clock::duration updatePeriod{0};
 
   /// \brief Previous update time for publisher throttle.
-  public: common::Time prevTime;
+  public: std::chrono::steady_clock::duration prevTime{0};
 
-  // Parameters
+  /// \brief Center of pressure in link local coordinates.
+  public: gz::math::Vector3d cp = gz::math::Vector3d::Zero;
 
-  /// \brief center of pressure in link local coordinates
-  public: ignition::math::Vector3d cp = ignition::math::Vector3d(0, 0, 0);
-
-  public: std::unique_ptr<LiftDragModel> liftDrag;
-#endif
+  /// \brief Lift drag model.
+  public: std::unique_ptr<asv::LiftDragModel> liftDrag;
 };
 
 /////////////////////////////////////////////////
@@ -113,47 +90,69 @@ FoilLiftDrag::FoilLiftDrag()
 {
 }
 
-#if 0
 /////////////////////////////////////////////////
-void FoilLiftDrag::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
+void FoilLiftDrag::Configure(
+    const Entity &_entity,
+    const std::shared_ptr<const sdf::Element> &_sdf,
+    EntityComponentManager &_ecm,
+    EventManager &_eventMgr)
 {
-  GZ_ASSERT(_sdf, "Invalid parameter _sdf");
-  GZ_ASSERT(_model, "Invalid parameter _model");
-  GZ_ASSERT(_model->GetWorld(), "Model has invalid world");
+  this->dataPtr->model = Model(_entity);
 
-  // Capture model and sdf.
-  this->dataPtr->sdf = _sdf;
-  this->dataPtr->model = _model;
-  this->dataPtr->world = _model->GetWorld();
-
-  // Parameters
-  std::string linkName;
-#if (GAZEBO_MAJOR_VERSION < 11)
-  gazebo::LoadParam(this, _sdf, "cp", this->dataPtr->cp, this->dataPtr->cp);
-  gazebo::LoadParam(this, _sdf, "link_name", linkName, "");
-#else
-  this->LoadParam(_sdf, "cp", this->dataPtr->cp, this->dataPtr->cp);
-  this->LoadParam(_sdf, "link_name", linkName, "");
-#endif
-
-  if (!linkName.empty())
+  if (!this->dataPtr->model.Valid(_ecm))
   {
-    this->dataPtr->link = this->dataPtr->model->GetLink(linkName);
-    if (this->dataPtr->link == nullptr)
-    {
-      gzerr << "Link with name[" << linkName << "] not found. "
-        << "The FoilLiftDrag will not generate forces\n";
-    }
-    else
-    {
-      this->dataPtr->updateConnection = event::Events::ConnectWorldUpdateBegin(
-          std::bind(&FoilLiftDrag::OnUpdate, this));
-    }
+    gzerr << "FoilLiftDrag plugin should be attached to a model "
+           << "entity. Failed to initialize.\n";
+    return;
   }
 
-  // Transport
-  this->dataPtr->node = transport::NodePtr(new transport::Node());
-  this->dataPtr->node->Init(this->dataPtr->model->GetName());
+  // Parameters
+  {
+    if (!_sdf->HasElement("link_name"))
+    {
+      gzerr << "You must specify a <link_name> for the FoilLiftDrag"
+            << " plugin to act upon.\n";
+      return;
+    }
+    auto linkName = _sdf->Get<std::string>();
+    auto linkEntity = this->dataPtr->model.LinkByName(_ecm, linkName);
+    if (!_ecm.HasEntity(linkEntity))
+    {
+      gzerr << "Link with name [" << linkName << "] not found. "
+            << "The FoilLiftDrag plugin will not generate forces.\n";
+      return;
+    }
+    this->dataPtr->link = Link(linkEntity);
+  }
+
+  {
+    if (!_sdf->HasElement("cp"))
+    {
+      gzerr << "You must specify a <cp> for the FoilLiftDrag"
+            << " plugin forces to act at.\n";
+      return;
+    }
+    this->dataPtr->cp = _sdf->Get<gz::math::Vector3d>();
+  }
+
+  /// \todo(srmainwaring) implement publishing forces.
+#if 0
+  auto getTopic = [&, this]() -> std::string
+  {
+    std::string topic;
+
+    this->LoadParam(this->dataPtr->sdf, "topic", topic, "lift_drag");
+
+    std::string topicName = "~";
+    if (this->dataPtr->link != nullptr)
+    {
+      topicName += '/' + this->dataPtr->link->GetName();
+    }
+    topicName += '/' + topic;
+    boost::replace_all(topicName, "::", "/");
+
+    return topicName;
+  }
 
   // Publishers
   std::string topic = this->GetTopic();
@@ -162,62 +161,55 @@ void FoilLiftDrag::Load(gazebo::physics::ModelPtr _model, sdf::ElementPtr _sdf)
 
   // Time
   this->dataPtr->prevTime = this->dataPtr->world->SimTime();
-
-  // Lift / Drag model
-  this->dataPtr->liftDrag.reset(LiftDragModel::Create(_sdf));
-}
-
-void FoilLiftDrag::Reset()
-{
-  // Reset Time
-  this->dataPtr->prevTime = this->dataPtr->world->SimTime();
-}
-
-/////////////////////////////////////////////////
-std::string FoilLiftDrag::GetTopic() const
-{
-  std::string topic;
-#if (GAZEBO_MAJOR_VERSION < 11)
-  gazebo::LoadParam(this, this->dataPtr->sdf, "topic", topic, "lift_drag");
-#else
-  this->LoadParam(this->dataPtr->sdf, "topic", topic, "lift_drag");
 #endif
 
-  std::string topicName = "~";
-  if (this->dataPtr->link != nullptr)
-  {
-    topicName += '/' + this->dataPtr->link->GetName();
-  }
-  topicName += '/' + topic;
-  boost::replace_all(topicName, "::", "/");
-
-  return topicName;
+  // Lift / Drag model
+  this->dataPtr->liftDrag.reset(asv::LiftDragModel::Create(_sdf));
 }
 
 /////////////////////////////////////////////////
-void FoilLiftDrag::OnUpdate()
+void FoilLiftDrag::PreUpdate(
+    const UpdateInfo &_info,
+    EntityComponentManager &_ecm)
 {
-  if (this->dataPtr->link == nullptr)
-  {
+  if (_info.paused)
     return;
-  }
+
+  if (!this->dataPtr->link.Valid(_ecm))
+    return;
+
+  // ensure components are available
+  this->dataPtr->link.EnableVelocityChecks(_ecm, true);
+  this->dataPtr->link.EnableAccelerationChecks(_ecm, true);
+
   // Linear velocity at the centre of pressure (world frame).
-  auto velCp = this->dataPtr->link->WorldLinearVel(this->dataPtr->cp);
+  auto velCpComp = this->dataPtr->link.WorldLinearVelocity(
+      _ecm, this->dataPtr->cp);
+  if (!velCpComp.has_value())
+    return;
+  auto velCp = velCpComp.value();
 
   // Free stream velocity at centre of pressure (world frame).
   auto vel = - velCp;
 
   // Pose of link origin and link CoM (world frame).
-  auto linkPose = this->dataPtr->link->WorldPose();
-  auto comPose  = this->dataPtr->link->WorldCoGPose();
+  auto linkPoseOpt = this->dataPtr->link.WorldPose(_ecm);
+  if (!linkPoseOpt.has_value())
+    return;
+  auto linkPose = linkPoseOpt.value();
+
+  auto comPoseOpt  = this->dataPtr->link.WorldInertialPose(_ecm);
+  if (!comPoseOpt.has_value())
+    return;
+  auto comPose = comPoseOpt.value();
 
   // Compute lift and drag
   double alpha = 0;
   double u = 0;
   double cl = 0;
   double cd = 0;
-  ignition::math::Vector3d lift = ignition::math::Vector3d::Zero;
-  ignition::math::Vector3d drag = ignition::math::Vector3d::Zero;
+  gz::math::Vector3d lift = gz::math::Vector3d::Zero;
+  gz::math::Vector3d drag = gz::math::Vector3d::Zero;
   this->dataPtr->liftDrag->Compute(vel, linkPose, lift, drag, alpha, u, cl, cd);
 
   // Resultant force arising from lift and drag (world frame).
@@ -230,7 +222,7 @@ void FoilLiftDrag::OnUpdate()
   auto cpWorld = linkPose.Rot().RotateVector(this->dataPtr->cp);
 
   // Vector from CoM to CP.
-  auto xr  = linkPose.Pos() + cpWorld - com;
+  auto xr = linkPose.Pos() + cpWorld - com;
 
   // Compute torque (about CoM in world frame)
   auto torque = xr.Cross(force);
@@ -240,9 +232,11 @@ void FoilLiftDrag::OnUpdate()
   torque.Correct();
 
   // Add force and torque to link (applied to CoM in world frame).
-  this->dataPtr->link->AddForce(force);
-  this->dataPtr->link->AddTorque(torque);
+  this->dataPtr->link.AddWorldForce(_ecm, force, com);
+  this->dataPtr->link.AddWorldWrench(_ecm, math::Vector3d::Zero, torque);
 
+  /// \todo(srmainwaring) enable force publishing / visualization.
+#if 0
   // Publish message
   const double updateRate = 50.0;
   const double updateInterval = 1.0/updateRate;
@@ -277,23 +271,7 @@ void FoilLiftDrag::OnUpdate()
 
   // @DEBUG_INFO
   // gzmsg << liftDragMsg.DebugString() << std::endl;
-}
 #endif
-
-/////////////////////////////////////////////////
-void FoilLiftDrag::Configure(
-    const Entity &_entity,
-    const std::shared_ptr<const sdf::Element> &_sdf,
-    EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
-{
-}
-
-/////////////////////////////////////////////////
-void FoilLiftDrag::PreUpdate(
-    const UpdateInfo &_info,
-    EntityComponentManager &_ecm)
-{
 }
 
 }  // namespace systems
