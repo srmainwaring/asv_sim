@@ -1,4 +1,4 @@
-gz_add_system(foil_lift_drag
+gz_add_system(foil-lift-drag
   SOURCES
     FoilLiftDrag.cc
   PUBLIC_LINK_LIBS

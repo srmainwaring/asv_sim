@@ -1,4 +1,4 @@
-gz_add_system(sail_lift_drag
+gz_add_system(sail-lift-drag
   SOURCES
     SailLiftDrag.cc
   PUBLIC_LINK_LIBS
