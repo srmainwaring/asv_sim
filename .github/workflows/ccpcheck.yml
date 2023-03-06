@@ -17,7 +17,7 @@ jobs:
           sudo apt-get install cppcheck
       - name: Cppcheck Core Library
         run: |
-          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/include/asv_sim/*.hh
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/include/asv/sim/*.hh
           cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/*.cc
       - name: Cppcheck Anemometer Plugin
         run: |

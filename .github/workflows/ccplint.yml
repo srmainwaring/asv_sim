@@ -24,7 +24,7 @@ jobs:
           pip install cpplint
       - name: Cpplint Core Library
         run: |
-          cpplint ./asv_sim_gazebo_plugins/include/asv_sim/*.hh
+          cpplint ./asv_sim_gazebo_plugins/include/asv/sim/*.hh
           cpplint ./asv_sim_gazebo_plugins/src/*.cc
       - name: Cpplint Anemometer Plugin
         run: |
