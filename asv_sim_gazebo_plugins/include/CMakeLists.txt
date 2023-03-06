@@ -1,0 +1,1 @@
+add_subdirectory(asv_sim_gazebo_plugins)
