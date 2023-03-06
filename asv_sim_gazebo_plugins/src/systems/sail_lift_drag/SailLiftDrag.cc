@@ -293,12 +293,12 @@ void SailLiftDrag::PreUpdate(
   // Add force and torque to link (applied at link origin in world frame).
   {
     auto link = Link(this->dataPtr->link.Entity());
-    link.SetVisualizationLabel("SailLift");
+    // link.SetVisualizationLabel("SailLift");
     link.AddWorldWrench(_ecm, lift, liftTorque);
   }
   {
     auto link = Link(this->dataPtr->link.Entity());
-    link.SetVisualizationLabel("SailDrag");
+    // link.SetVisualizationLabel("SailDrag");
     link.AddWorldWrench(_ecm, drag, dragTorque);
   }
 
