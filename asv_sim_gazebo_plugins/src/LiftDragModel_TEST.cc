@@ -17,7 +17,7 @@
 
 #include <memory>
 
-#include "asv_sim/LiftDragModel.hh"
+#include "asv/sim/LiftDragModel.hh"
 
 /////////////////////////////////////////////////
 std::string get_sdf_string()

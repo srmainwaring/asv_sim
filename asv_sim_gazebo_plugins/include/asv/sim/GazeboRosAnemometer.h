@@ -24,7 +24,7 @@
 
 #include <gazebo/common/Plugin.hh>
 
-#include "asv_sim/AnemometerSensor.hh"
+#include "asv/sim/AnemometerSensor.hh"
 
 
 namespace asv

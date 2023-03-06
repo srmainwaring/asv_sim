@@ -1,1 +1,1 @@
-add_subdirectory(asv_sim)
+add_subdirectory(asv)

@@ -15,9 +15,9 @@
 
 #include <gazebo/msgs/MsgFactory.hh>
 
-#include "asv_sim/RegisterSensorsPlugin.hh"
-#include "asv_sim/AnemometerSensor.hh"
-#include "asv_sim/MessageTypes.hh"
+#include "asv/sim/RegisterSensorsPlugin.hh"
+#include "asv/sim/AnemometerSensor.hh"
+#include "asv/sim/MessageTypes.hh"
 
 // using namespace gazebo;
 

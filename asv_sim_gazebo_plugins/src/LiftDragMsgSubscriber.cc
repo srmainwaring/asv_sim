@@ -26,7 +26,7 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/msgs/msgs.hh>
 
-#include "asv_sim/MessageTypes.hh"
+#include "asv/sim/MessageTypes.hh"
 
 // using namespace gazebo;
 namespace po = boost::program_options;

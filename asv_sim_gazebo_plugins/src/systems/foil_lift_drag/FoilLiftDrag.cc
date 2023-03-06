@@ -47,7 +47,7 @@
 #include <gz/sim/Util.hh>
 #include <gz/transport/Node.hh>
 
-#include "asv_sim/LiftDragModel.hh"
+#include "asv/sim/LiftDragModel.hh"
 
 namespace gz
 {
