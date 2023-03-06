@@ -118,7 +118,8 @@ void SailLiftDrag::Configure(
     auto linkEntity = this->dataPtr->model.LinkByName(_ecm, linkName);
     if (!_ecm.HasEntity(linkEntity))
     {
-      gzerr << "Link name" << linkName << "does not exist";
+      gzerr << "Link with name [" << linkName << "] not found. "
+            << "The SailLiftDrag plugin will not generate forces.\n";
       return;
     }
     this->dataPtr->link = Link(linkEntity);
