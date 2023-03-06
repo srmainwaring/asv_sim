@@ -209,12 +209,6 @@ void FoilLiftDrag::PreUpdate(
     return;
   auto linkPoseWorld = linkPoseWorldOpt.value();
 
-  // Pose of centre of pressure (CP) in the world frame.
-  auto cpPoseLink = math::Pose3d(this->dataPtr->cpLink,
-      math::Quaterniond::Identity);
-  auto cpPoseWorld = linkPoseWorld * cpPoseLink;
-  auto cpWorld = cpPoseWorld.Pos();
-
   // Linear velocity at the centre of pressure (world frame).
   auto velCpWorldComp = this->dataPtr->link.WorldLinearVelocity(
       _ecm, this->dataPtr->cpLink);
