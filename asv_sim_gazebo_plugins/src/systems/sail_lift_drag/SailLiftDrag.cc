@@ -77,7 +77,7 @@ class SailLiftDragPrivate
   public: std::chrono::steady_clock::duration lastUpdateTime{0};
 
   /// \brief Center of pressure in link local coordinates.
-  public: gz::math::Vector3d cp = gz::math::Vector3d::Zero;
+  public: gz::math::Vector3d cpLink = gz::math::Vector3d::Zero;
 
   /// \brief Lift drag model.
   public: std::unique_ptr<asv::LiftDragModel> liftDrag;
@@ -135,11 +135,11 @@ void SailLiftDrag::Configure(
             << " plugin forces to act at.\n";
       return;
     }
-    this->dataPtr->cp = _sdf->Get<gz::math::Vector3d>("cp");
+    this->dataPtr->cpLink = _sdf->Get<gz::math::Vector3d>("cp");
   }
 
   {
-    double rate = 1.0;
+    double rate = 50.0;
     std::chrono::duration<double> period{rate > 0.0 ? 1.0 / rate : 0.0};
     this->dataPtr->updatePeriod = std::chrono::duration_cast<
         std::chrono::steady_clock::duration>(period);
@@ -193,107 +193,114 @@ void SailLiftDrag::PreUpdate(
   this->dataPtr->link.EnableAccelerationChecks(_ecm, true);
 
   /// \todo(srmainwaring) get wind model accounting for wind effects plugin
-  // retrieve the wind velocity
-  auto velWind = math::Vector3d::Zero;
+  // wind velocity
+  auto velWindWorld = math::Vector3d::Zero;
   Entity windEntity = _ecm.EntityByComponents(components::Wind());
-  auto windLinearVelComp =
+  auto velWindWorldComp =
       _ecm.Component<components::WorldLinearVelocity>(windEntity);
-  if (windLinearVelComp)
+  if (velWindWorldComp)
   {
-    velWind = windLinearVelComp->Data();
+    velWindWorld = velWindWorldComp->Data();
   }
 
-  // Linear velocity at the centre of pressure (world frame).
-  auto velCpComp = this->dataPtr->link.WorldLinearVelocity(
-      _ecm, this->dataPtr->cp);
-  if (!velCpComp.has_value())
+  // Pose of link origin and link CoM (world frame).
+  auto linkPoseWorldOpt = this->dataPtr->link.WorldPose(_ecm);
+  if (!linkPoseWorldOpt.has_value())
     return;
-  auto velCp = velCpComp.value();
+  auto linkPoseWorld = linkPoseWorldOpt.value();
+
+  // Pose of centre of pressure (CP) in the world frame.
+  auto cpPoseLink = math::Pose3d(this->dataPtr->cpLink,
+      math::Quaterniond::Identity);
+  auto cpPoseWorld = linkPoseWorld * cpPoseLink;
+  auto cpWorld = cpPoseWorld.Pos();
+
+  // Linear velocity at the centre of pressure (world frame).
+  auto velCpWorldComp = this->dataPtr->link.WorldLinearVelocity(
+      _ecm, this->dataPtr->cpLink);
+  if (!velCpWorldComp.has_value())
+    return;
+  auto velCpWorld = velCpWorldComp.value();
 
   // Free stream velocity at centre of pressure (world frame).
-  auto vel = velWind - velCp;
+  auto velWorld = velCpWorld - velWindWorld;
 
-  // Pose of link origin and link CoM (world frame).
-  auto linkPoseOpt = this->dataPtr->link.WorldPose(_ecm);
-  if (!linkPoseOpt.has_value())
-    return;
-  auto linkPose = linkPoseOpt.value();
-
-  auto comPoseOpt  = this->dataPtr->link.WorldInertialPose(_ecm);
-  if (!comPoseOpt.has_value())
-    return;
-  auto comPose = comPoseOpt.value();
-
-  // Compute lift and drag
+  // Compute lift and drag in world frame
   double alpha = 0;
   double u = 0;
   double cl = 0;
   double cd = 0;
   gz::math::Vector3d lift = gz::math::Vector3d::Zero;
   gz::math::Vector3d drag = gz::math::Vector3d::Zero;
-  this->dataPtr->liftDrag->Compute(vel, linkPose, lift, drag, alpha, u, cl, cd);
-
-  // Resultant force arising from lift and drag (world frame).
-  auto force = lift + drag;
-
-  // CoM (world frame).
-  auto com = comPose.Pos();
+  this->dataPtr->liftDrag->Compute(velWorld, linkPoseWorld,
+      lift, drag, alpha, u, cl, cd);
 
   // Rotate the centre of pressure (CP) into the world frame.
-  auto cpWorld = linkPose.Rot().RotateVector(this->dataPtr->cp);
+  auto xr = linkPoseWorld.Rot().RotateVector(this->dataPtr->cpLink);
 
-  // Vector from CoM to CP.
-  auto xr = linkPose.Pos() + cpWorld - com;
-
-  // Compute torque (about CoM in world frame)
-  auto torque = xr.Cross(force);
+  // Compute torque (about link origin in world frame)
+  auto liftTorque = xr.Cross(lift);
+  auto dragTorque = xr.Cross(drag);
 
   // Ensure no overflow.
-  force.Correct();
-  torque.Correct();
+  lift.Correct();
+  drag.Correct();
 
-  // @DEBUG_INFO
 #if 1
   auto elapsed = _info.simTime - this->dataPtr->lastUpdateTime;
   if (elapsed >= this->dataPtr->updatePeriod)
   {
     this->dataPtr->lastUpdateTime = _info.simTime;
+
+    // Resultant force arising from lift and drag (world frame).
+    auto force = lift + drag;
+    auto torque = liftTorque + dragTorque;
+    force.Correct();
+    torque.Correct();
+
     gzmsg << "Link:         " << this->dataPtr->link.Name(_ecm).value() << "\n"
-    // Scalars
-          << "u:            " << u                  << "\n"
-          << "alpha:        " << alpha              << "\n"
-          << "cl:           " << cl                 << "\n"
-          << "cd:           " << cd                 << "\n"
-          << "||velWind||:  " << velWind.Length()   << "\n"
-          << "||velCp||:    " << velCp.Length()     << "\n"
-          << "||vel||:      " << vel.Length()       << "\n"
-          << "||lift||:     " << lift.Length()      << "\n"
-          << "||drag||:     " << drag.Length()      << "\n"
-          << "||xr||:       " << xr.Length()        << "\n"
-          << "||force||:    " << force.Length()     << "\n"
-    // Vectors
-          << "link.pos:     " << linkPose.Pos()     << "\n"
-          << "link.rot:     " << linkPose.Rot().Euler() << "\n"
-          << "com.pos:      " << comPose.Pos()     << "\n"
-          << "com.rot:      " << comPose.Rot().Euler() << "\n"
-          << "velWind:      " << velWind            << "\n"
-          << "velCp:        " << velCp              << "\n"
-          << "vel:          " << vel                << "\n"
-          << "lift:         " << lift               << "\n"
-          << "drag:         " << drag               << "\n"
-          << "xr:           " << xr                 << "\n"
-          << "force:        " << force              << "\n"
-          << "torque:       " << torque             << "\n"
-          << "link          " << linkPose.Pos()     << "\n"
-          << "com:          " << com                << "\n"
-          << "cp:           " << cpWorld            << "\n"
+          // Scalars
+          << "u:            " << u << "\n"
+          << "alpha:        " << alpha << "\n"
+          << "cl:           " << cl << "\n"
+          << "cd:           " << cd << "\n"
+          << "||velWind||:  " << velWindWorld.Length() << "\n"
+          << "||velCp||:    " << velCpWorld.Length() << "\n"
+          << "||vel||:      " << velWorld.Length() << "\n"
+          << "||lift||:     " << lift.Length() << "\n"
+          << "||drag||:     " << drag.Length() << "\n"
+          << "||xr||:       " << xr.Length() << "\n"
+          << "||force||:    " << force.Length() << "\n"
+          // Vectors
+          << "link.pos:     " << linkPoseWorld.Pos() << "\n"
+          << "link.rot:     " << linkPoseWorld.Rot().Euler() << "\n"
+          << "velWind:      " << velWindWorld << "\n"
+          << "velCp:        " << velCpWorld << "\n"
+          << "vel:          " << velWorld << "\n"
+          << "lift:         " << lift << "\n"
+          << "drag:         " << drag << "\n"
+          << "liftTorque:   " << liftTorque << "\n"
+          << "dragTorque:   " << dragTorque << "\n"
+          << "xr:           " << xr << "\n"
+          << "force:        " << force << "\n"
+          << "torque:       " << torque << "\n"
+          << "link          " << linkPoseWorld.Pos() << "\n"
+          << "cp:           " << cpWorld << "\n"
           << "\n";
   }
 #endif
 
-  // Add force and torque to link (applied to CoM in world frame).
-  this->dataPtr->link.AddWorldForce(_ecm, force, com);
-  this->dataPtr->link.AddWorldWrench(_ecm, math::Vector3d::Zero, torque);
+  // Add force and torque to link (applied at link origin in world frame).
+  {
+    auto link = Link(this->dataPtr->link.Entity());
+    link.SetVisualizationLabel("SailLift");
+    link.AddWorldWrench(_ecm, lift, liftTorque);
+  }
+  {
+    auto link = Link(this->dataPtr->link.Entity());
+    link.SetVisualizationLabel("SailDrag");
+    link.AddWorldWrench(_ecm, drag, dragTorque);
+  }
 
   /// \todo(srmainwaring) enable force publishing / visualization.
 #if 0
@@ -328,7 +335,7 @@ void SailLiftDrag::PreUpdate(
   // Publish the message if needed
   if (this->dataPtr->liftDragPub)
     this->dataPtr->liftDragPub->Publish(liftDragMsg);
-  // @DEBUG_INFO
+
   // gzmsg << liftDragMsg.DebugString() << "\n";
 #endif
 }
