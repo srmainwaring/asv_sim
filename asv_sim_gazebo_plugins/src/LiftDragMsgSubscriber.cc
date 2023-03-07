@@ -1,4 +1,4 @@
-// Copyright (C) 2019  Rhys Mainwaring
+// Copyright (C) 2019-2023 Rhys Mainwaring
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -13,7 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#include "asv_sim_gazebo_plugins/MessageTypes.hh"
+#include <atomic>
+#include <chrono>
+#include <csignal>
+#include <thread>
+
+#include <boost/program_options.hpp>
 
 #include <gazebo/gazebo.hh>
 #include <gazebo/common/common.hh>
@@ -21,14 +26,9 @@
 #include <gazebo/physics/physics.hh>
 #include <gazebo/msgs/msgs.hh>
 
-#include <boost/program_options.hpp>
+#include "asv/sim/MessageTypes.hh"
 
-#include <atomic>
-#include <chrono>
-#include <csignal>
-#include <thread>
-
-using namespace gazebo;
+// using namespace gazebo;
 namespace po = boost::program_options;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -57,7 +57,7 @@ void OnLiftDragMsg(asv::LiftDragPtr &_msg)
 ///////////////////////////////////////////////////////////////////////////////
 int main(int _argc, char **_argv)
 {
-  try 
+  try
   {
     // Copyright notice.
     std::cout
@@ -66,10 +66,11 @@ int main(int _argc, char **_argv)
       << "Released under the GNU General Public License.\n\n";
 
     // Program options
-    po::options_description options("Subscribe to lift drag messages (asv_msgs/LiftDrag)");
+    po::options_description options(
+        "Subscribe to lift drag messages (asv_msgs/LiftDrag)");
 
     options.add_options()
-      ("help,h", 
+      ("help,h",
         "Dispay this help screen.")
       ("topic,t", po::value<std::string>(),
         "The topic to subscribe to.");
@@ -79,7 +80,7 @@ int main(int _argc, char **_argv)
     po::notify(vm);
 
     if (vm.count("help") || vm.empty())
-    { 
+    {
       std::cout << options << std::endl;
       return 0;
     }
@@ -91,7 +92,7 @@ int main(int _argc, char **_argv)
         return 0;
     }
     auto topic = vm["topic"].as<std::string>();
- 
+
     // Signal handler
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);

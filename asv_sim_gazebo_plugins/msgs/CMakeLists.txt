@@ -23,9 +23,9 @@ set (msgs
 
 PROTOBUF_GENERATE_CPP(PROTO_SRCS PROTO_HDRS ${msgs})
 
-add_library(asv_sim_gazebo_plugins_msgs SHARED ${PROTO_SRCS})
+add_library(asv_sim_msgs SHARED ${PROTO_SRCS})
 
-target_link_libraries(asv_sim_gazebo_plugins_msgs
+target_link_libraries(asv_sim_msgs
   ${PROTOBUF_LIBRARY}
   ${GAZEBO_LIBRARIES}
   ${GAZEBO_PROTO_LIBRARIES}
@@ -34,7 +34,7 @@ target_link_libraries(asv_sim_gazebo_plugins_msgs
 ############################################################################### 
 # Install
 
-install(TARGETS asv_sim_gazebo_plugins_msgs
+install(TARGETS asv_sim_msgs
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}

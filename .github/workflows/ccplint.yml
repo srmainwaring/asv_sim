@@ -1,0 +1,43 @@
+# GitHub Action to run cpplint
+# 
+# The cpplint configuration file is:
+# 
+#   ./CPPLINT.cfg
+#
+name: Cpplint
+
+on: [push, pull_request]
+
+jobs:
+  cpplint:
+    runs-on: ubuntu-latest
+    name: Cpplint
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - name: Install Cpplint
+        run: |
+          pip install cpplint
+      - name: Cpplint Core Library
+        run: |
+          cpplint ./asv_sim_gazebo_plugins/include/asv/sim/*.hh
+          cpplint ./asv_sim_gazebo_plugins/src/*.cc
+      - name: Cpplint Anemometer Plugin
+        run: |
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/anemometer/*.hh \
+            ./asv_sim_gazebo_plugins/src/systems/anemometer/*.cc
+      - name: Cpplint FoilLiftDrag Plugin
+        run: |
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh \
+            ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.cc
+      - name: Cpplint SailLiftDrag Plugin
+        run: |
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh \
+            ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.cc

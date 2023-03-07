@@ -1,0 +1,39 @@
+# GitHub Action to run cppcheck
+# 
+name: Cppcheck
+
+on: [push, pull_request]
+
+jobs:
+  cpplint:
+    runs-on: ubuntu-latest
+    name: Cppcheck
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install Cppcheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install cppcheck
+      - name: Cppcheck Core Library
+        run: |
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/include/asv/sim/*.hh
+          cppcheck --std=c++17 ./asv_sim_gazebo_plugins/src/*.cc
+      - name: Cppcheck Anemometer Plugin
+        run: |
+          cppcheck --std=c++17 --suppress=unknownMacro \
+            ./asv_sim_gazebo_plugins/src/systems/anemometer/*.hh
+          cppcheck --std=c++17 --suppress=unknownMacro \
+            ./asv_sim_gazebo_plugins/src/systems/anemometer/*.cc
+      - name: Cppcheck FoilLiftDrag Plugin
+        run: |
+          cppcheck --std=c++17 --suppress=unknownMacro \
+            ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh
+          cppcheck --std=c++17 --suppress=unknownMacro \
+            ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.cc
+      - name: Cppcheck SailLiftDrag Plugin
+        run: |
+          cppcheck --std=c++17 --suppress=unknownMacro \
+            ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh
+          cppcheck --std=c++17 --suppress=unknownMacro \
+            ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.cc
