@@ -139,7 +139,7 @@ void SailLiftDrag::Configure(
   }
 
   {
-    double rate = 50.0;
+    double rate = 1.0;
     std::chrono::duration<double> period{rate > 0.0 ? 1.0 / rate : 0.0};
     this->dataPtr->updatePeriod = std::chrono::duration_cast<
         std::chrono::steady_clock::duration>(period);
@@ -217,7 +217,7 @@ void SailLiftDrag::PreUpdate(
   auto velCpWorld = velCpWorldComp.value();
 
   // Free stream velocity at centre of pressure (world frame).
-  auto velWorld = velCpWorld - velWindWorld;
+  auto velWorld = velWindWorld - velCpWorld;
 
   // Compute lift and drag in world frame
   double alpha = 0;
@@ -240,7 +240,7 @@ void SailLiftDrag::PreUpdate(
   lift.Correct();
   drag.Correct();
 
-#if 1
+#if 0
   auto elapsed = _info.simTime - this->dataPtr->lastUpdateTime;
   if (elapsed >= this->dataPtr->updatePeriod)
   {

@@ -192,17 +192,6 @@ void FoilLiftDrag::PreUpdate(
   this->dataPtr->link.EnableVelocityChecks(_ecm, true);
   this->dataPtr->link.EnableAccelerationChecks(_ecm, true);
 
-  /// \todo(srmainwaring) get wind model accounting for wind effects plugin
-  // wind velocity
-  auto velWindWorld = math::Vector3d::Zero;
-  Entity windEntity = _ecm.EntityByComponents(components::Wind());
-  auto velWindWorldComp =
-      _ecm.Component<components::WorldLinearVelocity>(windEntity);
-  if (velWindWorldComp)
-  {
-    velWindWorld = velWindWorldComp->Data();
-  }
-
   // Pose of link origin and link CoM (world frame).
   auto linkPoseWorldOpt = this->dataPtr->link.WorldPose(_ecm);
   if (!linkPoseWorldOpt.has_value())
@@ -217,7 +206,7 @@ void FoilLiftDrag::PreUpdate(
   auto velCpWorld = velCpWorldComp.value();
 
   // Free stream velocity at centre of pressure (world frame).
-  auto velWorld = velCpWorld - velWindWorld;
+  auto velWorld = - velCpWorld;
 
   // Compute lift and drag in world frame
   double alpha = 0;
