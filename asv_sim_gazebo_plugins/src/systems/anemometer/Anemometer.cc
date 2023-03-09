@@ -21,6 +21,7 @@
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 #include <gz/common/Console.hh>
 #include <gz/common/Profiler.hh>
@@ -323,7 +324,7 @@ void Anemometer::PostUpdate(
   {
     for (auto &[entity, sensor] : this->dataPtr->entitySensorMap)
     {
-      /// \todo(srmainwaring) implement sensor. 
+      /// \todo(srmainwaring) implement sensor.
       // sensor->NewPosition(gz::sim::worldPose(entity, _ecm).Pos());
       sensor->Update(_info.simTime);
     }
