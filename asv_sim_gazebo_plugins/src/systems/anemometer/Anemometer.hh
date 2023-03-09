@@ -37,7 +37,7 @@ namespace custom
 class Anemometer : public gz::sensors::Sensor
 {
   /// \brief Destructor.
-  virtual ~Anemometer();
+  public: virtual ~Anemometer();
 
   // Documentation inherited
   public: virtual bool Load(const sdf::Sensor &_sdf) override;
@@ -123,7 +123,6 @@ class AnemometerPrivate;
 ///
 class Anemometer
     : public System,
-      public ISystemConfigure,
       public ISystemPreUpdate,
       public ISystemPostUpdate
 {
@@ -134,37 +133,18 @@ class Anemometer
   public: Anemometer();
 
   // Documentation inherited
-  public: void Configure(
-      const Entity &_entity,
-      const std::shared_ptr<const sdf::Element> &_sdf,
-      EntityComponentManager &_ecm,
-      EventManager &_eventMgr) final;
-
-  /// Documentation inherited
   public: void PreUpdate(
       const UpdateInfo &_info,
       EntityComponentManager &_ecm) override;
 
-  /// Documentation inherited
+  // Documentation inherited
   public: void PostUpdate(
       const UpdateInfo &_info,
       const EntityComponentManager &_ecm) final;
 
-  /// \brief Accessor for the current true wind velocity in m/s.
-  /// \return Current true wind velocity.
-  public: gz::math::Vector3d TrueWindVelocity() const;
-
-  /// \brief Accessor for the current apparent wind velocity in m/s.
-  /// \return Current apparent wind velocity.
-  public: gz::math::Vector3d ApparentWindVelocity() const;
-
   /// \brief Private data pointer.
   private: std::unique_ptr<AnemometerPrivate> dataPtr;
 };
-
-/// \def AnemometerPtr
-/// \brief Shared pointer to Anemometer
-using AnemometerPtr = std::shared_ptr<Anemometer>;
 
 }  // namespace systems
 }

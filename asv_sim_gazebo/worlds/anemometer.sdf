@@ -40,6 +40,9 @@
     <plugin filename="gz-sim-imu-system"
         name="gz::sim::systems::Imu">
     </plugin>
+    <plugin filename="asv_sim2-anemometer-system"
+      name="gz::sim::systems::Anemometer">
+    </plugin>
 
     <scene>
       <ambient>1.0 1.0 1.0</ambient>

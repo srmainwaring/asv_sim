@@ -27,9 +27,20 @@
 #include <gz/msgs/Utility.hh>
 #include <gz/plugin/Register.hh>
 #include <gz/sensors/Noise.hh>
+#include <gz/sensors/SensorFactory.hh>
 #include <gz/sensors/Util.hh>
+
+#include <gz/sim/components/CustomSensor.hh>
+#include <gz/sim/components/Name.hh>
+#include <gz/sim/components/ParentEntity.hh>
+#include <gz/sim/components/Sensor.hh>
+#include <gz/sim/components/World.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/Util.hh>
+
 #include <gz/transport.hh>
 
+#include <sdf/Sensor.hh>
 
 namespace custom
 {
@@ -51,7 +62,7 @@ bool Anemometer::Load(const sdf::Sensor &_sdf)
   gz::sensors::Sensor::Load(_sdf);
 
   // Advertise topic where data will be published
-  this->pub = this->node.Advertise<gz::msgs::Double>(this->Topic());
+  this->pub = this->node.Advertise<gz::msgs::Vector3d>(this->Topic());
 
   if (!_sdf.Element()->HasElement("gz:anemometer"))
   {
@@ -139,50 +150,35 @@ class AnemometerPrivate
   /// \brief Store the most recent anemometer message.
   // public: asv_msgs::msgs::Anemometer anemometerMsg;
 
-#if 0
-  /// \brief A map of air speed entity to its sensor
-  public: std::unordered_map<Entity,
-      std::unique_ptr<sensors::AirSpeedSensor>> entitySensorMap;
-
-  /// \brief gz-sensors sensor factory for creating sensors
-  public: sensors::SensorFactory sensorFactory;
-
-  /// \brief Keep list of sensors that were created during the previous
-  /// `PostUpdate`, so that components can be created during the next
-  /// `PreUpdate`.
-  public: std::unordered_set<Entity> newSensors;
-
-  /// True if the rendering component is initialized
-  public: bool initialized = false;
-
-  public: Entity entity;
-
-  /// \brief Create sensor
+  /// \brief Remove custom sensors if their entities have been removed from
+  /// the simulation.
   /// \param[in] _ecm Immutable reference to ECM.
-  /// \param[in] _entity Entity of the IMU
-  /// \param[in] _airSpeed AirSpeedSensor component.
-  /// \param[in] _parent Parent entity component.
-  public: void AddAirSpeed(
-    const EntityComponentManager &_ecm,
-    const Entity _entity,
-    const components::AirSpeedSensor *_airSpeed,
-    const components::ParentEntity *_parent);
+  public: void RemoveSensorEntities(
+      const gz::sim::EntityComponentManager &_ecm);
 
-  /// \brief Create air speed sensor
-  /// \param[in] _ecm Immutable reference to ECM.
-  public: void CreateSensors(const EntityComponentManager &_ecm);
-
-  /// \brief Update air speed sensor data based on physics data
-  /// \param[in] _ecm Immutable reference to ECM.
-  public: void UpdateAirSpeeds(const EntityComponentManager &_ecm);
-
-  /// \brief Remove air speed sensors if their entities have been removed
-  /// from simulation.
-  /// \param[in] _ecm Immutable reference to ECM.
-  public: void RemoveAirSpeedEntities(const EntityComponentManager &_ecm);
-#endif
+  /// \brief A map of custom entities to their sensors.
+  public: std::unordered_map<gz::sim::Entity,
+      std::shared_ptr<custom::Anemometer>> entitySensorMap;
 };
 
+/////////////////////////////////////////////////
+void AnemometerPrivate::RemoveSensorEntities(
+    const gz::sim::EntityComponentManager &_ecm)
+{
+  _ecm.EachRemoved<gz::sim::components::CustomSensor>(
+    [&](const gz::sim::Entity &_entity,
+        const gz::sim::components::CustomSensor *)->bool
+      {
+        if (this->entitySensorMap.erase(_entity) == 0)
+        {
+          gzerr << "Internal error, missing anemometer for entity ["
+                << _entity << "].\n";
+        }
+        return true;
+      });
+}
+
+/////////////////////////////////////////////////
 /////////////////////////////////////////////////
 Anemometer::~Anemometer() = default;
 
@@ -191,38 +187,6 @@ Anemometer::Anemometer()
   : System(), dataPtr(std::make_unique<AnemometerPrivate>())
 
 {
-}
-
-/////////////////////////////////////////////////
-void Anemometer::Configure(
-    const Entity &_entity,
-    const std::shared_ptr<const sdf::Element> &_sdf,
-    EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
-{
-  /// \todo(srmainwaring) implement
-#if 0
-  physics::EntityPtr parentEntity =
-    this->world->EntityByName(this->ParentName());
-
-  this->dataPtr->parentLink =
-    boost::dynamic_pointer_cast<physics::Link>(parentEntity);
-
-  auto getTopic = [&, this]() -> std::string
-  {
-    std::string topicName = "~/" + this->ParentName() + '/' + this->Name();
-    if (this->sdf->HasElement("topic"))
-      topicName += '/' + this->sdf->Get<std::string>("topic");
-    boost::replace_all(topicName, "::", "/");
-
-    return topicName;
-  }
-
-  this->dataPtr->anemometerPub =
-      this->node->Advertise<asv_msgs::msgs::Anemometer>(
-          getTopic(), 50);
-
-#endif
 }
 
 /////////////////////////////////////////////////
@@ -303,6 +267,50 @@ void Anemometer::PreUpdate(
     this->dataPtr->anemometerPub->Publish(this->dataPtr->anemometerMsg);
 
 #endif
+
+  _ecm.EachNew<gz::sim::components::CustomSensor,
+               gz::sim::components::ParentEntity>(
+    [&](const gz::sim::Entity &_entity,
+        const gz::sim::components::CustomSensor *_custom,
+        const gz::sim::components::ParentEntity *_parent)->bool
+      {
+        // Get sensor's scoped name without the world
+        auto sensorScopedName = gz::sim::removeParentScope(
+            gz::sim::scopedName(_entity, _ecm, "::", false), "::");
+        sdf::Sensor data = _custom->Data();
+        data.SetName(sensorScopedName);
+
+        // Default to scoped name as topic
+        if (data.Topic().empty())
+        {
+          std::string topic = scopedName(_entity, _ecm) + "/anemometer";
+          data.SetTopic(topic);
+        }
+
+        gz::sensors::SensorFactory sensorFactory;
+        auto sensor = sensorFactory.CreateSensor<custom::Anemometer>(data);
+        if (nullptr == sensor)
+        {
+          gzerr << "Failed to create anemometer [" << sensorScopedName << "]."
+                << "\n";
+          return false;
+        }
+
+        // Set sensor parent
+        auto parentName = _ecm.Component<gz::sim::components::Name>(
+            _parent->Data())->Data();
+        sensor->SetParent(parentName);
+
+        // Set topic on Gazebo
+        _ecm.CreateComponent(_entity,
+            gz::sim::components::SensorTopic(sensor->Topic()));
+
+        // Keep track of this sensor
+        this->dataPtr->entitySensorMap.insert(std::make_pair(_entity,
+            std::move(sensor)));
+
+        return true;
+      });
 }
 
 /////////////////////////////////////////////////
@@ -310,28 +318,18 @@ void Anemometer::PostUpdate(
     const UpdateInfo &_info,
     const EntityComponentManager &_ecm)
 {
-  /// \todo(srmainwaring) implement
-}
+  // Only update and publish if not paused.
+  if (!_info.paused)
+  {
+    for (auto &[entity, sensor] : this->dataPtr->entitySensorMap)
+    {
+      /// \todo(srmainwaring) implement sensor. 
+      // sensor->NewPosition(gz::sim::worldPose(entity, _ecm).Pos());
+      sensor->Update(_info.simTime);
+    }
+  }
 
-/////////////////////////////////////////////////
-gz::math::Vector3d Anemometer::TrueWindVelocity() const
-{
-  /// \todo(srmainwaring) implement
-  // std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  // return gz::math::Vector3d::Zero;
-}
-
-/////////////////////////////////////////////////
-gz::math::Vector3d Anemometer::ApparentWindVelocity() const
-{
-  /// \todo(srmainwaring) implement
-  // std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  // gz::math::Vector3d vel(
-  //     this->dataPtr->anemometerMsg.wind_velocity().x(),
-  //     this->dataPtr->anemometerMsg.wind_velocity().y(),
-  //     this->dataPtr->anemometerMsg.wind_velocity().z());
-  // return vel;
-  return gz::math::Vector3d::Zero;
+  this->dataPtr->RemoveSensorEntities(_ecm);
 }
 
 }  // namespace systems
@@ -341,7 +339,6 @@ gz::math::Vector3d Anemometer::ApparentWindVelocity() const
 GZ_ADD_PLUGIN(
     gz::sim::systems::Anemometer,
     gz::sim::System,
-    gz::sim::systems::Anemometer::ISystemConfigure,
     gz::sim::systems::Anemometer::ISystemPreUpdate,
     gz::sim::systems::Anemometer::ISystemPostUpdate)
 
