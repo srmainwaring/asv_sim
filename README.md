@@ -154,7 +154,7 @@ You should see a world containing a single block at the origin.
 The figure below shows the block falling to demonstate the effect
 of motion on apparent wind:
 
-![Anemometer World](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_world_falling.jpg)
+![anemometer](https://user-images.githubusercontent.com/24916364/224131738-0277d78e-8ab1-4c07-bf14-072b1e3fed19.jpg)
 
 Open the Topic Visualization window and select the `anemometer` topic:
 
