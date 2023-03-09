@@ -15,12 +15,15 @@
 
 #include "Anemometer.hh"
 
+#include <gz/msgs/vector3d.pb.h>
+
 #include <mutex>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 #include <gz/common/Console.hh>
 #include <gz/common/Profiler.hh>
-#include <gz/msgs/vector3d.pb.h>
 #include <gz/msgs/Utility.hh>
 #include <gz/plugin/Register.hh>
 #include <gz/sensors/Noise.hh>
