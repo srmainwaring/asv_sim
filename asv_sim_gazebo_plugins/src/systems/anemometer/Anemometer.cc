@@ -18,34 +18,97 @@
 #include <mutex>
 #include <string>
 
+#include <gz/common/Console.hh>
 #include <gz/common/Profiler.hh>
+#include <gz/msgs/vector3d.pb.h>
+#include <gz/msgs/Utility.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sensors/Noise.hh>
+#include <gz/sensors/Util.hh>
 #include <gz/transport.hh>
 
-// #include <mutex>
-// #include <iostream>
-// #include <string>
-// #include <boost/algorithm/string.hpp>
 
-// #include <gazebo/common/Assert.hh>
-// #include <gazebo/physics/Link.hh>
-// #include <gazebo/physics/PhysicsTypes.hh>
-// #include <gazebo/physics/World.hh>
-// #include <gazebo/sensors/Noise.hh>
-// #include <gazebo/sensors/SensorFactory.hh>
-// #include <gazebo/transport/Node.hh>
-// #include <gazebo/transport/TransportTypes.hh>
+namespace custom
+{
+//////////////////////////////////////////////////
+Anemometer::~Anemometer() = default;
 
-// #include <gazebo/msgs/msgs.hh>
+//////////////////////////////////////////////////
+bool Anemometer::Load(const sdf::Sensor &_sdf)
+{
+  auto type = gz::sensors::customType(_sdf);
+  if ("anemometer" != type)
+  {
+    gzerr << "Trying to load [anemometer] sensor, but got type ["
+           << type << "] instead.\n";
+    return false;
+  }
 
-// #include <ignition/math/Pose3.hh>
-// #include <ignition/math/Vector3.hh>
+  // Load common sensor params
+  gz::sensors::Sensor::Load(_sdf);
 
-// #include "asv/sim/MessageTypes.hh"
-// #include "asv/sim/Utilities.hh"
+  // Advertise topic where data will be published
+  this->pub = this->node.Advertise<gz::msgs::Double>(this->Topic());
 
-// using namespace asv;
+  if (!_sdf.Element()->HasElement("gz:anemometer"))
+  {
+    gzdbg << "No custom configuration for [" << this->Topic() << "]\n";
+    return true;
+  }
 
+  // Load custom sensor params
+  auto customElem = _sdf.Element()->GetElement("gz:anemometer");
+
+  if (!customElem->HasElement("noise"))
+  {
+    gzdbg << "No noise for [" << this->Topic() << "]\n";
+    return true;
+  }
+
+  sdf::Noise noiseSdf;
+  noiseSdf.Load(customElem->GetElement("noise"));
+  this->noise = gz::sensors::NoiseFactory::NewNoiseModel(noiseSdf);
+  if (nullptr == this->noise)
+  {
+    gzerr << "Failed to load noise.\n";
+    return false;
+  }
+
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Anemometer::Update(const std::chrono::steady_clock::duration &_now)
+{
+  gz::msgs::Vector3d msg;
+  *msg.mutable_header()->mutable_stamp() = gz::msgs::Convert(_now);
+  auto frame = msg.mutable_header()->add_data();
+  frame->set_key("frame_id");
+  frame->add_value(this->Name());
+
+  gz::msgs::Set(&msg, this->prevApparentWindVel);
+
+  this->AddSequence(msg.mutable_header());
+  this->pub.Publish(msg);
+
+  return true;
+}
+
+//////////////////////////////////////////////////
+void Anemometer::SetApparentWindVelocity(const gz::math::Vector3d &_vel)
+{
+  this->prevApparentWindVel = _vel;
+}
+
+//////////////////////////////////////////////////
+const gz::math::Vector3d& Anemometer::ApparentWindVelocity() const
+{
+  return this->prevApparentWindVel;
+}
+
+}  // namespace custom
+
+//////////////////////////////////////////////////
 namespace gz
 {
 namespace sim
@@ -57,21 +120,64 @@ namespace systems
 class AnemometerPrivate
 {
   /// \brief Parent link of this sensor.
-  public: Entity parentLink;
+  // public: Entity parentLink;
 
   /// \todo(srmainwaring) enable
   /// \brief Publish to topic "~/anemometer".
   // public: transport::PublisherPtr anemometerPub;
 
   /// \brief Communication node.
-  public: transport::Node node;
+  // public: transport::Node node;
 
    /// \brief Mutex to protect read and writes
-  public: std::mutex mutex;
+  // public: std::mutex mutex;
 
   /// \todo(srmainwaring) enable
   /// \brief Store the most recent anemometer message.
   // public: asv_msgs::msgs::Anemometer anemometerMsg;
+
+#if 0
+  /// \brief A map of air speed entity to its sensor
+  public: std::unordered_map<Entity,
+      std::unique_ptr<sensors::AirSpeedSensor>> entitySensorMap;
+
+  /// \brief gz-sensors sensor factory for creating sensors
+  public: sensors::SensorFactory sensorFactory;
+
+  /// \brief Keep list of sensors that were created during the previous
+  /// `PostUpdate`, so that components can be created during the next
+  /// `PreUpdate`.
+  public: std::unordered_set<Entity> newSensors;
+
+  /// True if the rendering component is initialized
+  public: bool initialized = false;
+
+  public: Entity entity;
+
+  /// \brief Create sensor
+  /// \param[in] _ecm Immutable reference to ECM.
+  /// \param[in] _entity Entity of the IMU
+  /// \param[in] _airSpeed AirSpeedSensor component.
+  /// \param[in] _parent Parent entity component.
+  public: void AddAirSpeed(
+    const EntityComponentManager &_ecm,
+    const Entity _entity,
+    const components::AirSpeedSensor *_airSpeed,
+    const components::ParentEntity *_parent);
+
+  /// \brief Create air speed sensor
+  /// \param[in] _ecm Immutable reference to ECM.
+  public: void CreateSensors(const EntityComponentManager &_ecm);
+
+  /// \brief Update air speed sensor data based on physics data
+  /// \param[in] _ecm Immutable reference to ECM.
+  public: void UpdateAirSpeeds(const EntityComponentManager &_ecm);
+
+  /// \brief Remove air speed sensors if their entities have been removed
+  /// from simulation.
+  /// \param[in] _ecm Immutable reference to ECM.
+  public: void RemoveAirSpeedEntities(const EntityComponentManager &_ecm);
+#endif
 };
 
 /////////////////////////////////////////////////
@@ -121,10 +227,10 @@ void Anemometer::PreUpdate(
     const UpdateInfo &_info,
     EntityComponentManager &_ecm)
 {
+#if 0
   std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
 
   /// \todo(srmainwaring) implement
-#if 0
   // Get latest pose information
   if (this->dataPtr->parentLink)
   {
@@ -208,15 +314,15 @@ void Anemometer::PostUpdate(
 gz::math::Vector3d Anemometer::TrueWindVelocity() const
 {
   /// \todo(srmainwaring) implement
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  return gz::math::Vector3d::Zero;
+  // std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  // return gz::math::Vector3d::Zero;
 }
 
 /////////////////////////////////////////////////
 gz::math::Vector3d Anemometer::ApparentWindVelocity() const
 {
   /// \todo(srmainwaring) implement
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  // std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
   // gz::math::Vector3d vel(
   //     this->dataPtr->anemometerMsg.wind_velocity().x(),
   //     this->dataPtr->anemometerMsg.wind_velocity().y(),
