@@ -134,23 +134,6 @@ namespace systems
 /// \brief Private Anemometer data class.
 class AnemometerPrivate
 {
-  /// \brief Parent link of this sensor.
-  // public: Entity parentLink;
-
-  /// \todo(srmainwaring) enable
-  /// \brief Publish to topic "~/anemometer".
-  // public: transport::PublisherPtr anemometerPub;
-
-  /// \brief Communication node.
-  // public: transport::Node node;
-
-   /// \brief Mutex to protect read and writes
-  // public: std::mutex mutex;
-
-  /// \todo(srmainwaring) enable
-  /// \brief Store the most recent anemometer message.
-  // public: asv_msgs::msgs::Anemometer anemometerMsg;
-
   /// \brief Remove custom sensors if their entities have been removed from
   /// the simulation.
   /// \param[in] _ecm Immutable reference to ECM.
@@ -186,7 +169,6 @@ Anemometer::~Anemometer() = default;
 /////////////////////////////////////////////////
 Anemometer::Anemometer()
   : System(), dataPtr(std::make_unique<AnemometerPrivate>())
-
 {
 }
 
@@ -195,10 +177,63 @@ void Anemometer::PreUpdate(
     const UpdateInfo &_info,
     EntityComponentManager &_ecm)
 {
-#if 0
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  _ecm.EachNew<gz::sim::components::CustomSensor,
+               gz::sim::components::ParentEntity>(
+    [&](const gz::sim::Entity &_entity,
+        const gz::sim::components::CustomSensor *_custom,
+        const gz::sim::components::ParentEntity *_parent)->bool
+      {
+        // Get sensor's scoped name without the world
+        auto sensorScopedName = gz::sim::removeParentScope(
+            gz::sim::scopedName(_entity, _ecm, "::", false), "::");
+        sdf::Sensor data = _custom->Data();
+        data.SetName(sensorScopedName);
 
-  /// \todo(srmainwaring) implement
+        // Default to scoped name as topic
+        if (data.Topic().empty())
+        {
+          std::string topic = scopedName(_entity, _ecm) + "/anemometer";
+          data.SetTopic(topic);
+        }
+
+        gz::sensors::SensorFactory sensorFactory;
+        auto sensor = sensorFactory.CreateSensor<custom::Anemometer>(data);
+        if (nullptr == sensor)
+        {
+          gzerr << "Failed to create anemometer [" << sensorScopedName << "]."
+                << "\n";
+          return false;
+        }
+
+        // Set sensor parent
+        auto parentName = _ecm.Component<gz::sim::components::Name>(
+            _parent->Data())->Data();
+        sensor->SetParent(parentName);
+
+        // Set topic on Gazebo
+        _ecm.CreateComponent(_entity,
+            gz::sim::components::SensorTopic(sensor->Topic()));
+
+        // Keep track of this sensor
+        this->dataPtr->entitySensorMap.insert(std::make_pair(_entity,
+            std::move(sensor)));
+
+        return true;
+      });
+}
+
+/////////////////////////////////////////////////
+void Anemometer::PostUpdate(
+    const UpdateInfo &_info,
+    const EntityComponentManager &_ecm)
+{
+  // Only update and publish if not paused.
+  if (!_info.paused)
+  {
+    for (auto &[entity, sensor] : this->dataPtr->entitySensorMap)
+    {
+
+#if 0
   // Get latest pose information
   if (this->dataPtr->parentLink)
   {
@@ -259,71 +294,9 @@ void Anemometer::PreUpdate(
     gzmsg << "\n";
   }
 
-  // Save the time of the measurement
-  common::Time simTime = this->world->SimTime();
-  msgs::Set(this->dataPtr->anemometerMsg.mutable_time(), simTime);
-
-  // Publish the message if needed
-  if (this->dataPtr->anemometerPub)
-    this->dataPtr->anemometerPub->Publish(this->dataPtr->anemometerMsg);
-
 #endif
 
-  _ecm.EachNew<gz::sim::components::CustomSensor,
-               gz::sim::components::ParentEntity>(
-    [&](const gz::sim::Entity &_entity,
-        const gz::sim::components::CustomSensor *_custom,
-        const gz::sim::components::ParentEntity *_parent)->bool
-      {
-        // Get sensor's scoped name without the world
-        auto sensorScopedName = gz::sim::removeParentScope(
-            gz::sim::scopedName(_entity, _ecm, "::", false), "::");
-        sdf::Sensor data = _custom->Data();
-        data.SetName(sensorScopedName);
 
-        // Default to scoped name as topic
-        if (data.Topic().empty())
-        {
-          std::string topic = scopedName(_entity, _ecm) + "/anemometer";
-          data.SetTopic(topic);
-        }
-
-        gz::sensors::SensorFactory sensorFactory;
-        auto sensor = sensorFactory.CreateSensor<custom::Anemometer>(data);
-        if (nullptr == sensor)
-        {
-          gzerr << "Failed to create anemometer [" << sensorScopedName << "]."
-                << "\n";
-          return false;
-        }
-
-        // Set sensor parent
-        auto parentName = _ecm.Component<gz::sim::components::Name>(
-            _parent->Data())->Data();
-        sensor->SetParent(parentName);
-
-        // Set topic on Gazebo
-        _ecm.CreateComponent(_entity,
-            gz::sim::components::SensorTopic(sensor->Topic()));
-
-        // Keep track of this sensor
-        this->dataPtr->entitySensorMap.insert(std::make_pair(_entity,
-            std::move(sensor)));
-
-        return true;
-      });
-}
-
-/////////////////////////////////////////////////
-void Anemometer::PostUpdate(
-    const UpdateInfo &_info,
-    const EntityComponentManager &_ecm)
-{
-  // Only update and publish if not paused.
-  if (!_info.paused)
-  {
-    for (auto &[entity, sensor] : this->dataPtr->entitySensorMap)
-    {
       /// \todo(srmainwaring) implement sensor.
       // sensor->NewPosition(gz::sim::worldPose(entity, _ecm).Pos());
       sensor->Update(_info.simTime);
