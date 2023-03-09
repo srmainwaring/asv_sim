@@ -31,9 +31,12 @@
 #include <gz/sensors/SensorFactory.hh>
 #include <gz/sensors/Util.hh>
 
+#include "gz/sim/components/AngularVelocity.hh"
 #include <gz/sim/components/CustomSensor.hh>
+#include "gz/sim/components/LinearVelocity.hh"
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/ParentEntity.hh>
+#include <gz/sim/components/Pose.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/sim/components/World.hh>
 #include <gz/sim/EntityComponentManager.hh>
@@ -218,6 +221,13 @@ void Anemometer::PreUpdate(
         this->dataPtr->entitySensorMap.insert(std::make_pair(_entity,
             std::move(sensor)));
 
+        // Enable components (enable velocity checks)
+        enableComponent<components::WorldLinearVelocity>(_ecm, _entity, true);
+        enableComponent<components::WorldAngularVelocity>(_ecm, _entity, true);
+        enableComponent<components::LinearVelocity>(_ecm, _entity, true);
+        enableComponent<components::AngularVelocity>(_ecm, _entity, true);
+        enableComponent<components::WorldPose>(_ecm, _entity, true);
+
         return true;
       });
 }
@@ -232,73 +242,65 @@ void Anemometer::PostUpdate(
   {
     for (auto &[entity, sensor] : this->dataPtr->entitySensorMap)
     {
+      // Sensor pose relative to the world frame
+      // math::Pose3d sensorWorldPose
+      //   = this->pose + this->dataPtr->parentLink->WorldPose();
+      math::Pose3d sensorWorldPose = worldPose(entity, _ecm);
 
-#if 0
-  // Get latest pose information
-  if (this->dataPtr->parentLink)
-  {
-    // Sensor pose relative to the world frame
-    ignition::math::Pose3d sensorWorldPose
-      = this->pose + this->dataPtr->parentLink->WorldPose();
+      // Link velocity at the link CoM in the world frame.
+      // math::Vector3d linkWorldCoMLinearVel
+      //   = this->dataPtr->parentLink->WorldCoGLinearVel();
 
-    // Link velocity at the link CoM in the world frame.
-    ignition::math::Vector3d linkWorldCoMLinearVel
-      = this->dataPtr->parentLink->WorldCoGLinearVel();
+      // Link angular velocity at the link CoM in the world frame.
+      // math::Vector3d linkWorldAngularVel
+      //   = this->dataPtr->parentLink->WorldAngularVel();
 
-    // Link angular velocity at the link CoM in the world frame.
-    ignition::math::Vector3d linkWorldAngularVel
-      = this->dataPtr->parentLink->WorldAngularVel();
+      // Sensor pose relative to the link CoM
+      // math::Pose3d sensorCoMPose
+      //   = sensorWorldPose - this->dataPtr->parentLink->WorldCoGPose();
 
-    // Sensor pose relative to the link CoM
-    ignition::math::Pose3d sensorCoMPose
-      = sensorWorldPose - this->dataPtr->parentLink->WorldCoGPose();
+      // Sensor velocity: vs = omega x r_(CoM, sensor)
+      // math::Vector3d sensorWorldLinearVel
+      //   = linkWorldCoMLinearVel
+      //   + linkWorldAngularVel.Cross(sensorCoMPose.Pos());
+      math::Vector3d sensorWorldLinearVel = relativeVel(entity, _ecm);
 
-    // Sensor velocity: vs = omega x r_(CoM, sensor)
-    ignition::math::Vector3d sensorWorldLinearVel
-      = linkWorldCoMLinearVel + linkWorldAngularVel.Cross(sensorCoMPose.Pos());
+      // Wind velocity at the link origin in the world frame.
+      // We use this to approximate the true wind at the sensor origin
+      // (true wind = unadjusted for the sensors's motion)
+      // auto& wind = this->world->Wind();
+      // gz::math::Vector3d windWorldLinearVel
+      //   = wind.WorldLinearVel(this->dataPtr->parentLink.get());
+      math::Vector3d windWorldLinearVel = gz::math::Vector3d::Zero;
 
-    // Wind velocity at the link origin in the world frame.
-    // We use this to approximate the true wind at the sensor origin
-    // (true wind = unadjusted for the sensors's motion)
-    auto& wind = this->world->Wind();
-    ignition::math::Vector3d windWorldLinearVel
-      = wind.WorldLinearVel(this->dataPtr->parentLink.get());
+      // Apparent wind velocity at the sensor origin in the world frame.
+      math::Vector3d apparentWindWorldLinearVel
+        = windWorldLinearVel - sensorWorldLinearVel;
 
-    // Apparent wind velocity at the sensor origin in the world frame.
-    ignition::math::Vector3d apparentWindWorldLinearVel
-      = windWorldLinearVel - sensorWorldLinearVel;
+      // Apparent wind velocity at the sensor origin in the sensor frame.
+      // This is what would be measured by an anemometer.
+      math::Vector3d apparentWindRelativeLinearVel
+          = sensorWorldPose.Rot().Inverse().RotateVector(
+              apparentWindWorldLinearVel);
 
-    // Apparent wind velocity at the sensor origin in the sensor frame.
-    // This is what would be measured by an anemometer.
-    ignition::math::Vector3d apparentWindRelativeLinearVel
-     = sensorWorldPose.Rot().Inverse().RotateVector(
-        apparentWindWorldLinearVel);
+      // debug info
+      #if 0
+      gzmsg << "parent_link:            "
+            << this->dataPtr->parentLink->GetName() << "\n"
+            << "sensor_link:            " << this->Name() << "\n"
+            << "sensor_world_pose:      " << sensorWorldPose << "\n"
+            << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << "\n"
+            << "link_world_ang_vel:     " << linkWorldAngularVel << "\n"
+            << "sensor_com_pose:        " << sensorCoMPose << "\n"
+            << "sensor_world_lin_vel:   " << sensorWorldLinearVel << "\n"
+            << "wind_world_linear_vel:  " << windWorldLinearVel << "\n"
+            << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << "\n"
+            << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel
+            << "\n\n";
+      #endif
 
-    // Update the messages.
-    msgs::Set(this->dataPtr->anemometerMsg.mutable_wind_velocity(),
-      apparentWindRelativeLinearVel);
-
-    // debug info
-    gzmsg << "parent_link:            " << this->dataPtr->parentLink->GetName()
-          << "\n";
-    gzmsg << "sensor_link:            " << this->Name() << "\n";
-    gzmsg << "sensor_world_pose:      " << sensorWorldPose << "\n";
-    gzmsg << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << "\n";
-    gzmsg << "link_world_ang_vel:     " << linkWorldAngularVel << "\n";
-    gzmsg << "sensor_com_pose:        " << sensorCoMPose << "\n";
-    gzmsg << "sensor_world_lin_vel:   " << sensorWorldLinearVel << "\n";
-    gzmsg << "wind_world_linear_vel:  " << windWorldLinearVel << "\n";
-    gzmsg << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << "\n";
-    gzmsg << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel
-          << "\n";
-    gzmsg << "\n";
-  }
-
-#endif
-
-
-      /// \todo(srmainwaring) implement sensor.
-      // sensor->NewPosition(gz::sim::worldPose(entity, _ecm).Pos());
+      // Update the sensor.
+      sensor->SetApparentWindVelocity(apparentWindRelativeLinearVel);
       sensor->Update(_info.simTime);
     }
   }
