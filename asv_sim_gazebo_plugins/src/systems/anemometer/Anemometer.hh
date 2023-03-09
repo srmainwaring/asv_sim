@@ -86,19 +86,27 @@ class AnemometerPrivate;
 /// Add the SDF for the sensor to a <link> element of your model.
 ///
 /// \code
-/// <sensor name="anemometer_sensor" type="anemometer">
-///   <always_on>true</always_on>
-///   <update_rate>50</update_rate>
+/// <sensor name="anemometer" type="custom" gz:type="anemometer">
+///   <always_on>1</always_on>
+///   <update_rate>30</update_rate>
 ///   <topic>anemometer</topic>
+///   <gz:anemometer>
+///     <noise type="gaussian">
+///       <mean>0.2</mean>
+///       <stddev>0.1</stddev>
+///     </noise>
+///   </gz:anemometer>
 /// </sensor>
 /// \endcode
 ///
 /// # Published Topics
 ///
-/// 1. ~/anemometer (asv_msgs::msgs::Anemometer)
-///   - time (gazebo::msgs::Time)
+/// 1. ~/anemometer (msgs::Vector3d)
+///   - header.stamp
 ///     The simulation time of the observation.
-///   - wind_velocity (gazebo::msgs::Vector3d)
+///   - header.data["frame_id"]
+///     The name of the sensor.
+///   - x, y, z
 ///     The apparent wind at the sensor origin.
 ///     (i.e. true wind adjusted for the velocity of the sensor).
 ///
