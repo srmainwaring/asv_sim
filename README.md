@@ -17,7 +17,7 @@ This package contains plugins and models for the simulation of surface vessels i
 
 ### macOS
 
-- macOS 12.6 (Monterey)
+- macOS 12.6.2 (Monterey)
 - Gazebo Sim, version 7.1.0 (Garden)
 
 ## Installation
@@ -93,33 +93,37 @@ $HOME/gz_ws/src/asv_sim/install/lib
 
 ## Anemometer Sensor
 
-AnemometerSensor to measure wind speed and direction.
+The package includes a custom Anemometer sensor to measure wind speed
+and direction.
 
 ### Usage
 
 Add the SDF for the sensor to a `<link>` element of your model.
 
 ```xml
-<sensor name="anemometer_sensor" type="anemometer">
-  <always_on>true</always_on>
-  <update_rate>50</update_rate>
+<sensor name="anemometer" type="custom" gz:type="anemometer">
+  <always_on>1</always_on>
+  <update_rate>30</update_rate>
   <topic>anemometer</topic>
+  <gz:anemometer>
+    <noise type="gaussian">
+      <mean>0.2</mean>
+      <stddev>0.1</stddev>
+    </noise>
+  </gz:anemometer>
 </sensor>
 ```
 
 ### Published Topics
 
-1. `~/anemometer` (`gazebo::msgs::Param_V`)
+1. `~/anemometer` (`gz::msgs::Vector3d`)
 
-  - `time` (`gazebo::msgs::Time`) \
+  - `header.stamp` (`gz::msgs::Time`) \
     The simulation time of the observation.
 
-  - `true_wind` (`gazebo::msgs::Vector3d`) \
-    The true wind at the link origin.
-
-  - `apparent_wind` (`gazebo::msgs::Vector3d`) \
-    The apparent wind at the link origin
-    (i.e. true wind adjusted for the link velocity).
+  - `x, y, z` (`double`) \
+    The apparent wind velocity components at the sensor origin
+    in the world frame (i.e. true wind adjusted for the link velocity).
 
 ### Parameters
 
@@ -140,34 +144,70 @@ Add the SDF for the sensor to a `<link>` element of your model.
 To run the example:
 
 ```bash
-roslaunch asv_sim_gazebo anemometer_demo_world.launch verbose:=true
+gz sim -v4 -s -r anemometer.sdf
 ```
 
-The launch file loads the `RegisterSensorsPlugin` system plugin using
-the parameter:  
+The system plugin is registered with the simulation in the world file using:
 
 ```xml
-  <arg name="extra_gazebo_args" default="--server-plugin libRegisterSensorsPlugin.so" />
+<plugin filename="asv_sim2-anemometer-system"
+  name="gz::sim::systems::Anemometer">
+</plugin>
 ```
 
 You should see a world containing a single block at the origin. 
 The figure below shows the block falling to demonstate the effect
 of motion on apparent wind:
 
-![anemometer](https://user-images.githubusercontent.com/24916364/224131738-0277d78e-8ab1-4c07-bf14-072b1e3fed19.jpg)
+![anemometer-falling](https://user-images.githubusercontent.com/24916364/224192127-adc7bab0-ade3-42ca-ae5b-1ea66548f392.jpg)
 
-Open the Topic Visualization window and select the `anemometer` topic:
-
-![Anemometer Topic](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic.jpg)
 
 When the block is at rest with axis aligned with the world frame,
-the true and apparent wind should be the same. When the block is in motion,
-for instance by setting the `z` pose to `100` and letting it fall, the
-apparent wind will be adjusted for the object's motion.
+the true and apparent wind should be the same.
 
-![Anemometer Rest](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic_view_rest.jpg)
-![Anemometer Falling](https://github.com/srmainwaring/asv_sim/wiki/images/anemometer_topic_view_falling.jpg)
+```bash
+% gz topic -e -t /anemometer -n 1
+header {
+  stamp {
+    sec: 61
+    nsec: 369000000
+  }
+  data {
+    key: "frame_id"
+    value: "anemometer::base_link::anemometer"
+  }
+  data {
+    key: "seq"
+    value: "61368"
+  }
+}
+x: -5
+y: 1.4381672343972489e-17
+z: -0.00099989893750004975
+```
 
+When the block is in motion, for instance by setting the `z` pose to `100` and letting it fall, the apparent wind will be adjusted for the object's motion.
+
+```bash
+gz topic -e -t /anemometer -n 1
+header {
+  stamp {
+    sec: 58
+    nsec: 596000000
+  }
+  data {
+    key: "frame_id"
+    value: "anemometer::base_link::anemometer"
+  }
+  data {
+    key: "seq"
+    value: "58595"
+  }
+}
+x: -5
+y: 1.959765959893313e-16
+z: 25.675000101061269
+```
 
 ## License
 
