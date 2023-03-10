@@ -39,6 +39,7 @@
 #include <gz/sim/components/Pose.hh>
 #include <gz/sim/components/Sensor.hh>
 #include <gz/sim/components/World.hh>
+#include <gz/sim/components/Wind.hh>
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/Util.hh>
 
@@ -243,8 +244,6 @@ void Anemometer::PostUpdate(
     for (auto &[entity, sensor] : this->dataPtr->entitySensorMap)
     {
       // Sensor pose relative to the world frame
-      // math::Pose3d sensorWorldPose
-      //   = this->pose + this->dataPtr->parentLink->WorldPose();
       math::Pose3d sensorWorldPose = worldPose(entity, _ecm);
 
       // Link velocity at the link CoM in the world frame.
@@ -263,15 +262,22 @@ void Anemometer::PostUpdate(
       // math::Vector3d sensorWorldLinearVel
       //   = linkWorldCoMLinearVel
       //   + linkWorldAngularVel.Cross(sensorCoMPose.Pos());
+
+      /// \todo(srmainwaring) test that the direct use of relativeVel
+      /// calculates the expected velocity of the sensor.
       math::Vector3d sensorWorldLinearVel = relativeVel(entity, _ecm);
 
       // Wind velocity at the link origin in the world frame.
       // We use this to approximate the true wind at the sensor origin
       // (true wind = unadjusted for the sensors's motion)
-      // auto& wind = this->world->Wind();
-      // gz::math::Vector3d windWorldLinearVel
-      //   = wind.WorldLinearVel(this->dataPtr->parentLink.get());
-      math::Vector3d windWorldLinearVel = gz::math::Vector3d::Zero;
+      math::Vector3d windWorldLinearVel = math::Vector3d::Zero;
+      Entity windEntity = _ecm.EntityByComponents(components::Wind());
+      auto velWindWorldComp =
+          _ecm.Component<components::WorldLinearVelocity>(windEntity);
+      if (velWindWorldComp)
+      {
+        windWorldLinearVel = velWindWorldComp->Data();
+      }
 
       // Apparent wind velocity at the sensor origin in the world frame.
       math::Vector3d apparentWindWorldLinearVel
