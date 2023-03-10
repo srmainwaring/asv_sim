@@ -19,11 +19,53 @@
 #ifndef GZ_SIM_SYSTEMS_ANEMOMETER_HH_
 #define GZ_SIM_SYSTEMS_ANEMOMETER_HH_
 
+#include <cmath>
 #include <memory>
 #include <string>
 
 #include <gz/math/Vector3.hh>
+
+#include <gz/sensors/Sensor.hh>
+#include <gz/sensors/SensorTypes.hh>
 #include <gz/sim/System.hh>
+
+#include <gz/transport/Node.hh>
+
+namespace custom
+{
+/// \brief Custom anemometer sensor that publishes wind speed and direction.
+class Anemometer : public gz::sensors::Sensor
+{
+  /// \brief Destructor.
+  public: virtual ~Anemometer();
+
+  // Documentation inherited
+  public: virtual bool Load(const sdf::Sensor &_sdf) override;
+
+  // Documentation inherited
+  public: virtual bool Update(
+    const std::chrono::steady_clock::duration &_now) override;
+
+  /// \brief Set the apparent wind velocity.
+  public: void SetApparentWindVelocity(const gz::math::Vector3d &_vel);
+
+  /// \brief Get the latest apparent wind velocity.
+  public: const gz::math::Vector3d& ApparentWindVelocity() const;
+
+  /// \brief Previous apparent wind velocity.
+  private: gz::math::Vector3d prevApparentWindVel{std::nan(""), std::nan(""),
+      std::nan("")};
+
+  /// \brief Noise that will be applied to the sensor data
+  private: gz::sensors::NoisePtr noise{nullptr};
+
+  /// \brief Node for communication
+  private: gz::transport::Node node;
+
+  /// \brief Publishes sensor data
+  private: gz::transport::Node::Publisher pub;
+};
+}  // namespace custom
 
 namespace gz
 {
@@ -44,19 +86,27 @@ class AnemometerPrivate;
 /// Add the SDF for the sensor to a <link> element of your model.
 ///
 /// \code
-/// <sensor name="anemometer_sensor" type="anemometer">
-///   <always_on>true</always_on>
-///   <update_rate>50</update_rate>
+/// <sensor name="anemometer" type="custom" gz:type="anemometer">
+///   <always_on>1</always_on>
+///   <update_rate>30</update_rate>
 ///   <topic>anemometer</topic>
+///   <gz:anemometer>
+///     <noise type="gaussian">
+///       <mean>0.2</mean>
+///       <stddev>0.1</stddev>
+///     </noise>
+///   </gz:anemometer>
 /// </sensor>
 /// \endcode
 ///
 /// # Published Topics
 ///
-/// 1. ~/anemometer (asv_msgs::msgs::Anemometer)
-///   - time (gazebo::msgs::Time)
+/// 1. ~/anemometer (msgs::Vector3d)
+///   - header.stamp
 ///     The simulation time of the observation.
-///   - wind_velocity (gazebo::msgs::Vector3d)
+///   - header.data["frame_id"]
+///     The name of the sensor.
+///   - x, y, z
 ///     The apparent wind at the sensor origin.
 ///     (i.e. true wind adjusted for the velocity of the sensor).
 ///
@@ -73,7 +123,6 @@ class AnemometerPrivate;
 ///
 class Anemometer
     : public System,
-      public ISystemConfigure,
       public ISystemPreUpdate,
       public ISystemPostUpdate
 {
@@ -84,37 +133,18 @@ class Anemometer
   public: Anemometer();
 
   // Documentation inherited
-  public: void Configure(
-      const Entity &_entity,
-      const std::shared_ptr<const sdf::Element> &_sdf,
-      EntityComponentManager &_ecm,
-      EventManager &_eventMgr) final;
-
-  /// Documentation inherited
   public: void PreUpdate(
       const UpdateInfo &_info,
       EntityComponentManager &_ecm) override;
 
-  /// Documentation inherited
+  // Documentation inherited
   public: void PostUpdate(
       const UpdateInfo &_info,
       const EntityComponentManager &_ecm) final;
 
-  /// \brief Accessor for the current true wind velocity in m/s.
-  /// \return Current true wind velocity.
-  public: gz::math::Vector3d TrueWindVelocity() const;
-
-  /// \brief Accessor for the current apparent wind velocity in m/s.
-  /// \return Current apparent wind velocity.
-  public: gz::math::Vector3d ApparentWindVelocity() const;
-
   /// \brief Private data pointer.
   private: std::unique_ptr<AnemometerPrivate> dataPtr;
 };
-
-/// \def AnemometerPtr
-/// \brief Shared pointer to Anemometer
-using AnemometerPtr = std::shared_ptr<Anemometer>;
 
 }  // namespace systems
 }

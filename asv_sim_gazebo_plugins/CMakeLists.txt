@@ -59,6 +59,11 @@ gz_find_package(gz-plugin2 REQUIRED COMPONENTS loader register)
 set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
 
 #--------------------------------------
+# Find gz-sensors
+gz_find_package(gz-sensors7 REQUIRED)
+set(GZ_SENSORS_VER ${gz-sensors7_VERSION_MAJOR})
+
+#--------------------------------------
 # Find gz-sim
 gz_find_package(gz-sim7 REQUIRED)
 set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
@@ -85,129 +90,3 @@ gz_configure_build(QUIT_IF_BUILD_ERRORS)
 #============================================================================
 gz_create_packages()
 
-# TODO(srmainwaring) - remove ROS / gazebo11 build below when migrated
-###############################################################################
-# Other dependencies...
-
-# find_package(Boost REQUIRED)
-# find_package(Protobuf REQUIRED)
-
-############################################################################### 
-# Messages...
-
-# add_subdirectory(msgs)
-
-############################################################################### 
-# Libraries...
-
-# asv_sim
-# add_library(asv_sim
-#   SHARED
-#     src/AnemometerSensor.cc
-#     src/LiftDragModel.cc
-#     src/Utilities.cc
-# )
-
-# target_link_libraries(asv_sim
-#   asv_sim_msgs
-#   ${Boost_LIBRARIES}
-#   ${catkin_LIBRARIES}
-#   ${GAZEBO_LIBRARIES}
-# )
-
-# add_dependencies(asv_sim
-#   ${catkin_EXPORTED_TARGETS}
-# )
-
-############################################################################### 
-# Plugins...
-
-# RegisterSensorsPlugin
-# add_library(RegisterSensorsPlugin
-#   SHARED
-#     src/RegisterSensorsPlugin.cc
-# )
-
-# target_link_libraries(RegisterSensorsPlugin
-#   asv_sim
-#   asv_sim_msgs
-#   ${Boost_LIBRARIES}
-#   ${catkin_LIBRARIES}
-#   ${GAZEBO_LIBRARIES}
-# )
-
-# add_dependencies(RegisterSensorsPlugin
-#   ${catkin_EXPORTED_TARGETS}
-# )
-
-# SailPlugin
-# add_library(SailPlugin
-#   SHARED
-#     src/SailPlugin.cc
-# )
-
-# target_link_libraries(SailPlugin
-#   asv_sim
-#   asv_sim_msgs
-#   ${Boost_LIBRARIES}
-#   ${catkin_LIBRARIES}
-#   ${GAZEBO_LIBRARIES}
-# )
-
-# add_dependencies(SailPlugin
-#   ${catkin_EXPORTED_TARGETS}
-# )
-
-# FoilPlugin
-# add_library(FoilPlugin
-#   SHARED
-#     src/FoilPlugin.cc
-# )
-
-# target_link_libraries(FoilPlugin
-#   asv_sim
-#   asv_sim_msgs
-#   ${Boost_LIBRARIES}
-#   ${catkin_LIBRARIES}
-#   ${GAZEBO_LIBRARIES}
-# )
-
-# add_dependencies(FoilPlugin
-#   ${catkin_EXPORTED_TARGETS}
-# )
-
-# gazebo_ros_anemometer
-# add_library(gazebo_ros_anemometer
-#   SHARED
-#     src/GazeboRosAnemometer.cc
-# )
-
-# target_link_libraries(gazebo_ros_anemometer
-#   asv_sim
-#   asv_sim_msgs
-#   ${Boost_LIBRARIES}
-#   ${catkin_LIBRARIES}
-#   ${GAZEBO_LIBRARIES}
-# )
-
-# add_dependencies(FoilPlugin
-#   ${catkin_EXPORTED_TARGETS}
-# )
-
-############################################################################### 
-# Executables...
-
-# add_executable(LiftDragMsgSubscriber
-#   src/LiftDragMsgSubscriber.cc
-# )
-
-# target_link_libraries(LiftDragMsgSubscriber  
-#   asv_sim_msgs
-#   ${Boost_LIBRARIES}
-#   ${catkin_LIBRARIES}
-#   ${GAZEBO_LIBRARIES}
-# )
-
-# add_dependencies(LiftDragMsgSubscriber
-#   ${catkin_EXPORTED_TARGETS}
-# )

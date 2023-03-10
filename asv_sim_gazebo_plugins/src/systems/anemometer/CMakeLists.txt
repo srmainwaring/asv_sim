@@ -4,5 +4,6 @@ gz_add_system(anemometer
   PUBLIC_LINK_LIBS
     gz-math${GZ_MATH_VER}::gz-math${GZ_MATH_VER}
     gz-common${GZ_COMMON_VER}::gz-common${GZ_COMMON_VER}
+    gz-sensors${GZ_SENSORS_VER}::gz-sensors${GZ_SENSORS_VER}
     gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
 )

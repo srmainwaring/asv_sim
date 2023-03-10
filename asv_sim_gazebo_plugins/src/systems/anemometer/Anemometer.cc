@@ -15,37 +15,119 @@
 
 #include "Anemometer.hh"
 
+#include <gz/msgs/vector3d.pb.h>
+
 #include <mutex>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 
+#include <gz/common/Console.hh>
 #include <gz/common/Profiler.hh>
+#include <gz/msgs/Utility.hh>
 #include <gz/plugin/Register.hh>
+#include <gz/sensors/Noise.hh>
+#include <gz/sensors/SensorFactory.hh>
+#include <gz/sensors/Util.hh>
+
+#include "gz/sim/components/AngularVelocity.hh"
+#include <gz/sim/components/CustomSensor.hh>
+#include "gz/sim/components/LinearVelocity.hh"
+#include <gz/sim/components/Name.hh>
+#include <gz/sim/components/ParentEntity.hh>
+#include <gz/sim/components/Pose.hh>
+#include <gz/sim/components/Sensor.hh>
+#include <gz/sim/components/World.hh>
+#include <gz/sim/components/Wind.hh>
+#include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/Util.hh>
+
 #include <gz/transport.hh>
 
-// #include <mutex>
-// #include <iostream>
-// #include <string>
-// #include <boost/algorithm/string.hpp>
+#include <sdf/Sensor.hh>
 
-// #include <gazebo/common/Assert.hh>
-// #include <gazebo/physics/Link.hh>
-// #include <gazebo/physics/PhysicsTypes.hh>
-// #include <gazebo/physics/World.hh>
-// #include <gazebo/sensors/Noise.hh>
-// #include <gazebo/sensors/SensorFactory.hh>
-// #include <gazebo/transport/Node.hh>
-// #include <gazebo/transport/TransportTypes.hh>
+namespace custom
+{
+//////////////////////////////////////////////////
+Anemometer::~Anemometer() = default;
 
-// #include <gazebo/msgs/msgs.hh>
+//////////////////////////////////////////////////
+bool Anemometer::Load(const sdf::Sensor &_sdf)
+{
+  auto type = gz::sensors::customType(_sdf);
+  if ("anemometer" != type)
+  {
+    gzerr << "Trying to load [anemometer] sensor, but got type ["
+           << type << "] instead.\n";
+    return false;
+  }
 
-// #include <ignition/math/Pose3.hh>
-// #include <ignition/math/Vector3.hh>
+  // Load common sensor params
+  gz::sensors::Sensor::Load(_sdf);
 
-// #include "asv/sim/MessageTypes.hh"
-// #include "asv/sim/Utilities.hh"
+  // Advertise topic where data will be published
+  this->pub = this->node.Advertise<gz::msgs::Vector3d>(this->Topic());
 
-// using namespace asv;
+  if (!_sdf.Element()->HasElement("gz:anemometer"))
+  {
+    gzdbg << "No custom configuration for [" << this->Topic() << "]\n";
+    return true;
+  }
 
+  // Load custom sensor params
+  auto customElem = _sdf.Element()->GetElement("gz:anemometer");
+
+  if (!customElem->HasElement("noise"))
+  {
+    gzdbg << "No noise for [" << this->Topic() << "]\n";
+    return true;
+  }
+
+  sdf::Noise noiseSdf;
+  noiseSdf.Load(customElem->GetElement("noise"));
+  this->noise = gz::sensors::NoiseFactory::NewNoiseModel(noiseSdf);
+  if (nullptr == this->noise)
+  {
+    gzerr << "Failed to load noise.\n";
+    return false;
+  }
+
+  return true;
+}
+
+//////////////////////////////////////////////////
+bool Anemometer::Update(const std::chrono::steady_clock::duration &_now)
+{
+  gz::msgs::Vector3d msg;
+  *msg.mutable_header()->mutable_stamp() = gz::msgs::Convert(_now);
+  auto frame = msg.mutable_header()->add_data();
+  frame->set_key("frame_id");
+  frame->add_value(this->Name());
+
+  gz::msgs::Set(&msg, this->prevApparentWindVel);
+
+  this->AddSequence(msg.mutable_header());
+  this->pub.Publish(msg);
+
+  return true;
+}
+
+//////////////////////////////////////////////////
+void Anemometer::SetApparentWindVelocity(const gz::math::Vector3d &_vel)
+{
+  this->prevApparentWindVel = _vel;
+}
+
+//////////////////////////////////////////////////
+const gz::math::Vector3d& Anemometer::ApparentWindVelocity() const
+{
+  return this->prevApparentWindVel;
+}
+
+}  // namespace custom
+
+//////////////////////////////////////////////////
 namespace gz
 {
 namespace sim
@@ -56,64 +138,42 @@ namespace systems
 /// \brief Private Anemometer data class.
 class AnemometerPrivate
 {
-  /// \brief Parent link of this sensor.
-  public: Entity parentLink;
+  /// \brief Remove custom sensors if their entities have been removed from
+  /// the simulation.
+  /// \param[in] _ecm Immutable reference to ECM.
+  public: void RemoveSensorEntities(
+      const gz::sim::EntityComponentManager &_ecm);
 
-  /// \todo(srmainwaring) enable
-  /// \brief Publish to topic "~/anemometer".
-  // public: transport::PublisherPtr anemometerPub;
-
-  /// \brief Communication node.
-  public: transport::Node node;
-
-   /// \brief Mutex to protect read and writes
-  public: std::mutex mutex;
-
-  /// \todo(srmainwaring) enable
-  /// \brief Store the most recent anemometer message.
-  // public: asv_msgs::msgs::Anemometer anemometerMsg;
+  /// \brief A map of custom entities to their sensors.
+  public: std::unordered_map<gz::sim::Entity,
+      std::shared_ptr<custom::Anemometer>> entitySensorMap;
 };
 
+/////////////////////////////////////////////////
+void AnemometerPrivate::RemoveSensorEntities(
+    const gz::sim::EntityComponentManager &_ecm)
+{
+  _ecm.EachRemoved<gz::sim::components::CustomSensor>(
+    [&](const gz::sim::Entity &_entity,
+        const gz::sim::components::CustomSensor *)->bool
+      {
+        if (this->entitySensorMap.erase(_entity) == 0)
+        {
+          gzerr << "Internal error, missing anemometer for entity ["
+                << _entity << "].\n";
+        }
+        return true;
+      });
+}
+
+/////////////////////////////////////////////////
 /////////////////////////////////////////////////
 Anemometer::~Anemometer() = default;
 
 /////////////////////////////////////////////////
 Anemometer::Anemometer()
   : System(), dataPtr(std::make_unique<AnemometerPrivate>())
-
 {
-}
-
-/////////////////////////////////////////////////
-void Anemometer::Configure(
-    const Entity &_entity,
-    const std::shared_ptr<const sdf::Element> &_sdf,
-    EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
-{
-  /// \todo(srmainwaring) implement
-#if 0
-  physics::EntityPtr parentEntity =
-    this->world->EntityByName(this->ParentName());
-
-  this->dataPtr->parentLink =
-    boost::dynamic_pointer_cast<physics::Link>(parentEntity);
-
-  auto getTopic = [&, this]() -> std::string
-  {
-    std::string topicName = "~/" + this->ParentName() + '/' + this->Name();
-    if (this->sdf->HasElement("topic"))
-      topicName += '/' + this->sdf->Get<std::string>("topic");
-    boost::replace_all(topicName, "::", "/");
-
-    return topicName;
-  }
-
-  this->dataPtr->anemometerPub =
-      this->node->Advertise<asv_msgs::msgs::Anemometer>(
-          getTopic(), 50);
-
-#endif
 }
 
 /////////////////////////////////////////////////
@@ -121,79 +181,56 @@ void Anemometer::PreUpdate(
     const UpdateInfo &_info,
     EntityComponentManager &_ecm)
 {
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
+  _ecm.EachNew<gz::sim::components::CustomSensor,
+               gz::sim::components::ParentEntity>(
+    [&](const gz::sim::Entity &_entity,
+        const gz::sim::components::CustomSensor *_custom,
+        const gz::sim::components::ParentEntity *_parent)->bool
+      {
+        // Get sensor's scoped name without the world
+        auto sensorScopedName = gz::sim::removeParentScope(
+            gz::sim::scopedName(_entity, _ecm, "::", false), "::");
+        sdf::Sensor data = _custom->Data();
+        data.SetName(sensorScopedName);
 
-  /// \todo(srmainwaring) implement
-#if 0
-  // Get latest pose information
-  if (this->dataPtr->parentLink)
-  {
-    // Sensor pose relative to the world frame
-    ignition::math::Pose3d sensorWorldPose
-      = this->pose + this->dataPtr->parentLink->WorldPose();
+        // Default to scoped name as topic
+        if (data.Topic().empty())
+        {
+          std::string topic = scopedName(_entity, _ecm) + "/anemometer";
+          data.SetTopic(topic);
+        }
 
-    // Link velocity at the link CoM in the world frame.
-    ignition::math::Vector3d linkWorldCoMLinearVel
-      = this->dataPtr->parentLink->WorldCoGLinearVel();
+        gz::sensors::SensorFactory sensorFactory;
+        auto sensor = sensorFactory.CreateSensor<custom::Anemometer>(data);
+        if (nullptr == sensor)
+        {
+          gzerr << "Failed to create anemometer [" << sensorScopedName << "]."
+                << "\n";
+          return false;
+        }
 
-    // Link angular velocity at the link CoM in the world frame.
-    ignition::math::Vector3d linkWorldAngularVel
-      = this->dataPtr->parentLink->WorldAngularVel();
+        // Set sensor parent
+        auto parentName = _ecm.Component<gz::sim::components::Name>(
+            _parent->Data())->Data();
+        sensor->SetParent(parentName);
 
-    // Sensor pose relative to the link CoM
-    ignition::math::Pose3d sensorCoMPose
-      = sensorWorldPose - this->dataPtr->parentLink->WorldCoGPose();
+        // Set topic on Gazebo
+        _ecm.CreateComponent(_entity,
+            gz::sim::components::SensorTopic(sensor->Topic()));
 
-    // Sensor velocity: vs = omega x r_(CoM, sensor)
-    ignition::math::Vector3d sensorWorldLinearVel
-      = linkWorldCoMLinearVel + linkWorldAngularVel.Cross(sensorCoMPose.Pos());
+        // Keep track of this sensor
+        this->dataPtr->entitySensorMap.insert(std::make_pair(_entity,
+            std::move(sensor)));
 
-    // Wind velocity at the link origin in the world frame.
-    // We use this to approximate the true wind at the sensor origin
-    // (true wind = unadjusted for the sensors's motion)
-    auto& wind = this->world->Wind();
-    ignition::math::Vector3d windWorldLinearVel
-      = wind.WorldLinearVel(this->dataPtr->parentLink.get());
+        // Enable components (enable velocity checks)
+        enableComponent<components::WorldLinearVelocity>(_ecm, _entity, true);
+        enableComponent<components::WorldAngularVelocity>(_ecm, _entity, true);
+        enableComponent<components::LinearVelocity>(_ecm, _entity, true);
+        enableComponent<components::AngularVelocity>(_ecm, _entity, true);
+        enableComponent<components::WorldPose>(_ecm, _entity, true);
 
-    // Apparent wind velocity at the sensor origin in the world frame.
-    ignition::math::Vector3d apparentWindWorldLinearVel
-      = windWorldLinearVel - sensorWorldLinearVel;
-
-    // Apparent wind velocity at the sensor origin in the sensor frame.
-    // This is what would be measured by an anemometer.
-    ignition::math::Vector3d apparentWindRelativeLinearVel
-     = sensorWorldPose.Rot().Inverse().RotateVector(
-        apparentWindWorldLinearVel);
-
-    // Update the messages.
-    msgs::Set(this->dataPtr->anemometerMsg.mutable_wind_velocity(),
-      apparentWindRelativeLinearVel);
-
-    // debug info
-    gzmsg << "parent_link:            " << this->dataPtr->parentLink->GetName()
-          << "\n";
-    gzmsg << "sensor_link:            " << this->Name() << "\n";
-    gzmsg << "sensor_world_pose:      " << sensorWorldPose << "\n";
-    gzmsg << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << "\n";
-    gzmsg << "link_world_ang_vel:     " << linkWorldAngularVel << "\n";
-    gzmsg << "sensor_com_pose:        " << sensorCoMPose << "\n";
-    gzmsg << "sensor_world_lin_vel:   " << sensorWorldLinearVel << "\n";
-    gzmsg << "wind_world_linear_vel:  " << windWorldLinearVel << "\n";
-    gzmsg << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << "\n";
-    gzmsg << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel
-          << "\n";
-    gzmsg << "\n";
-  }
-
-  // Save the time of the measurement
-  common::Time simTime = this->world->SimTime();
-  msgs::Set(this->dataPtr->anemometerMsg.mutable_time(), simTime);
-
-  // Publish the message if needed
-  if (this->dataPtr->anemometerPub)
-    this->dataPtr->anemometerPub->Publish(this->dataPtr->anemometerMsg);
-
-#endif
+        return true;
+      });
 }
 
 /////////////////////////////////////////////////
@@ -201,28 +238,80 @@ void Anemometer::PostUpdate(
     const UpdateInfo &_info,
     const EntityComponentManager &_ecm)
 {
-  /// \todo(srmainwaring) implement
-}
+  // Only update and publish if not paused.
+  if (!_info.paused)
+  {
+    for (auto &[entity, sensor] : this->dataPtr->entitySensorMap)
+    {
+      // Sensor pose relative to the world frame
+      math::Pose3d sensorWorldPose = worldPose(entity, _ecm);
 
-/////////////////////////////////////////////////
-gz::math::Vector3d Anemometer::TrueWindVelocity() const
-{
-  /// \todo(srmainwaring) implement
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  return gz::math::Vector3d::Zero;
-}
+      // Link velocity at the link CoM in the world frame.
+      // math::Vector3d linkWorldCoMLinearVel
+      //   = this->dataPtr->parentLink->WorldCoGLinearVel();
 
-/////////////////////////////////////////////////
-gz::math::Vector3d Anemometer::ApparentWindVelocity() const
-{
-  /// \todo(srmainwaring) implement
-  std::lock_guard<std::mutex> lock(this->dataPtr->mutex);
-  // gz::math::Vector3d vel(
-  //     this->dataPtr->anemometerMsg.wind_velocity().x(),
-  //     this->dataPtr->anemometerMsg.wind_velocity().y(),
-  //     this->dataPtr->anemometerMsg.wind_velocity().z());
-  // return vel;
-  return gz::math::Vector3d::Zero;
+      // Link angular velocity at the link CoM in the world frame.
+      // math::Vector3d linkWorldAngularVel
+      //   = this->dataPtr->parentLink->WorldAngularVel();
+
+      // Sensor pose relative to the link CoM
+      // math::Pose3d sensorCoMPose
+      //   = sensorWorldPose - this->dataPtr->parentLink->WorldCoGPose();
+
+      // Sensor velocity: vs = omega x r_(CoM, sensor)
+      // math::Vector3d sensorWorldLinearVel
+      //   = linkWorldCoMLinearVel
+      //   + linkWorldAngularVel.Cross(sensorCoMPose.Pos());
+
+      /// \todo(srmainwaring) test that the direct use of relativeVel
+      /// calculates the expected velocity of the sensor.
+      math::Vector3d sensorWorldLinearVel = relativeVel(entity, _ecm);
+
+      // Wind velocity at the link origin in the world frame.
+      // We use this to approximate the true wind at the sensor origin
+      // (true wind = unadjusted for the sensors's motion)
+      math::Vector3d windWorldLinearVel = math::Vector3d::Zero;
+      Entity windEntity = _ecm.EntityByComponents(components::Wind());
+      auto velWindWorldComp =
+          _ecm.Component<components::WorldLinearVelocity>(windEntity);
+      if (velWindWorldComp)
+      {
+        windWorldLinearVel = velWindWorldComp->Data();
+      }
+
+      // Apparent wind velocity at the sensor origin in the world frame.
+      math::Vector3d apparentWindWorldLinearVel
+        = windWorldLinearVel - sensorWorldLinearVel;
+
+      // Apparent wind velocity at the sensor origin in the sensor frame.
+      // This is what would be measured by an anemometer.
+      math::Vector3d apparentWindRelativeLinearVel
+          = sensorWorldPose.Rot().Inverse().RotateVector(
+              apparentWindWorldLinearVel);
+
+      // debug info
+      #if 0
+      gzmsg << "parent_link:            "
+            << this->dataPtr->parentLink->GetName() << "\n"
+            << "sensor_link:            " << this->Name() << "\n"
+            << "sensor_world_pose:      " << sensorWorldPose << "\n"
+            << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << "\n"
+            << "link_world_ang_vel:     " << linkWorldAngularVel << "\n"
+            << "sensor_com_pose:        " << sensorCoMPose << "\n"
+            << "sensor_world_lin_vel:   " << sensorWorldLinearVel << "\n"
+            << "wind_world_linear_vel:  " << windWorldLinearVel << "\n"
+            << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << "\n"
+            << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel
+            << "\n\n";
+      #endif
+
+      // Update the sensor.
+      sensor->SetApparentWindVelocity(apparentWindRelativeLinearVel);
+      sensor->Update(_info.simTime);
+    }
+  }
+
+  this->dataPtr->RemoveSensorEntities(_ecm);
 }
 
 }  // namespace systems
@@ -232,7 +321,6 @@ gz::math::Vector3d Anemometer::ApparentWindVelocity() const
 GZ_ADD_PLUGIN(
     gz::sim::systems::Anemometer,
     gz::sim::System,
-    gz::sim::systems::Anemometer::ISystemConfigure,
     gz::sim::systems::Anemometer::ISystemPreUpdate,
     gz::sim::systems::Anemometer::ISystemPostUpdate)
 
