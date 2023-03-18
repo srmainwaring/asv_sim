@@ -37,6 +37,7 @@
 
 #include <gz/msgs/double.pb.h>
 
+#include <atomic>
 #include <string>
 #include <unordered_set>
 #include <vector>
@@ -77,10 +78,7 @@ class SailPositionControllerPrivate
   public: std::vector<std::string> jointNames;
 
   /// \brief Commanded joint position
-  public: double jointPosCmd{0.0};
-
-  /// \brief mutex to protect joint commands
-  public: std::mutex jointCmdMutex;
+  public: std::atomic<double> jointPosCmd{0.0};
 
   /// \brief Model interface
   public: Model model{kNullEntity};
@@ -90,31 +88,11 @@ class SailPositionControllerPrivate
 
   /// \brief Joint index to be used.
   public: unsigned int jointIndex{0};
-
-  /// \brief Operation modes
-  enum OperationMode
-  {
-    /// \brief Use PID to achieve positional control
-    PID,
-    /// \brief Bypass PID completely. This means the joint will move to that
-    /// position bypassing the physics engine.
-    ABS
-  };
-
-  /// \brief Joint position mode
-  public: OperationMode mode = OperationMode::PID;
-
-  /// \brief Update period calculated from <update_rate>.
-  // public: std::chrono::steady_clock::duration updatePeriod{0};
-
-  /// \brief Previous update time for publisher throttle.
-  // public: std::chrono::steady_clock::duration lastUpdateTime{0};
 };
 
 /////////////////////////////////////////////////
 void SailPositionControllerPrivate::OnCmdPos(const msgs::Double &_msg)
 {
-  std::lock_guard<std::mutex> lock(this->jointCmdMutex);
   this->jointPosCmd = _msg.data();
 }
 
@@ -211,15 +189,6 @@ void SailPositionController::Configure(
   {
     cmdOffset = _sdf->Get<double>("cmd_offset");
   }
-  if (_sdf->HasElement("use_velocity_commands"))
-  {
-    auto useVelocityCommands = _sdf->Get<bool>("use_velocity_commands");
-    if (useVelocityCommands)
-    {
-      this->dataPtr->mode =
-          SailPositionControllerPrivate::OperationMode::ABS;
-    }
-  }
 
   this->dataPtr->posPid.Init(p, i, d, iMax, iMin, cmdMax, cmdMin, cmdOffset);
 
@@ -286,7 +255,7 @@ void SailPositionController::Configure(
         << "cmd_max: ["    << cmdMax    << "]"            << "\n"
         << "cmd_min: ["    << cmdMin    << "]"            << "\n"
         << "cmd_offset: [" << cmdOffset << "]"            << "\n"
-        << "Topic: ["      << topic     << "]"            << "\n"
+        << "topic: ["      << topic     << "]"            << "\n"
         << "initial_position: [" << this->dataPtr->jointPosCmd << "]"
         << "\n";
 }
@@ -391,56 +360,27 @@ void SailPositionController::PreUpdate(
   }
 
   // Get error in position
-  double error;
-  {
-    std::lock_guard<std::mutex> lock(this->dataPtr->jointCmdMutex);
-    error = jointPosComp->Data().at(this->dataPtr->jointIndex) -
-            this->dataPtr->jointPosCmd;
-  }
+  const double pos = jointPosComp->Data().at(this->dataPtr->jointIndex);
+  const double pos_sgn = pos < 0.0 ? -1.0 : 1.0;
 
-  // Check if the mode is ABS
-  if (this->dataPtr->mode ==
-      SailPositionControllerPrivate::OperationMode::ABS)
-  {
-    // Calculate target velcity
-    double targetVel = 0;
+  // Target position will be in [0, pos_max] (positive),
+  // we set it to have the same sign as the current position
+  const double pos_target = pos_sgn * this->dataPtr->jointPosCmd;
 
-    // Get time in seconds
-    auto dt = std::chrono::duration<double>(_info.dt).count();
-
-    // Get the maximum amount in m that this joint may move
-    auto maxMovement = this->dataPtr->posPid.CmdMax() * dt;
-
-    // Limit the maximum change to maxMovement
-    if (abs(error) > maxMovement)
-    {
-      targetVel = (error < 0) ? this->dataPtr->posPid.CmdMax() :
-          -this->dataPtr->posPid.CmdMax();
-    }
-    else
-    {
-      targetVel = -error;
-    }
-    for (Entity joint : this->dataPtr->jointEntities)
-    {
-      // Update velocity command.
-      auto vel = _ecm.Component<components::JointVelocityCmd>(joint);
-      if (vel == nullptr)
-      {
-        _ecm.CreateComponent(joint, components::JointVelocityCmd({targetVel}));
-      }
-      else
-      {
-        *vel = components::JointVelocityCmd({targetVel});
-      }
-    }
-    return;
-  }
+  // Calculate the error
+  const double error = pos - pos_target;
 
   for (Entity joint : this->dataPtr->jointEntities)
   {
     // Update force command.
     double force = this->dataPtr->posPid.Update(error, _info.dt);
+
+    // Only apply tension forces (when |pos_target| < |pos|)
+    if (force * pos_sgn > 0)
+    {
+      force = 0.0;
+    }
+
     auto forceComp = _ecm.Component<components::JointForceCmd>(joint);
     if (forceComp == nullptr)
     {
