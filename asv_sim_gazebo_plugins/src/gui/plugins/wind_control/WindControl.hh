@@ -50,12 +50,12 @@ inline namespace ASV_SIM_VERSION_NAMESPACE
         gz::sim::EntityComponentManager &_ecm) override;
 
     /// \brief Update the wind speed
-    /// \param[in] _windSpeed new wind speed
+    /// \param[in] _windSpeed new wind speed in m/s
     public slots: void UpdateWindSpeed(double _windSpeed);
 
     /// \brief Update the wind angle
-    /// \param[in] _windAngle new wind angle
-    public slots: void UpdateWindAngle(double _windAngle);
+    /// \param[in] _windAngleDeg new wind angle in degrees
+    public slots: void UpdateWindAngle(double _windAngleDeg);
 
     /// \internal
     /// \brief Pointer to private data

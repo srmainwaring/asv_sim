@@ -15,21 +15,19 @@
 
 #include "WindControl.hh"
 
-#include <gz/msgs/any.pb.h>
-#include <gz/msgs/param.pb.h>
-#include <gz/msgs/param_v.pb.h>
-
-#include <gz/transport/Node.hh>
+#include <mutex>
+#include <string>
 
 #include <gz/plugin/Register.hh>
 
+#include "gz/sim/components/LinearVelocity.hh"
 #include <gz/sim/components/Name.hh>
+#include <gz/sim/components/Wind.hh>
 #include <gz/sim/components/World.hh>
 #include <gz/sim/EntityComponentManager.hh>
 #include <gz/sim/gui/GuiEvents.hh>
 
-#include <mutex>
-#include <string>
+#include <gz/transport/Node.hh>
 
 namespace gz
 {
@@ -47,9 +45,9 @@ inline namespace ASV_SIM_VERSION_NAMESPACE
     public: double windSpeed{5.0};
 
     /// \brief Wind angle
-    public: double windAngle{135.0};
+    public: double windAngleDeg{135.0};
 
-    /// \brief Mutex windSpeed and windAngle
+    /// \brief Mutex windSpeed and windAngleDeg
     public: std::mutex serviceMutex;
 
     /// \brief Initialization flag
@@ -99,7 +97,52 @@ void WindControl::Update(const gz::sim::UpdateInfo & /*_info*/,
         });
     }
 
+    // todo - set the GUI with the initial value of the wind
+
+
     this->dataPtr->initialized = true;
+  }
+
+  /// \todo(srmainwaring) only update on change 
+
+  // set the wind if changed
+  Entity windEntity = _ecm.EntityByComponents(components::Wind());
+
+  // /// \todo(srmainwaring) what to do with vz-component
+  double windAngleRad = this->dataPtr->windAngleDeg * GZ_PI / 180.0;
+  double vx = std::cos(windAngleRad) * this->dataPtr->windSpeed;
+  double vy = std::sin(windAngleRad) * this->dataPtr->windSpeed;
+
+  // // update wind velocity
+  math::Vector3d windVelocity(vx, vy, 0.0);
+
+  auto windVelComp =
+      _ecm.Component<components::WorldLinearVelocity>(windEntity);
+
+  if (windVelComp)
+  {
+    auto compFunc = [](const math::Vector3d &_a, const math::Vector3d &_b)
+    {
+      return _a == _b;
+    };
+    auto state = windVelComp->SetData(windVelocity, compFunc)
+        ? ComponentState::PeriodicChange
+        : ComponentState::NoChange;
+    _ecm.SetChanged(windEntity,
+        components::WorldLinearVelocity::typeId,
+        ComponentState::OneTimeChange /*state*/);
+  }
+  else
+  {
+    _ecm.CreateComponent(windEntity,
+        components::WorldLinearVelocity(windVelocity));
+  }
+
+  // debug
+  {
+    auto windVel =
+        _ecm.Component<components::WorldLinearVelocity>(windEntity)->Data();
+    gzdbg << "wind: " << windVel << "\n";
   }
 }
 
@@ -109,16 +152,16 @@ void WindControl::UpdateWindSpeed(double _windSpeed)
   std::lock_guard<std::mutex> lock(this->dataPtr->serviceMutex);
   this->dataPtr->windSpeed = _windSpeed;
 
-  gzmsg << "Wind Speed: " << _windSpeed << "\n";
+  gzmsg << "Wind Speed: " << _windSpeed << " (m/s)\n";
 }
 
 //////////////////////////////////////////////////
-void WindControl::UpdateWindAngle(double _windAngle)
+void WindControl::UpdateWindAngle(double _windAngleDeg)
 {
   std::lock_guard<std::mutex> lock(this->dataPtr->serviceMutex);
-  this->dataPtr->windAngle = _windAngle;
+  this->dataPtr->windAngleDeg = _windAngleDeg;
 
-  gzmsg << "Wind Angle: " << _windAngle << "\n";
+  gzmsg << "Wind Angle: " << _windAngleDeg << " (deg)\n";
 }
 
 }  // namespace sim

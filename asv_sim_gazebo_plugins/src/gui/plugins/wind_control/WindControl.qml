@@ -54,8 +54,8 @@ GridLayout {
     Layout.fillWidth: true
     id: windSpeed
     maximumValue: 100.0
-    minimumValue: 0.5
-    value: 5.0
+    minimumValue: 0.0
+    value: 0.0
     decimals: 1
     stepSize: 0.5
     onEditingFinished: WindControl.UpdateWindSpeed(windSpeed.value)
@@ -75,7 +75,7 @@ GridLayout {
     id: windAngle
     maximumValue: 180
     minimumValue: -180
-    value: 135
+    value: 0
     decimals: 0
     stepSize: 10
     onEditingFinished: WindControl.UpdateWindAngle(windAngle.value)
