@@ -230,15 +230,25 @@ void FoilLiftDrag::PreUpdate(
   drag.Correct();
 
   // Add force and torque to link (applied at link origin in world frame).
+  if (lift.IsFinite() && liftTorque.IsFinite())
   {
     auto link = Link(this->dataPtr->link.Entity());
     // link.SetVisualizationLabel("FoilLift");
     link.AddWorldWrench(_ecm, lift, liftTorque);
   }
+  else
+  {
+    gzwarn << "FoilLiftDrag: overflow in lift calculation\n";
+  }
+  if (drag.IsFinite() && dragTorque.IsFinite())
   {
     auto link = Link(this->dataPtr->link.Entity());
     // link.SetVisualizationLabel("FoilDrag");
     link.AddWorldWrench(_ecm, drag, dragTorque);
+  }
+  else
+  {
+    gzwarn << "FoilLiftDrag: overflow in drag calculation\n";
   }
 
   /// \todo(srmainwaring) enable force publishing / visualization.
