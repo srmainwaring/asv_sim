@@ -41,6 +41,7 @@
 #include <gz/sim/components/World.hh>
 #include <gz/sim/components/Wind.hh>
 #include <gz/sim/EntityComponentManager.hh>
+#include <gz/sim/Link.hh>
 #include <gz/sim/Util.hh>
 
 #include <gz/transport.hh>
@@ -244,69 +245,50 @@ void Anemometer::PostUpdate(
     for (auto &[entity, sensor] : this->dataPtr->entitySensorMap)
     {
       // Sensor pose relative to the world frame
-      math::Pose3d sensorWorldPose = worldPose(entity, _ecm);
+      math::Pose3d X_WS = worldPose(entity, _ecm);
 
-      // Link velocity at the link CoM in the world frame.
-      // math::Vector3d linkWorldCoMLinearVel
-      //   = this->dataPtr->parentLink->WorldCoGLinearVel();
-
-      // Link angular velocity at the link CoM in the world frame.
-      // math::Vector3d linkWorldAngularVel
-      //   = this->dataPtr->parentLink->WorldAngularVel();
-
-      // Sensor pose relative to the link CoM
-      // math::Pose3d sensorCoMPose
-      //   = sensorWorldPose - this->dataPtr->parentLink->WorldCoGPose();
-
-      // Sensor velocity: vs = omega x r_(CoM, sensor)
-      // math::Vector3d sensorWorldLinearVel
-      //   = linkWorldCoMLinearVel
-      //   + linkWorldAngularVel.Cross(sensorCoMPose.Pos());
-
-      /// \todo(srmainwaring) test that the direct use of relativeVel
-      /// calculates the expected velocity of the sensor.
-      math::Vector3d sensorWorldLinearVel = relativeVel(entity, _ecm);
+      /// calculates the expected velocity of the sensor in sensor link frame.
+      math::Vector3d v_s_S = relativeVel(entity, _ecm);
+      math::Vector3d v_s_W = X_WS.Rot().RotateVector(v_s_S);
 
       // Wind velocity at the link origin in the world frame.
       // We use this to approximate the true wind at the sensor origin
       // (true wind = unadjusted for the sensors's motion)
-      math::Vector3d windWorldLinearVel = math::Vector3d::Zero;
+      math::Vector3d v_wt_W = math::Vector3d::Zero;
       Entity windEntity = _ecm.EntityByComponents(components::Wind());
       auto velWindWorldComp =
           _ecm.Component<components::WorldLinearVelocity>(windEntity);
       if (velWindWorldComp)
       {
-        windWorldLinearVel = velWindWorldComp->Data();
+        v_wt_W = velWindWorldComp->Data();
       }
 
       // Apparent wind velocity at the sensor origin in the world frame.
-      math::Vector3d apparentWindWorldLinearVel
-        = windWorldLinearVel - sensorWorldLinearVel;
+      math::Vector3d v_wa_W = v_wt_W - v_s_W;
 
       // Apparent wind velocity at the sensor origin in the sensor frame.
       // This is what would be measured by an anemometer.
-      math::Vector3d apparentWindRelativeLinearVel
-          = sensorWorldPose.Rot().Inverse().RotateVector(
-              apparentWindWorldLinearVel);
+      math::Vector3d v_wa_S = X_WS.Rot().Inverse().RotateVector(v_wa_W);
 
       // debug info
       #if 0
-      gzmsg << "parent_link:            "
-            << this->dataPtr->parentLink->GetName() << "\n"
-            << "sensor_link:            " << this->Name() << "\n"
-            << "sensor_world_pose:      " << sensorWorldPose << "\n"
-            << "link_world_com_lin_vel: " << linkWorldCoMLinearVel << "\n"
-            << "link_world_ang_vel:     " << linkWorldAngularVel << "\n"
-            << "sensor_com_pose:        " << sensorCoMPose << "\n"
-            << "sensor_world_lin_vel:   " << sensorWorldLinearVel << "\n"
-            << "wind_world_linear_vel:  " << windWorldLinearVel << "\n"
-            << "app_wind_world_lin_vel: " << apparentWindWorldLinearVel << "\n"
-            << "app_wind_rel_lin_vel:   " << apparentWindRelativeLinearVel
-            << "\n\n";
+      auto link = sim::Link(entity);
+      gzmsg << "\n"
+            << "parent_link:  "
+            << link.Name(_ecm).value() << "\n"
+            << "sensor_link:  " << sensor->Name() << "\n"
+            << "X_WS.Pos():   " << X_WS.Pos() << "\n"
+            << "X_WS.Rot():   " << X_WS.Rot().Euler() << "\n"
+            << "v_s_S:        " << v_s_S << "\n"
+            << "v_s_W:        " << v_s_W << "\n"
+            << "v_wt_W:       " << v_wt_W << "\n"
+            << "v_wa_W:       " << v_wa_W << "\n"
+            << "v_wa_S:       " << v_wa_S
+            << "\n";
       #endif
 
       // Update the sensor.
-      sensor->SetApparentWindVelocity(apparentWindRelativeLinearVel);
+      sensor->SetApparentWindVelocity(v_wa_S);
       sensor->Update(_info.simTime);
     }
   }

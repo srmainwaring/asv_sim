@@ -67,7 +67,7 @@
     </light>
 
     <wind>
-      <linear_velocity>-5 0 0</linear_velocity>
+      <linear_velocity>0 -10 0</linear_velocity>
     </wind>
 
     <model name="axes">
@@ -149,7 +149,7 @@
     </model>
 
     <model name="anemometer">
-      <pose>0 0 0.5 0 0 0</pose>
+      <pose>0 0 0.5 0 0 1.570796</pose>
 
       <link name="base_link">
         <inertial>
@@ -181,20 +181,31 @@
             <specular>0.1 0.1 0.1 1.0</specular>
           </material>
         </visual>
-
         <sensor name="anemometer" type="custom" gz:type="anemometer">
           <always_on>1</always_on>
           <update_rate>30</update_rate>
           <topic>anemometer</topic>
           <gz:anemometer>
-            <noise type="gaussian">
+            <!-- <noise type="gaussian">
               <mean>0.2</mean>
               <stddev>0.1</stddev>
-            </noise>
+            </noise> -->
           </gz:anemometer>
         </sensor>
-
       </link>
+
+      <!--
+        Velocity control
+
+        gz topic -t "/model/anemometer/cmd_vel" -m gz.msgs.Twist -p "linear: {x: 5}"
+      -->
+      <plugin
+        filename="gz-sim-velocity-control-system"
+        name="gz::sim::systems::VelocityControl">
+        <initial_linear>0 0 0</initial_linear>
+        <initial_angular>0 0 0</initial_angular>
+      </plugin>
+
     </model>
 
   </world>
