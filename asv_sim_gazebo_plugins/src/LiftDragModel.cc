@@ -221,8 +221,11 @@ void LiftDragModel::Compute(
   gzmsg << "dragUnit:     " << dragUnit << "\n";
   gzmsg << "liftUnit:     " << liftUnit << "\n";
   gzmsg << "alpha:        " << alpha << "\n";
+  gzmsg << "u:            " << _u << "\n";
+  gzmsg << "cl:           " << _cl << "\n";
+  gzmsg << "cd:           " << _cd << "\n";
   gzmsg << "lift:         " << _lift << "\n";
-  gzmsg << "drag:         " << _drag << "\n";
+  gzmsg << "drag:         " << _drag << "\n\n";
 #endif
 }
 
