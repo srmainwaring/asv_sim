@@ -145,34 +145,6 @@ void FoilLiftDrag::Configure(
         std::chrono::steady_clock::duration>(period);
   }
 
-  /// \todo(srmainwaring) implement publishing forces.
-#if 0
-  auto getTopic = [&, this]() -> std::string
-  {
-    std::string topic;
-
-    this->LoadParam(this->dataPtr->sdf, "topic", topic, "lift_drag");
-
-    std::string topicName = "~";
-    if (this->dataPtr->link != nullptr)
-    {
-      topicName += '/' + this->dataPtr->link->GetName();
-    }
-    topicName += '/' + topic;
-    boost::replace_all(topicName, "::", "/");
-
-    return topicName;
-  }
-
-  // Publishers
-  std::string topic = this->GetTopic();
-  this->dataPtr->liftDragPub
-    = this->dataPtr->node->Advertise<asv_msgs::msgs::LiftDrag>(topic);
-
-  // Time
-  this->dataPtr->prevTime = this->dataPtr->world->SimTime();
-#endif
-
   // Lift / Drag model
   this->dataPtr->liftDrag.reset(asv::LiftDragModel::Create(_sdf));
 }
@@ -185,7 +157,7 @@ void FoilLiftDrag::PreUpdate(
   if (_info.paused)
     return;
 
-  if (!this->dataPtr->link.Valid(_ecm))
+  if (!this->dataPtr->link.Valid(_ecm) || !this->dataPtr->liftDrag)
     return;
 
   // ensure components are available
@@ -250,44 +222,6 @@ void FoilLiftDrag::PreUpdate(
   {
     gzwarn << "FoilLiftDrag: overflow in drag calculation\n";
   }
-
-  /// \todo(srmainwaring) enable force publishing / visualization.
-#if 0
-  // Publish message
-  const double updateRate = 50.0;
-  const double updateInterval = 1.0/updateRate;
-  common::Time simTime = this->dataPtr->world->SimTime();
-  if ((simTime - this->dataPtr->prevTime).Double() < updateInterval)
-  {
-    return;
-  }
-  this->dataPtr->prevTime = simTime;
-
-  // Save the time of the measurement
-  asv_msgs::msgs::LiftDrag liftDragMsg;
-  msgs::Set(liftDragMsg.mutable_time(), simTime);
-
-  msgs::Set(liftDragMsg.mutable_lift(), lift);
-  msgs::Set(liftDragMsg.mutable_drag(), drag);
-
-  liftDragMsg.set_alpha(alpha);
-  liftDragMsg.set_speed_ld(u);
-  liftDragMsg.set_lift_coeff(cl);
-  liftDragMsg.set_drag_coeff(cd);
-
-  msgs::Set(liftDragMsg.mutable_vel(), vel);
-  // msgs::Set(liftDragMsg.mutable_vel_ld(), velLD);
-  msgs::Set(liftDragMsg.mutable_xr(), xr);
-  msgs::Set(liftDragMsg.mutable_force(), force);
-  msgs::Set(liftDragMsg.mutable_torque(), torque);
-
-  // Publish the message if needed
-  if (this->dataPtr->liftDragPub)
-    this->dataPtr->liftDragPub->Publish(liftDragMsg);
-
-  // @DEBUG_INFO
-  // gzmsg << liftDragMsg.DebugString() << std::endl;
-#endif
 }
 
 }  // namespace systems
