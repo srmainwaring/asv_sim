@@ -168,7 +168,7 @@ void LiftDragModel::Compute(
   // Compute the angle of attack, alpha:
   // This is the angle between the free stream velocity
   // projected into the lift-drag plane and the forward vector
-  auto velLD = _velU - _velU.Dot(spanI) * velUnit;
+  auto velLD = _velU - _velU.Dot(spanI) * spanI;
 
   // Get direction of drag
   auto dragUnit = velLD;
