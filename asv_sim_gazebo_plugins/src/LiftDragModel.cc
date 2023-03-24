@@ -118,7 +118,7 @@ LiftDragModel* LiftDragModel::Create(
   if (!data->radialSymmetry)
   {
     gzerr << "LiftDragModel only supports radially symmetric foils\n";
-    return 0;
+    return nullptr;
   }
 
   // Normalise
@@ -168,7 +168,7 @@ void LiftDragModel::Compute(
   // Compute the angle of attack, alpha:
   // This is the angle between the free stream velocity
   // projected into the lift-drag plane and the forward vector
-  auto velLD = _velU - _velU.Dot(spanI) * velUnit;
+  auto velLD = _velU - _velU.Dot(spanI) * spanI;
 
   // Get direction of drag
   auto dragUnit = velLD;
@@ -221,8 +221,11 @@ void LiftDragModel::Compute(
   gzmsg << "dragUnit:     " << dragUnit << "\n";
   gzmsg << "liftUnit:     " << liftUnit << "\n";
   gzmsg << "alpha:        " << alpha << "\n";
+  gzmsg << "u:            " << _u << "\n";
+  gzmsg << "cl:           " << _cl << "\n";
+  gzmsg << "cd:           " << _cd << "\n";
   gzmsg << "lift:         " << _lift << "\n";
-  gzmsg << "drag:         " << _drag << "\n";
+  gzmsg << "drag:         " << _drag << "\n\n";
 #endif
 }
 
