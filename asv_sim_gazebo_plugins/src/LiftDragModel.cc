@@ -118,7 +118,7 @@ LiftDragModel* LiftDragModel::Create(
   if (!data->radialSymmetry)
   {
     gzerr << "LiftDragModel only supports radially symmetric foils\n";
-    return 0;
+    return nullptr;
   }
 
   // Normalise
