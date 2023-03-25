@@ -37,6 +37,7 @@
 
 #include <gz/msgs/vector3d.pb.h>
 
+#include <atomic>
 #include <mutex>
 #include <string>
 
@@ -69,24 +70,24 @@ class WindPrivate
   /// \brief Gazebo communication node.
   public: transport::Node node;
 
-  /// \brief Mutex windVel
-  public: std::mutex windVelocityMutex;
-
-  /// \brief Initialization flag
-  public: bool initialized{false};
-
   /// \brief World
   public: World world;
 
-  /// \brief World wind velocity 
-  public: math::Vector3d windVelocityWorld;
+  /// \brief Mutex windVel
+  public: std::mutex windVelocityMutex;
+
+  public: std::atomic<bool> hasWindChanged{false};
+
+  /// \brief World wind velocity
+  public: math::Vector3d windVelWorld;
 };
 
 /////////////////////////////////////////////////
 void WindPrivate::OnWindVelocity(const msgs::Vector3d &_msg)
 {
   std::lock_guard<std::mutex> lock(this->windVelocityMutex);
-  this->windVelocityWorld = msgs::Convert(_msg);
+  this->windVelWorld = msgs::Convert(_msg);
+  this->hasWindChanged = true;
 }
 
 /////////////////////////////////////////////////
@@ -120,7 +121,7 @@ void Wind::Configure(
   if (!_sdf->HasElement("topic"))
   {
     topic = transport::TopicUtils::AsValidTopic("/world/" +
-        this->dataPtr->world.Name(_ecm).value() + "/wind/vel");
+        this->dataPtr->world.Name(_ecm).value() + "/wind");
     if (topic.empty())
     {
       gzerr << "Failed to create topic for wind velocity\n";
@@ -166,6 +167,44 @@ void Wind::PreUpdate(
   if (_info.paused)
     return;
 
+  // Only update on change.
+  if (this->dataPtr->hasWindChanged)
+  {
+    this->dataPtr->hasWindChanged = false;
+
+    std::lock_guard<std::mutex> lock(this->dataPtr->windVelocityMutex);
+  
+    Entity windEntity = _ecm.EntityByComponents(components::Wind());
+
+    auto windVelComp =
+        _ecm.Component<components::WorldLinearVelocity>(windEntity);
+
+    if (windVelComp)
+    {
+      auto compFunc = [](const math::Vector3d &_a, const math::Vector3d &_b)
+      {
+        return _a == _b;
+      };
+      auto state = windVelComp->SetData(this->dataPtr->windVelWorld, compFunc)
+          ? ComponentState::PeriodicChange
+          : ComponentState::NoChange;
+      _ecm.SetChanged(windEntity,
+          components::WorldLinearVelocity::typeId,
+          state);
+    }
+    else
+    {
+      _ecm.CreateComponent(windEntity,
+          components::WorldLinearVelocity(this->dataPtr->windVelWorld));
+    }
+
+    // debug
+    {
+      auto windVel =
+          _ecm.Component<components::WorldLinearVelocity>(windEntity)->Data();
+      gzdbg << "Wind: " << windVel << "\n";
+    }
+  }
 }
 
 }  // namespace systems
