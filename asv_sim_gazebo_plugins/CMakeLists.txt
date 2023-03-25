@@ -74,15 +74,23 @@ gz_find_package(sdformat13 REQUIRED)
 set(SDF_VER ${sdformat13_VERSION_MAJOR})
 
 #============================================================================
-
 # Location of "fake install folder" used in tests
 # Defined here at root scope so it is available for tests in src and test folders
 set(FAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/fake/install")
 
 #============================================================================
+# Plugin install dirs
+set(GZ_SIM_PLUGIN_INSTALL_DIR
+  ${CMAKE_INSTALL_PREFIX}/${GZ_LIB_INSTALL_DIR}/${GZ_DESIGNATION}-${PROJECT_VERSION_MAJOR}/plugins
+)
+
+set(GZ_SIM_GUI_PLUGIN_INSTALL_DIR
+  ${CMAKE_INSTALL_PREFIX}/${GZ_LIB_INSTALL_DIR}/${GZ_DESIGNATION}-${PROJECT_VERSION_MAJOR}/plugins/gui
+)
+
+#============================================================================
 # Configure the build
 #============================================================================
-
 gz_configure_build(QUIT_IF_BUILD_ERRORS)
 
 #============================================================================

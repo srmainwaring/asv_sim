@@ -1,21 +1,19 @@
-cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
-
 if(POLICY CMP0100)
   cmake_policy(SET CMP0100 NEW)
 endif()
-
-project(WindControl)
 
 set(CMAKE_AUTOMOC ON)
 
 find_package(gz-sim7 REQUIRED COMPONENTS gui)
 
-QT5_ADD_RESOURCES(resources_RCC ${PROJECT_NAME}.qrc)
+QT5_ADD_RESOURCES(resources_RCC WindControl.qrc)
 
-add_library(${PROJECT_NAME} SHARED
-  ${PROJECT_NAME}.cc
+add_library(WindControl SHARED
+  WindControl.cc
   ${resources_RCC}
 )
-target_link_libraries(${PROJECT_NAME}
+target_link_libraries(WindControl
   PRIVATE gz-sim7::gui
 )
+
+install(TARGETS WindControl DESTINATION ${GZ_SIM_GUI_PLUGIN_INSTALL_DIR})
