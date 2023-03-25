@@ -43,6 +43,10 @@
     <plugin filename="asv_sim2-anemometer-system"
       name="gz::sim::systems::Anemometer">
     </plugin>
+    <plugin filename="asv_sim2-wind-system"
+      name="gz::sim::systems::Wind">
+      <topic>/wind</topic>
+    </plugin>
 
     <scene>
       <ambient>1.0 1.0 1.0</ambient>
