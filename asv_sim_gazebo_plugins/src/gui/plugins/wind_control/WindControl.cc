@@ -20,7 +20,7 @@
 
 #include <gz/plugin/Register.hh>
 
-#include "gz/sim/components/LinearVelocity.hh"
+#include <gz/sim/components/LinearVelocity.hh>
 #include <gz/sim/components/Name.hh>
 #include <gz/sim/components/Wind.hh>
 #include <gz/sim/components/World.hh>
