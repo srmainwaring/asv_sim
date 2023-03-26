@@ -15,6 +15,9 @@
 
 #include "WindControl.hh"
 
+#include <gz/msgs/vector3d.pb.h>
+
+#include <atomic>
 #include <mutex>
 #include <string>
 
@@ -38,24 +41,69 @@ inline namespace ASV_SIM_VERSION_NAMESPACE
   /// \brief Private data class for WindControl
   class WindControlPrivate
   {
-    /// \brief Transport node
-    public: transport::Node node;
+    /// \brief Publish the wind velocity
+    public: void PublishWindVelocity();
+
+    /// \brief Mutex for topic
+    public: std::mutex topicMutex;
+
+    /// \brief Wind topic
+    public: QString topic;
 
     /// \brief Wind speed
-    public: double windSpeed{5.0};
+    public: std::atomic<double> windSpeed{0.0};
 
     /// \brief Wind angle
-    public: double windAngleDeg{135.0};
+    public: std::atomic<double> windDirection{0.0};
 
-    /// \brief Mutex windSpeed and windAngleDeg
-    public: std::mutex serviceMutex;
+    /// \brief Update on change
+    // public: bool hasChanged{false};
 
     /// \brief Initialization flag
     public: bool initialized{false};
 
     /// \brief Name of the world
     public: std::string worldName;
+
+    /// \brief Transport node
+    public: transport::Node node;
+
+    /// \brief Publisher
+    public: gz::transport::Node::Publisher pub;
   };
+}
+
+/////////////////////////////////////////////////
+void WindControlPrivate::PublishWindVelocity()
+{
+  // publish
+  // if (this->hasChanged)
+  {  
+    // Advertise the topic
+    auto topic = this->topic.toStdString();
+    this->pub = this->node.Advertise<msgs::Vector3d>(topic);
+
+    static bool warned{false};
+    if (!this->pub && !warned)
+    {
+      warned = true;
+      gzerr << "[WindControl]: Unable to publish on topic[" << topic << "]\n";
+      return;
+    }
+
+    /// \todo(srmainwaring) what to do with z-component?
+    // Convert zero reference from north to east and deg to rad.
+    double windDirENU = this->windDirection - 90.0;
+    double windDirRad = windDirENU * GZ_PI / 180.0;
+    double vx = std::cos(windDirRad) * this->windSpeed;
+    double vy = std::sin(windDirRad) * this->windSpeed;
+
+    // Create and publish message
+    msgs::Vector3d msg;
+    msg.set_x(vx);
+    msg.set_y(vy);
+    this->pub.Publish(msg);
+  }
 }
 
 /////////////////////////////////////////////////
@@ -69,15 +117,44 @@ WindControl::WindControl()
 WindControl::~WindControl() = default;
 
 /////////////////////////////////////////////////
-void WindControl::LoadConfig(const tinyxml2::XMLElement * /*_pluginElem*/)
+void WindControl::LoadConfig(const tinyxml2::XMLElement *_pluginElem)
 {
   if (this->title.empty())
   {
     this->title = "Wind Control";
   }
+
+  // Parameters from SDF
+  if (_pluginElem)
+  {
+    {
+      auto elem = _pluginElem->FirstChildElement("topic");
+      if (nullptr != elem && nullptr != elem->GetText())
+      {
+        this->dataPtr->topic = QString::fromStdString(elem->GetText());
+      }
+    }
+    {
+      if (auto elem = _pluginElem->FirstChildElement("wind_speed"))
+      {
+        double value{0.0};
+        elem->QueryDoubleText(&value);
+        this->dataPtr->windSpeed = value;
+      }
+    }
+    {
+      if (auto elem = _pluginElem->FirstChildElement("wind_direction"))
+      {
+        double value{0.0};
+        elem->QueryDoubleText(&value);
+        this->dataPtr->windDirection = value;
+      }
+    }
+  }
+
 }
 
-//////////////////////////////////////////////////
+/////////////////////////////////////////////////
 void WindControl::Update(const gz::sim::UpdateInfo & /*_info*/,
     gz::sim::EntityComponentManager &_ecm)
 {
@@ -97,77 +174,105 @@ void WindControl::Update(const gz::sim::UpdateInfo & /*_info*/,
         });
     }
 
-    // todo - set the GUI with the initial value of the wind
-
-
+    // Set up default topic name if not set
+    if (this->dataPtr->topic.isEmpty())
+    {
+      std::string topic = transport::TopicUtils::AsValidTopic("/world/" +
+          this->dataPtr->worldName + "/wind");
+      static bool warned{false};
+      if (topic.empty() && !warned)
+      {
+        warned = true;
+        gzerr << "Failed to create topic for wind velocity\n";
+        return;
+      }
+      // Set topic changed for GUI (but not publishing).
+      this->dataPtr->topic = QString::fromStdString(topic);
+      this->TopicChanged();
+    }
     this->dataPtr->initialized = true;
   }
 
-  /// \todo(srmainwaring) only update on change 
-
-  // set the wind if changed
+  // Sync the wind
   Entity windEntity = _ecm.EntityByComponents(components::Wind());
 
-  // /// \todo(srmainwaring) what to do with vz-component
-  double windAngleRad = this->dataPtr->windAngleDeg * GZ_PI / 180.0;
-  double vx = std::cos(windAngleRad) * this->dataPtr->windSpeed;
-  double vy = std::sin(windAngleRad) * this->dataPtr->windSpeed;
+  auto windVel =
+      _ecm.Component<components::WorldLinearVelocity>(windEntity)->Data();
 
-  // // update wind velocity
-  math::Vector3d windVelocity(vx, vy, 0.0);
-
-  auto windVelComp =
-      _ecm.Component<components::WorldLinearVelocity>(windEntity);
-
-  if (windVelComp)
-  {
-    auto compFunc = [](const math::Vector3d &_a, const math::Vector3d &_b)
-    {
-      return _a == _b;
-    };
-    auto state = windVelComp->SetData(windVelocity, compFunc)
-        ? ComponentState::PeriodicChange
-        : ComponentState::NoChange;
-    _ecm.SetChanged(windEntity,
-        components::WorldLinearVelocity::typeId,
-        ComponentState::OneTimeChange /*state*/);
-  }
-  else
-  {
-    _ecm.CreateComponent(windEntity,
-        components::WorldLinearVelocity(windVelocity));
-  }
-
-  // debug
-  {
-    auto windVel =
-        _ecm.Component<components::WorldLinearVelocity>(windEntity)->Data();
-    gzdbg << "wind: " << windVel << "\n";
-  }
+  double vx = windVel.X();
+  double vy = windVel.Y();
+  double windSpeed = std::sqrt(vx * vx + vy * vy);
+  double windDirRad = std::atan2(vy, vx);
+  double windDirDeg = windDirRad * 180 / GZ_PI + 90;
+  if (windDirDeg > 180.0)
+    windDirDeg -= 360.0;
+  if (windDirDeg < -180.0)
+     windDirDeg += 360.0;
+  this->dataPtr->windSpeed = windSpeed;
+  this->dataPtr->windDirection = windDirDeg;
+  this->WindSpeedChanged();
+  this->WindDirectionChanged();
+  gzdbg << "wind:      " << windVel << "\n"
+        << "speed:     " << windSpeed << "\n"
+        << "direction: " << windDirDeg << "\n";
 }
 
-//////////////////////////////////////////////////
-void WindControl::UpdateWindSpeed(double _windSpeed)
+/////////////////////////////////////////////////
+QString WindControl::Topic() const
 {
-  std::lock_guard<std::mutex> lock(this->dataPtr->serviceMutex);
+  return this->dataPtr->topic;
+}
+
+/////////////////////////////////////////////////
+void WindControl::SetTopic(const QString &_topic)
+{
+  this->dataPtr->topic = _topic;
+  // this->dataPtr->hasChanged = true;
+  this->TopicChanged();
+
+  gzmsg << "Wind Topic: " << _topic.toStdString() << "\n";
+}
+
+/////////////////////////////////////////////////
+double WindControl::WindSpeed() const
+{
+  return this->dataPtr->windSpeed;
+}
+
+/////////////////////////////////////////////////
+void WindControl::SetWindSpeed(double _windSpeed)
+{
   this->dataPtr->windSpeed = _windSpeed;
+  // this->dataPtr->hasChanged = true;
+  this->WindSpeedChanged();
 
   gzmsg << "Wind Speed: " << _windSpeed << " (m/s)\n";
+
+  this->dataPtr->PublishWindVelocity();
 }
 
-//////////////////////////////////////////////////
-void WindControl::UpdateWindAngle(double _windAngleDeg)
+/////////////////////////////////////////////////
+double WindControl::WindDirection() const
 {
-  std::lock_guard<std::mutex> lock(this->dataPtr->serviceMutex);
-  this->dataPtr->windAngleDeg = _windAngleDeg;
+  return this->dataPtr->windDirection;
+}
 
-  gzmsg << "Wind Angle: " << _windAngleDeg << " (deg)\n";
+/////////////////////////////////////////////////
+void WindControl::SetWindDirection(double _windDirection)
+{
+  this->dataPtr->windDirection = _windDirection;
+  // this->dataPtr->hasChanged = true;
+  this->WindDirectionChanged();
+
+  gzmsg << "Wind Direction: " << _windDirection << " (deg)\n";
+
+  this->dataPtr->PublishWindVelocity();
 }
 
 }  // namespace sim
 }  // namespace gz
 
-//////////////////////////////////////////////////
+/////////////////////////////////////////////////
 // Register this plugin
 GZ_ADD_PLUGIN(gz::sim::WindControl,
               gz::gui::Plugin)

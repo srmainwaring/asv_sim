@@ -19,6 +19,7 @@ import QtQuick.Layouts 1.3
 import "qrc:/qml"
 
 GridLayout {
+  id: windControl
   columns: 6
   columnSpacing: 10
   Layout.minimumWidth: 300
@@ -41,6 +42,23 @@ GridLayout {
     Layout.fillWidth: true
   }
 
+  // wind topic
+  Text {
+    Layout.columnSpan: 2
+    id: windTopicText
+    color: "dimgrey"
+    text: "Wind topic"
+  }
+
+  // todo(srmainwaring) add box for topic
+  TextField {
+    Layout.columnSpan: 2
+    Layout.fillWidth: true
+    id: windTopic
+    text: WindControl.topic
+    selectByMouse: true
+  }
+
   // wind speed
   Text {
     Layout.columnSpan: 2
@@ -55,30 +73,36 @@ GridLayout {
     id: windSpeed
     maximumValue: 100.0
     minimumValue: 0.0
-    value: 0.0
+    // value: WindControl.windSpeed
     decimals: 1
     stepSize: 0.5
-    onEditingFinished: WindControl.UpdateWindSpeed(windSpeed.value)
+    onEditingFinished: {
+      WindControl.SetWindSpeed(windSpeed.value)
+    }
   }
 
-  // wind angle
+  // wind direction (deg from North)
   Text {
     Layout.columnSpan: 2
-    id: windAngleText
+    id: windDirectionText
     color: "dimgrey"
-    text: "Wind angle (deg)"
+    text: "Wind direction (deg)"
   }
 
+  // binding to WindControl.windDirection does not work as the field
+  // cannot be edited...
   GzSpinBox {
     Layout.columnSpan: 2
     Layout.fillWidth: true
-    id: windAngle
+    id: windDirection
     maximumValue: 180
     minimumValue: -180
-    value: 0
+    // value: WindControl.windDirection
     decimals: 0
     stepSize: 10
-    onEditingFinished: WindControl.UpdateWindAngle(windAngle.value)
+    onEditingFinished: {
+      WindControl.SetWindDirection(windDirection.value)
+    }
   }
 
   // Bottom spacer

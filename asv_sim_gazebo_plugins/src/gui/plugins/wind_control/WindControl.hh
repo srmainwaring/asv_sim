@@ -36,6 +36,30 @@ inline namespace ASV_SIM_VERSION_NAMESPACE
   {
     Q_OBJECT
 
+    /// \brief Topic
+    Q_PROPERTY(
+      QString topic
+      READ Topic
+      WRITE SetTopic
+      NOTIFY TopicChanged
+    )
+
+    /// \brief WindSpeed
+    Q_PROPERTY(
+      double windSpeed
+      READ WindSpeed
+      WRITE SetWindSpeed
+      NOTIFY WindSpeedChanged
+    )
+
+    /// \brief WindDirection
+    Q_PROPERTY(
+      double windDirection
+      READ WindDirection
+      WRITE SetWindDirection
+      NOTIFY WindDirectionChanged
+    )
+
     /// \brief Constructor
     public: WindControl();
 
@@ -49,13 +73,53 @@ inline namespace ASV_SIM_VERSION_NAMESPACE
     public: void Update(const gz::sim::UpdateInfo &_info,
         gz::sim::EntityComponentManager &_ecm) override;
 
-    /// \brief Update the wind speed
-    /// \param[in] _windSpeed new wind speed in m/s
-    public slots: void UpdateWindSpeed(double _windSpeed);
+    // /// \brief Update the wind topic
+    // /// \param[in] _topic new wind topic
+    // public slots: void UpdateWindTopic(const std::string &_topic);
 
-    /// \brief Update the wind angle
-    /// \param[in] _windAngleDeg new wind angle in degrees
-    public slots: void UpdateWindAngle(double _windAngleDeg);
+    // /// \brief Update the wind speed
+    // /// \param[in] _windSpeed new wind speed in m/s
+    // public slots: void UpdateWindSpeed(double _windSpeed);
+
+    // /// \brief Update the wind angle
+    // /// \param[in] _windAngleDeg new wind angle in degrees
+    // public slots: void UpdateWindAngle(double _windAngleDeg);
+
+    /// \brief Get the topic as a string, for example
+    /// '/wind'
+    /// \return Topic
+    public: Q_INVOKABLE QString Topic() const;
+
+    /// \brief Set the topic from a string, for example
+    /// '/wind'
+    /// \param[in] _topic Topic
+    public: Q_INVOKABLE void SetTopic(const QString &_topic);
+
+    /// \brief Notify that topic has changed
+    signals: void TopicChanged();
+
+    /// \brief Get the wind speed, in m/s
+    /// \return Wind speed
+    public: Q_INVOKABLE double WindSpeed() const;
+
+    /// \brief Set the wind speed, in m/s
+    /// \param[in] _windSpeed Wind speed
+    public: Q_INVOKABLE void SetWindSpeed(const double _windSpeed);
+
+    /// \brief Notify that wind speed has changed
+    signals: void WindSpeedChanged();
+
+    /// \brief Get the wind direction, in degrees from North
+    /// \return Wind direction
+    public: Q_INVOKABLE double WindDirection() const;
+
+    /// \brief Set the wind direction, in degrees from North
+    /// \param[in] _windDirection Wind direction
+    public: Q_INVOKABLE void SetWindDirection(const double _windDirection);
+
+    /// \brief Notify that wind direction has changed
+    signals: void WindDirectionChanged();
+
 
     /// \internal
     /// \brief Pointer to private data
