@@ -1,0 +1,263 @@
+<?xml version="1.0" ?>
+<!--
+  Copyright (C) 2023  Rhys Mainwaring
+
+  This program is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
+
+tube_cat
+pipe_cat
+jubilee_cat
+
+<sdf version="1.6">
+  <model name="jubilee_cat">
+    <link name="base_link">
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>5</mass>
+        <inertia>
+          <ixx>0.5</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.5</iyy>
+          <iyz>0</iyz>
+          <izz>0.5</izz>
+        </inertia>
+      </inertial>
+      <collision name="left_hull_collision">
+        <pose>0 0.2 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://jubilee_cat/meshes/jubilee_cat_hull_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <collision name="right_hull_collision">
+        <pose>0 -0.2 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://jubilee_cat/meshes/jubilee_cat_hull_collision.stl</uri>
+          </mesh>
+        </geometry>
+      </collision>
+      <visual name="base_link_visual">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://jubilee_cat/meshes/jubilee_cat_base.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <sensor name="imu_sensor" type="imu">
+        <pose>0 0 0 3.141593 0 0</pose>
+        <always_on>1</always_on>
+        <update_rate>1000</update_rate>
+      </sensor>
+    </link>
+
+    <!-- left motor cw -->
+    <link name="left_motor_link">
+      <pose relative_to="left_motor_joint">0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.06</mass>
+        <inertia>
+          <ixx>0.001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.001</iyy>
+          <iyz>0</iyz>
+          <izz>0.001</izz>
+        </inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry>
+          <cylinder>
+            <radius>0.032</radius>
+            <length>0.0316</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://jubilee_cat/meshes/jubilee_cat_cw_prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="left_motor_joint" type="revolute">
+      <pose relative_to="base_link">-0.085013 0.2086 -0.16793 0 1.5708 0</pose>
+      <child>left_motor_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.0E+8</lower>
+          <upper>1.0E+8</upper>
+        </limit>
+        <dynamics>
+          <damping>0.001</damping>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <!-- right motor ccw -->
+    <link name="right_motor_link">
+      <pose relative_to="right_motor_joint">0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.06</mass>
+        <inertia>
+          <ixx>0.001</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.001</iyy>
+          <iyz>0</iyz>
+          <izz>0.001</izz>
+        </inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry>
+          <cylinder>
+            <radius>0.032</radius>
+            <length>0.0316</length>
+          </cylinder>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://jubilee_cat/meshes/jubilee_cat_ccw_prop.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="right_motor_joint" type="revolute">
+      <pose relative_to="base_link">-0.085013 -0.2086 -0.16793 0 1.5708 0</pose>
+      <child>right_motor_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>-1.0E+8</lower>
+          <upper>1.0E+8</upper>
+        </limit>
+        <dynamics>
+          <damping>0.001</damping>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <!-- Plugins -->
+    <plugin
+      name="gz::sim::systems::JointStatePublisher"
+      filename="gz-sim-joint-state-publisher-system">
+    </plugin>
+
+    <!-- left motor thruster cw -->
+    <plugin
+      name="gz::sim::systems::Thruster"
+      filename="gz-sim-thruster-system">
+      <namespace>jubilee_cat</namespace>
+      <joint_name>left_motor_joint</joint_name>
+      <thrust_coefficient>0.02</thrust_coefficient>
+      <fluid_density>1025</fluid_density>
+      <propeller_diameter>0.064</propeller_diameter>
+      <velocity_control>0</velocity_control>
+      <use_angvel_cmd>0</use_angvel_cmd>
+    </plugin>
+
+    <!-- right motor thruster ccw -->
+    <plugin
+      name="gz::sim::systems::Thruster"
+      filename="gz-sim-thruster-system">
+      <namespace>jubilee_cat</namespace>
+      <joint_name>right_motor_joint</joint_name>
+      <thrust_coefficient>-0.02</thrust_coefficient>
+      <fluid_density>1025</fluid_density>
+      <propeller_diameter>0.064</propeller_diameter>
+      <velocity_control>0</velocity_control>
+      <use_angvel_cmd>0</use_angvel_cmd>
+    </plugin>
+
+    <plugin
+      name="gz::sim::systems::Hydrodynamics"
+      filename="gz-waves1-hydrodynamics-system">
+
+      <!-- Not working correctly for nested models? -->
+      <enable>jubilee_cat::base_link::left_hull_collision</enable>
+      <enable>jubilee_cat::base_link::right_hull_collision</enable>
+
+      <hydrodynamics>
+        <damping_on>1</damping_on>
+        <viscous_drag_on>1</viscous_drag_on>
+        <pressure_drag_on>1</pressure_drag_on>
+      </hydrodynamics>
+      <markers>
+        <update_rate>10</update_rate>
+        <water_patch>0</water_patch>
+        <waterline>0</waterline>
+        <underwater_surface>0</underwater_surface>
+      </markers>
+    </plugin>
+  
+    <!-- ArduPilot plugin -->
+    <plugin
+      name="ArduPilotPlugin"
+      filename="ArduPilotPlugin">
+      <fdm_addr>127.0.0.1</fdm_addr>
+      <fdm_port_in>9002</fdm_port_in>        
+      <connectionTimeoutMaxCount>5</connectionTimeoutMaxCount>
+      <lock_step>1</lock_step>
+      <gazeboXYZToNED>0 0 0 3.141593 0 1.57079632</gazeboXYZToNED>
+      <modelXYZToAirplaneXForwardZDown>0 0 0 3.141593 0 0</modelXYZToAirplaneXForwardZDown>
+      <imuName>base_link::imu_sensor</imuName>
+
+      <!--
+        left motor cw
+
+        SERVO1_FUNCTION 73 (ThrottleLeft)
+        SERVO1_MAX 2000
+        SERVO1_MIN 1000
+      -->
+      <control channel="0">
+        <jointName>left_motor_joint</jointName>
+        <multiplier>10</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>1000</servo_min>
+        <servo_max>2000</servo_max>
+        <type>COMMAND</type>
+        <cmd_topic>/model/jubilee_cat/joint/left_motor_joint/cmd_thrust</cmd_topic>
+      </control>
+
+      <!--
+        right motor ccw
+
+        SERVO3_FUNCTION 74 (ThrottleRight)
+        SERVO3_MAX 2000
+        SERVO3_MIN 1000
+      -->
+      <control channel="2">
+        <jointName>right_motor_joint</jointName>
+        <multiplier>10</multiplier>
+        <offset>-0.5</offset>
+        <servo_min>1000</servo_min>
+        <servo_max>2000</servo_max>
+        <type>COMMAND</type>
+        <cmd_topic>/model/jubilee_cat/joint/right_motor_joint/cmd_thrust</cmd_topic>
+      </control>
+    </plugin>
+
+  </model>
+</sdf>
