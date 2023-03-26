@@ -157,13 +157,83 @@
       </link>
     </model>
 
-    <!-- <model name="jubilee_cat_with_ardupilot"> -->
-      <!-- <pose>0 0 0.5 0 0 1.570796</pose> -->
+    <model name="buoy_wp1">
+      <static>true</static>
+      <pose>10 0 0.15 0 0 0</pose>
+      <link name="base_link">
+        <visual name="base_visual">
+          <geometry>
+            <sphere>
+              <radius>0.5</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient>
+            <diffuse>1 0 0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="buoy_wp2">
+      <static>true</static>
+      <pose>0 10 0.15 0 0 0</pose>
+      <link name="base_link">
+        <visual name="base_visual">
+          <geometry>
+            <sphere>
+              <radius>0.5</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient>
+            <diffuse>1 0 0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="buoy_wp3">
+      <static>true</static>
+      <pose>-10 0 0.15 0 0 0</pose>
+      <link name="base_link">
+        <visual name="base_visual">
+          <geometry>
+            <sphere>
+              <radius>0.5</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient>
+            <diffuse>1 0 0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+    <model name="buoy_wp4">
+      <static>true</static>
+      <pose>0 -10 0.15 0 0 0</pose>
+      <link name="base_link">
+        <visual name="base_visual">
+          <geometry>
+            <sphere>
+              <radius>0.5</radius>
+            </sphere>
+          </geometry>
+          <material>
+            <ambient>1 0 0 1</ambient>
+            <diffuse>1 0 0 1</diffuse>
+            <specular>0.1 0.1 0.1 1</specular>
+          </material>
+        </visual>
+      </link>
+    </model>
+
     <include>
       <pose>0 0 0.5 0 0 0</pose>
       <uri>model://jubilee_cat</uri>
     </include>
-    <!-- </model> -->
 
   </world>
 </sdf>
