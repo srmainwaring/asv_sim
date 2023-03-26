@@ -21,14 +21,14 @@
       <pose>0 0 0 0 0 0</pose>
       <inertial>
         <pose>0 0 0.03 0 0 0</pose>
-        <mass>5</mass>
+        <mass>4</mass>
         <inertia>
-          <ixx>0.114</ixx>
+          <ixx>0.091241667</ixx>
           <ixy>0</ixy>
           <ixz>0</ixz>
-          <iyy>0.292</iyy>
+          <iyy>0.233321667</iyy>
           <iyz>0</iyz>
-          <izz>0.391</izz>
+          <izz>0.312770667</izz>
         </inertia>
       </inertial>
       <collision name="left_hull_collision">
@@ -37,6 +37,10 @@
           <mesh>
             <uri>model://jubilee_cat/meshes/jubilee_cat_hull_collision.stl</uri>
           </mesh>
+          <!-- box for inertial approx -->
+          <!-- <box>
+            <size>0.826 0.506 0.133</size>
+          </box> -->
         </geometry>
       </collision>
       <collision name="right_hull_collision">
