@@ -15,25 +15,20 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
-
-tube_cat
-pipe_cat
-jubilee_cat
-
 <sdf version="1.6">
   <model name="jubilee_cat">
     <link name="base_link">
       <pose>0 0 0 0 0 0</pose>
       <inertial>
-        <pose>0 0 0 0 0 0</pose>
+        <pose>0 0 0.03 0 0 0</pose>
         <mass>5</mass>
         <inertia>
-          <ixx>0.5</ixx>
+          <ixx>0.114</ixx>
           <ixy>0</ixy>
           <ixz>0</ixz>
-          <iyy>0.5</iyy>
+          <iyy>0.292</iyy>
           <iyz>0</iyz>
-          <izz>0.5</izz>
+          <izz>0.391</izz>
         </inertia>
       </inertial>
       <collision name="left_hull_collision">
@@ -71,14 +66,14 @@ jubilee_cat
     <link name="left_motor_link">
       <pose relative_to="left_motor_joint">0 0 0 0 0 0</pose>
       <inertial>
-        <mass>0.06</mass>
+        <mass>0.1</mass>
         <inertia>
-          <ixx>0.001</ixx>
+          <ixx>3.39213E-05</ixx>
           <ixy>0</ixy>
           <ixz>0</ixz>
-          <iyy>0.001</iyy>
+          <iyy>3.39213E-05</iyy>
           <iyz>0</iyz>
-          <izz>0.001</izz>
+          <izz>0.0000512</izz>
         </inertia>
       </inertial>
       <collision name="collision">
@@ -117,14 +112,14 @@ jubilee_cat
     <link name="right_motor_link">
       <pose relative_to="right_motor_joint">0 0 0 0 0 0</pose>
       <inertial>
-        <mass>0.06</mass>
+        <mass>0.1</mass>
         <inertia>
-          <ixx>0.001</ixx>
+          <ixx>3.39213E-05</ixx>
           <ixy>0</ixy>
           <ixz>0</ixz>
-          <iyy>0.001</iyy>
+          <iyy>3.39213E-05</iyy>
           <iyz>0</iyz>
-          <izz>0.001</izz>
+          <izz>0.0000512</izz>
         </inertia>
       </inertial>
       <collision name="collision">
@@ -155,6 +150,65 @@ jubilee_cat
         </limit>
         <dynamics>
           <damping>0.001</damping>
+        </dynamics>
+      </axis>
+    </joint>
+
+    <!-- @online{GazeboFuel-nate-Electrical-Box,
+      title={Electrical Box},
+      organization={Open Robotics},
+      date={2018},
+      month={September},
+      day={3},
+      author={nate},
+      url={https://fuel.gazebosim.org/1.0/nate/models/Electrical Box},
+    } -->
+    <!-- <include>
+      <pose>0 0 0.2 0 0 0</pose>
+      <uri>https://fuel.gazebosim.org/1.0/nate/models/Electrical Box</uri>
+      <name>electrical_box</name>
+    </include> -->
+    <link name="electrical_box_link">
+      <pose>0 0 0.165 0 0 0</pose>
+      <inertial>
+        <mass>0.5</mass>
+        <inertia>
+          <ixx>0.002804167</ixx>
+          <ixy>0</ixy>
+          <ixz>0</ixz>
+          <iyy>0.001804167</iyy>
+          <iyz>0</iyz>
+          <izz>0.003408333</izz>
+        </inertia>
+      </inertial>
+      <collision name="collision">
+        <geometry>
+          <box>
+            <size>0.17 0.23 0.12</size>
+          </box>
+        </geometry>
+      </collision>
+      <visual name="visual">
+        <pose>0 0 -0.055 1.57 3.14159 0</pose>
+        <geometry>
+          <mesh>
+            <uri>model://jubilee_cat/meshes/electrical_box.dae</uri>
+            <scale>0.4 0.4 0.4</scale>
+          </mesh>
+        </geometry>
+      </visual>
+    </link>
+    <joint name="electrical_box_joint" type="revolute">
+      <child>electrical_box_link</child>
+      <parent>base_link</parent>
+      <axis>
+        <xyz>0 0 1</xyz>
+        <limit>
+          <lower>0</lower>
+          <upper>0</upper>
+        </limit>
+        <dynamics>
+          <damping>1.</damping>
         </dynamics>
       </axis>
     </joint>
