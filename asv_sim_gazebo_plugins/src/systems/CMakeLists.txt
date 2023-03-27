@@ -89,6 +89,7 @@ endfunction()
 
 add_subdirectory(anemometer)
 add_subdirectory(foil_lift_drag)
+add_subdirectory(mooring)
 add_subdirectory(sail_lift_drag)
 add_subdirectory(sail_position_controller)
 add_subdirectory(wind)
