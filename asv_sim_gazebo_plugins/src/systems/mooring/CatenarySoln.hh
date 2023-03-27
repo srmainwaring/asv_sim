@@ -105,13 +105,13 @@ struct CatenaryFunction
 struct CatenaryHSoln : Functor<double>
 {
   /// \brief Vertical distance from buoy to anchor (metres).
-  private: double V = 82.0;
+  private: double V{std::nanf("")};
 
   /// \brief Horizontal distance from buoy to anchor (metres).
-  private: double H = 120.0;
+  private: double H{std::nanf("")};
 
   /// \brief Total length of mooring chain (metres).
-  private: double L = 160.0;
+  private: double L{std::nanf("")};
 
   /// \brief Constructor.
   public: CatenaryHSoln(double _V, double _H, double _L)
