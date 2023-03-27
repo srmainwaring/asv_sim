@@ -111,7 +111,7 @@ void SailPositionController::Configure(
     const Entity &_entity,
     const std::shared_ptr<const sdf::Element> &_sdf,
     EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
+    EventManager &/*_eventMgr*/)
 {
   this->dataPtr->model = Model(_entity);
 

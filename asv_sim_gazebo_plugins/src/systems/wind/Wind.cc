@@ -85,7 +85,7 @@ void Wind::Configure(
     const Entity &_entity,
     const std::shared_ptr<const sdf::Element> &_sdf,
     EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
+    EventManager &/*_eventMgr*/)
 {
   this->dataPtr->world = sim::World(_entity);
 
@@ -153,7 +153,7 @@ void Wind::PreUpdate(
     this->dataPtr->hasWindChanged = false;
 
     std::lock_guard<std::mutex> lock(this->dataPtr->windVelocityMutex);
-  
+
     Entity windEntity = _ecm.EntityByComponents(components::Wind());
 
     auto windVelComp =

@@ -62,7 +62,7 @@ class FoilLiftDragPrivate
   public: Model model{kNullEntity};
 
   /// \brief Link interface.
-  public: Link link{kNullEntity};;
+  public: Link link{kNullEntity};
 
   /// \brief Gazebo communication node.
   public: transport::Node node;
@@ -97,7 +97,7 @@ void FoilLiftDrag::Configure(
     const Entity &_entity,
     const std::shared_ptr<const sdf::Element> &_sdf,
     EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
+    EventManager &/*_eventMgr*/)
 {
   this->dataPtr->model = Model(_entity);
 
