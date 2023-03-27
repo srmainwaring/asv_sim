@@ -59,7 +59,7 @@
     <plugin filename="gz-sim-magnetometer-system"
       name="gz::sim::systems::Magnetometer">
     </plugin>
-   <plugin filename="gz-sim-navsat-system"
+    <plugin filename="gz-sim-navsat-system"
       name="gz::sim::systems::NavSat">
     </plugin>
     <plugin filename="gz-sim-wind-effects-system"
