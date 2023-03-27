@@ -153,7 +153,7 @@ void Wind::PreUpdate(
     this->dataPtr->hasWindChanged = false;
 
     std::lock_guard<std::mutex> lock(this->dataPtr->windVelocityMutex);
-  
+
     Entity windEntity = _ecm.EntityByComponents(components::Wind());
 
     auto windVelComp =
