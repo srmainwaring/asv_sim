@@ -85,7 +85,7 @@ void Wind::Configure(
     const Entity &_entity,
     const std::shared_ptr<const sdf::Element> &_sdf,
     EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
+    EventManager &/*_eventMgr*/)
 {
   this->dataPtr->world = sim::World(_entity);
 
