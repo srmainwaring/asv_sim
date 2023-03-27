@@ -13,7 +13,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-// Adapted from the MooringForce system developed for the MBARI wave buoy.
+// Adapted from the MooringForce system developed for the MBARI wave buoy
+// including https://github.com/osrf/buoy_sim/pull/135
+//
+// Authors: Mabel Zhang <mabel@openrobotics.org>
+//          Michael Anderson <anderson@mbari.org>
+//          Rhys Mainwaring <rhys.mainwaring@me.com>
 
 // Copyright 2022 Open Source Robotics Foundation, Inc. and Monterey Bay Aquarium Research Institute
 //
