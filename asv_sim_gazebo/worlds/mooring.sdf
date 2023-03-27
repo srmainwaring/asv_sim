@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!--
-  Copyright (C) 2019-2023 Rhys Mainwaring
+  Copyright (C) 2023 Rhys Mainwaring
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,21 +16,6 @@
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
 
-<!--
-  Usage
-
-  Gazebo
-  gz sim -v4 -s -r jubilee_cat.sdf
-
-  SITL
-
-  sim_vehicle.py -D -v Rover -f rover-skid
-    -/-model json:127.0.0.1
-    -/-console
-    -/-custom-location="51.56730439904417,-4.035240867824305,10.0,0.0" 
-
-
--->
 <sdf version="1.6">
   <world name="waves">
 
