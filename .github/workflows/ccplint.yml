@@ -36,8 +36,23 @@ jobs:
           cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
             ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.hh \
             ./asv_sim_gazebo_plugins/src/systems/foil_lift_drag/*.cc
+      - name: Cpplint Mooring Plugin
+        run: |
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/mooring/*.hh \
+            ./asv_sim_gazebo_plugins/src/systems/mooring/*.cc
       - name: Cpplint SailLiftDrag Plugin
         run: |
           cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
             ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.hh \
             ./asv_sim_gazebo_plugins/src/systems/sail_lift_drag/*.cc
+      - name: Cpplint SailPositionController Plugin
+        run: |
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/sail_position_controller/*.hh \
+            ./asv_sim_gazebo_plugins/src/systems/sail_position_controller/*.cc
+      - name: Cpplint Wind Plugin
+        run: |
+          cpplint --filter=-whitespace/blank_line,-whitespace/indent,-build/header_guard,-whitespace/newline \
+            ./asv_sim_gazebo_plugins/src/systems/wind/*.hh \
+            ./asv_sim_gazebo_plugins/src/systems/wind/*.cc
