@@ -1,4 +1,15 @@
-// Copyright 2022 Open Source Robotics Foundation, Inc. and Monterey Bay Aquarium Research Institute
+// Copyright (C) 2023 Rhys Mainwaring
+//
+
+// Adapted from the MooringForce system developed for the MBARI wave buoy
+// including https://github.com/osrf/buoy_sim/pull/135
+//
+// Authors: Mabel Zhang <mabel@openrobotics.org>
+//          Michael Anderson <anderson@mbari.org>
+//          Rhys Mainwaring <rhys.mainwaring@me.com>
+
+// Copyright 2022 Open Source Robotics Foundation, Inc.
+//                and Monterey Bay Aquarium Research Institute
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -41,93 +52,100 @@ struct Functor
   typedef Eigen::Matrix<Scalar, ValuesAtCompileTime, InputsAtCompileTime>
     JacobianType;
 
-  const int m_inputs, m_values;
+  const int inputs_;
+  const int values_;
 
+  /// \brief Constructor.
   Functor()
-  : m_inputs(InputsAtCompileTime), m_values(ValuesAtCompileTime)
-  {
-  }
-  Functor(int inputs, int values)
-  : m_inputs(inputs), m_values(values)
+      : inputs_(InputsAtCompileTime), values_(ValuesAtCompileTime)
   {
   }
 
+  /// \brief Constructor.
+  Functor(int _inputs, int _values)
+      : inputs_(_inputs), values_(_values)
+  {
+  }
+
+  /// \brief The number of inputs.
   int inputs() const
   {
-    return m_inputs;
-  }
-  int values() const
-  {
-    return m_values;
+    return inputs_;
   }
 
-  // you should define that in the subclass :
-  // int operator() (const InputType& x, ValueType* v, JacobianType* _j=0)
+  /// \brief The number of values.
+  int values() const
+  {
+    return values_;
+  }
+
+  // Define an operator overload in the subclass
+  // int operator() (const InputType &_x, ValueType *_v, JacobianType *_j = 0)
   // const;
 };
 
 /////////////////////////////////////////////////
 struct CatenaryFunction
 {
-public:
   /// \brief Scaling factor for catenary chain
-  /// V: meters, vertical distance from buoy to anchor
-  /// B: Meters, length of mooring chain lying on seafloor, start of catenary
-  /// L: meters, total length of mooring chain
-  /// Returns c, scaling factor, ratio of horizontal component of chain tension
-  /// and weight of cable per unit length
-  static double CatenaryScalingFactor(double _V, double _B, double _L)
+  /// \param V Vertical distance from buoy to anchor (metres)
+  /// \param B Length of mooring chain lying on seafloor,
+  /// start of catenary (metres).
+  /// \param L Total length of mooring chain (metres).
+  /// \return  Return scaling factor c, ratio of the horizontal component
+  /// of chain tension and weight of cable per unit length
+  public: static double CatenaryScalingFactor(double _V, double _B, double _L)
   {
     // Scaling factor c
-    return (pow((_L - _B), 2) - pow(_V, 2)) / (2. * _V);
+    return (std::pow((_L - _B), 2.0) - std::pow(_V, 2.0)) / (2.0 * _V);
   }
 };
 
 /////////////////////////////////////////////////
 struct CatenaryHSoln : Functor<double>
 {
-private:
-   /// \brief Meters, vertical distance from buoy to anchor
-   double V = 82.0;
+  /// \brief Vertical distance from buoy to anchor (metres).
+  private: double V = 82.0;
 
-   /// \brief Meters, horizontal distance from buoy to anchor
-   double H = 120.0;
+  /// \brief Horizontal distance from buoy to anchor (metres).
+  private: double H = 120.0;
 
-   /// \brief Meters, total length of mooring chain
-   double L = 160.0;
+  /// \brief Total length of mooring chain (metres).
+  private: double L = 160.0;
 
-   /// \brief For performance, set to true to skip solving vor CatenaryVSoln.
-   /// For accuracy, set to false.
-   bool SKIP_V_SOLVER = true;
-
-public:
-  CatenaryHSoln(double _V, double _H, double _L)
-  : Functor<double>(1, 1),
-    V(_V),
-    H(_H),
-    L(_L)
+  /// \brief Constructor.
+  public: CatenaryHSoln(double _V, double _H, double _L)
+      : Functor<double>(1, 1),
+      V(_V),
+      H(_H),
+      L(_L)
   {
   }
 
   /// \brief Invert the catenary equation and solve for the horizontal input.
   ///
-  /// \brief B length of chain on floor.
-  double InverseCatenaryVSoln(double B) const
+  /// \param B length of chain on floor.
+  public: double InverseCatenaryVSoln(double _B) const
   {
-    double c = CatenaryFunction::CatenaryScalingFactor(this->V, B, this->L);
-    return c * std::acosh(this->V / c + 1.0) + B;
+    double c = CatenaryFunction::CatenaryScalingFactor(this->V, _B, this->L);
+    return c * std::acosh(this->V / c + 1.0) + _B;
   }
 
-  // Know 0 <= B < L - V. Take in B = L - V - b as initial guess
-  int operator()(const Eigen::VectorXd & B, Eigen::VectorXd & fvec) const
+  /// \brief Evaluate the target function.
+  ///
+  /// Know 0 <= B < L - V. Take in B = L - V - b as initial guess
+  public: int operator()(
+      const Eigen::VectorXd &_B,
+      Eigen::VectorXd &_fvec) const
   {
-    if (B.size() < 1) {
-      ignerr << "Invalid input size for CatenaryHSoln::operator()" << std::endl;
+    if (_B.size() < 1)
+    {
+      gzerr << "Invalid input size for InverseCatenaryVSoln::operator()\n";
       return -1;
     }
 
-    // Evaluate target function
-    fvec[0] = this->InverseCatenaryVSoln(B[0]) - this->H;
+    // Evaluate target function.
+    _fvec[0] = this->InverseCatenaryVSoln(_B[0]) - this->H;
 
     return 0;
   }

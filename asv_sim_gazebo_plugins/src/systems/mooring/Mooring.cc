@@ -1,4 +1,4 @@
-// Copyright (C) 2019-2023 Rhys Mainwaring
+// Copyright (C) 2023 Rhys Mainwaring
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,7 +20,8 @@
 //          Michael Anderson <anderson@mbari.org>
 //          Rhys Mainwaring <rhys.mainwaring@me.com>
 
-// Copyright 2022 Open Source Robotics Foundation, Inc. and Monterey Bay Aquarium Research Institute
+// Copyright 2022 Open Source Robotics Foundation, Inc.
+//                and Monterey Bay Aquarium Research Institute
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
