@@ -26,9 +26,9 @@
 #ifndef ASV_SIM_CATENARYSOLN_HH_
 #define ASV_SIM_CATENARYSOLN_HH_
 
-#include <cmath>
-
 #include <eigen3/unsupported/Eigen/NonLinearOptimization>
+
+#include <cmath>
 
 #include <gz/common/Console.hh>
 
