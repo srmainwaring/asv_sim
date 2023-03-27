@@ -6,7 +6,7 @@
 
 This package contains plugins and models for the simulation of surface vessels in Gazebo.
 
-![rs750_ardupilot_v2_upwind](https://user-images.githubusercontent.com/24916364/227651896-bc4ca331-e732-4eb8-9b6e-b8e57223b21e.gif)
+![rs750_ardupilot_v3_upwind](https://user-images.githubusercontent.com/24916364/228044489-b434b1ae-c30f-4676-9415-1719ee75479b.gif)
 
 ## Dependencies
 
