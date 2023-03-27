@@ -15,8 +15,24 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <https://www.gnu.org/licenses/>.
 -->
+
+<!--
+  Usage
+
+  Gazebo
+  gz sim -v4 -s -r jubilee_cat.sdf
+
+  SITL
+
+  sim_vehicle.py -D -v Rover -f rover-skid
+    -/-model json:127.0.0.1
+    -/-console
+    -/-custom-location="51.56730439904417,-4.035240867824305,10.0,0.0" 
+
+
+-->
 <sdf version="1.6">
-  <world name="anemometer">
+  <world name="waves">
 
     <physics name="1ms" type="ignored">
       <max_step_size>0.001</max_step_size>
@@ -24,24 +40,31 @@
     </physics>
 
     <plugin filename="gz-sim-physics-system"
-        name="gz::sim::systems::Physics">
+      name="gz::sim::systems::Physics">
     </plugin>
     <plugin filename="gz-sim-sensors-system"
-        name="gz::sim::systems::Sensors">
+      name="gz::sim::systems::Sensors">
       <render_engine>ogre2</render_engine>
       <background_color>0.8 0.8 0.8</background_color>
     </plugin>
     <plugin filename="gz-sim-scene-broadcaster-system"
-        name="gz::sim::systems::SceneBroadcaster">
+      name="gz::sim::systems::SceneBroadcaster">
     </plugin>
     <plugin filename="gz-sim-user-commands-system"
-        name="gz::sim::systems::UserCommands">
+      name="gz::sim::systems::UserCommands">
     </plugin>
     <plugin filename="gz-sim-imu-system"
-        name="gz::sim::systems::Imu">
+      name="gz::sim::systems::Imu">
     </plugin>
+    <plugin filename="gz-sim-magnetometer-system"
+      name="gz::sim::systems::Magnetometer">
+    </plugin>
+   <plugin filename="gz-sim-navsat-system"
+      name="gz::sim::systems::NavSat">
+    </plugin>
+
     <plugin filename="asv_sim2-anemometer-system"
-      name="gz::sim::systems::Anemometer">
+        name="gz::sim::systems::Anemometer">
     </plugin>
     <plugin filename="asv_sim2-wind-system"
       name="gz::sim::systems::Wind">
@@ -55,8 +78,8 @@
     </scene>
 
     <spherical_coordinates>
-      <latitude_deg>51.56991349023042</latitude_deg>
-      <longitude_deg>-4.033693921107272</longitude_deg>
+      <latitude_deg>51.56730439904417</latitude_deg>
+      <longitude_deg>-4.035240867824305</longitude_deg>
       <elevation>10.0</elevation>
       <heading_deg>0</heading_deg>
       <surface_model>EARTH_WGS84</surface_model>
