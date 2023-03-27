@@ -179,7 +179,7 @@ Anemometer::Anemometer()
 
 /////////////////////////////////////////////////
 void Anemometer::PreUpdate(
-    const UpdateInfo &_info,
+    const UpdateInfo &/*_info*/,
     EntityComponentManager &_ecm)
 {
   _ecm.EachNew<gz::sim::components::CustomSensor,

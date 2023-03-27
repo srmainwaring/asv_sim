@@ -89,13 +89,13 @@ class MooringPrivate
   // public: double effectiveRadius = 90.0;
 
   /// \brief Mass of chain per unit length (kg/m)
-  public: double chainMassPerMetre{{std::nanf("")}};
+  public: double chainMassPerMetre{std::nanf("")};
 
   /// \brief Weight of chain per unit length (N/m).
   public: double w{std::nanf("")};
 
   /// \brief radians, atan2 angle of buoy from anchor
-  public: double theta{{std::nanf("")}};
+  public: double theta{std::nanf("")};
 
   /// \brief Catenary equation to pass to solver
   public: std::unique_ptr<CatenaryHSoln> catenarySoln;
@@ -190,7 +190,7 @@ void Mooring::Configure(
     const Entity &_entity,
     const std::shared_ptr<const sdf::Element> &_sdf,
     EntityComponentManager &_ecm,
-    EventManager &_eventMgr)
+    EventManager &/*_eventMgr*/)
 {
   this->dataPtr->model = sim::Model(_entity);
   if (!this->dataPtr->model.Valid(_ecm))
