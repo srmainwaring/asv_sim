@@ -156,7 +156,11 @@ void LiftDragModel::Compute(
 
   // Avoid division by zero issues.
   if (_velU.Length() <= 0.01)
+  {
+    _lift = gz::math::Vector3d::Zero;
+    _drag = gz::math::Vector3d::Zero;
     return;
+  }
 
   // Rotate forward and upward vectors into the world frame.
   auto forwardI = _bodyPose.Rot().RotateVector(this->data->forward);
