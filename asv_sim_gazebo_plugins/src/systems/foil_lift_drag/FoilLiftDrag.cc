@@ -193,13 +193,13 @@ void FoilLiftDrag::PreUpdate(
   // Rotate the centre of pressure (CP) into the world frame.
   auto xr = linkPoseWorld.Rot().RotateVector(this->dataPtr->cpLink);
 
-  // Compute torque (about link origin in world frame)
-  auto liftTorque = xr.Cross(lift);
-  auto dragTorque = xr.Cross(drag);
-
   // Ensure no overflow.
   lift.Correct();
   drag.Correct();
+
+  // Compute torque (about link origin in world frame)
+  auto liftTorque = xr.Cross(lift);
+  auto dragTorque = xr.Cross(drag);
 
   // Add force and torque to link (applied at link origin in world frame).
   if (lift.IsFinite() && liftTorque.IsFinite())
@@ -210,7 +210,12 @@ void FoilLiftDrag::PreUpdate(
   }
   else
   {
-    gzwarn << "FoilLiftDrag: overflow in lift calculation\n";
+    gzwarn << "FoilLiftDrag: overflow in lift calculation\n"
+           << "Link:         " << this->dataPtr->link.Name(_ecm).value() << "\n"
+           << "xr:           " << xr << "\n"
+           << "lift:         " << lift << "\n"
+           << "liftTorque:   " << liftTorque << "\n"
+           << "\n";
   }
   if (drag.IsFinite() && dragTorque.IsFinite())
   {
@@ -220,7 +225,12 @@ void FoilLiftDrag::PreUpdate(
   }
   else
   {
-    gzwarn << "FoilLiftDrag: overflow in drag calculation\n";
+    gzwarn << "FoilLiftDrag: overflow in drag calculation\n"
+           << "Link:         " << this->dataPtr->link.Name(_ecm).value() << "\n"
+           << "xr:           " << xr << "\n"
+           << "drag:         " << drag << "\n"
+           << "dragTorque:   " << dragTorque << "\n"
+           << "\n";
   }
 }
 
