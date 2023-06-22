@@ -60,48 +60,43 @@ class WinchPrivate
   /// \brief Model interface.
   public: sim::Model model{sim::kNullEntity};
 
-  /// \brief The link attached to the mooring chain.
+  /// \brief The link attached to the winch cable.
   public: sim::Link link{sim::kNullEntity};
 
-  /// \brief World position of link
+  /// \brief World position of link.
   public: math::Vector3d linkWorldPos;
 
-  /// \brief Name of the link the mooring is attached to.
+  /// \brief Name of the link the cable is attached to.
   public: std::string linkName;
 
-  /// \brief The fixed position of the anchor in the world.
-  public: math::Vector3d anchorWorldPos;
+  /// \brief The fixed position of the winch in the world.
+  public: math::Vector3d winchWorldPos;
 
-  /// \brief Meters, vertical distance from buoy to anchor. Updated per
-  /// iteration
+  /// \brief Meters, vertical distance from tethered object to winch.
+  ///  Updated per iteration.
   public: double V{std::nanf("")};
 
-  /// \brief Meters, total length of mooring chain
+  /// \brief Meters, total length of cable.
   public: double L{std::nanf("")};
 
-  /// \brief Meters, horizontal distance from buoy to anchor. Updated per
-  /// iteration
+  /// \brief Meters, horizontal distance from tethered object to winch.
+  /// Updated per iteration.
   public: double H{std::nanf("")};
 
-  /// \brief Distance of buoy from anchor, beyond which (i.e. H > radius)
-  /// mooring force is applied. Within the radius, no or negligible catenary
-  /// curve is formed, and no mooring force will be applied.
-  // public: double effectiveRadius = 90.0;
+  /// \brief Mass of cable per unit length (kg/m)
+  public: double cableMassPerMetre{std::nanf("")};
 
-  /// \brief Mass of chain per unit length (kg/m)
-  public: double chainMassPerMetre{std::nanf("")};
-
-  /// \brief Weight of chain per unit length (N/m).
+  /// \brief Weight of cable per unit length (N/m).
   public: double w{std::nanf("")};
 
-  /// \brief radians, atan2 angle of buoy from anchor
+  /// \brief radians, atan2 angle of object from winch.
   public: double theta{std::nanf("")};
 
-  /// \brief Catenary equation to pass to solver
+  /// \brief Catenary equation to pass to solver.
   public: std::unique_ptr<CatenaryHSoln> catenarySoln;
 
-  /// \brief Solution to catenary equation. Meters, length of chain laying on
-  /// the bottom, start of catenary.
+  /// \brief Solution to catenary equation. Meters, length of cable laying on
+  /// the surface, start of catenary.
   public: Eigen::VectorXd B{};
 
   /// \brief Debug print period calculated from <debug_print_rate>
@@ -113,11 +108,11 @@ class WinchPrivate
   /// \brief Constructor
   public: WinchPrivate();
 
-  /// \brief Look for buoy link to find input to catenary equation, and heave
-  /// cone link to apply output force to
+  /// \brief Look for tethered object link to find input to catenary equation,
+  ///  and link to apply output force to.
   public: bool FindLinks(sim::EntityComponentManager &_ecm);
 
-  /// \brief Update V and H for solver input
+  /// \brief Update V and H for solver input.
   public: void UpdateVH(sim::EntityComponentManager &_ecm);
 };
 
@@ -154,23 +149,23 @@ void WinchPrivate::UpdateVH(sim::EntityComponentManager &_ecm)
     return;
   }
 
-  // Get buoy position in world
+  // Get tethered object position in world.
   auto linkWorldPose = this->link.WorldPose(_ecm);
   this->linkWorldPos = linkWorldPose->Pos();
 
-  // Update vertical (z) distance between buoy and anchor
-  this->V = std::fabs(this->linkWorldPos[2U] - this->anchorWorldPos[2U]);
+  // Update vertical (z) distance between object and winch.
+  this->V = std::fabs(this->linkWorldPos[2U] - this->winchWorldPos[2U]);
 
-  // Update horizontal distance between buoy and anchor
+  // Update horizontal distance between object and winch.
   this->H = std::sqrt(
-    (this->linkWorldPos[0U] - this->anchorWorldPos[0U]) *
-    (this->linkWorldPos[0U] - this->anchorWorldPos[0U]) +
-    (this->linkWorldPos[1U] - this->anchorWorldPos[1U]) *
-    (this->linkWorldPos[1U] - this->anchorWorldPos[1U]));
+    (this->linkWorldPos[0U] - this->winchWorldPos[0U]) *
+    (this->linkWorldPos[0U] - this->winchWorldPos[0U]) +
+    (this->linkWorldPos[1U] - this->winchWorldPos[1U]) *
+    (this->linkWorldPos[1U] - this->winchWorldPos[1U]));
 
-  // Update angle between buoy and anchor
-  this->theta = std::atan2(this->linkWorldPos[1U] - this->anchorWorldPos[1U],
-      this->linkWorldPos[0U] - this->anchorWorldPos[0U]);
+  // Update angle between object and winch.
+  this->theta = std::atan2(this->linkWorldPos[1U] - this->winchWorldPos[1U],
+      this->linkWorldPos[0U] - this->winchWorldPos[0U]);
 
   this->catenarySoln.reset(new CatenaryHSoln(this->V, this->H, this->L));
 }
@@ -214,46 +209,46 @@ void Winch::Configure(
     return;
   }
 
-  if (_sdf->HasElement("anchor_position"))
+  if (_sdf->HasElement("winch_position"))
   {
-    this->dataPtr->anchorWorldPos = _sdf->Get<math::Vector3d>(
-        "anchor_position");
-    gzdbg << "Anchor position set to " << this->dataPtr->anchorWorldPos
+    this->dataPtr->winchWorldPos = _sdf->Get<math::Vector3d>(
+        "winch_position");
+    gzdbg << "Winch position set to " << this->dataPtr->winchWorldPos
           << std::endl;
   }
   else
   {
-    gzerr << "[Winch] missing required element <anchor_position>. "
+    gzerr << "[Winch] missing required element <winch_position>. "
           << "Failed to initialize." << std::endl;
     return;
   }
 
-  if (_sdf->HasElement("chain_length"))
+  if (_sdf->HasElement("cable_length"))
   {
-    this->dataPtr->L = _sdf->Get<double>("chain_length");
-    gzdbg << "Chain length set to " << this->dataPtr->L << std::endl;
+    this->dataPtr->L = _sdf->Get<double>("cable_length");
+    gzdbg << "Cable length set to " << this->dataPtr->L << std::endl;
   }
   else
   {
-    gzerr << "[Winch] missing required element <chain_length>. "
+    gzerr << "[Winch] missing required element <cable_length>. "
           << "Failed to initialize." << std::endl;
     return;
   }
 
-  if (_sdf->HasElement("chain_mass_per_metre"))
+  if (_sdf->HasElement("cable_mass_per_metre"))
   {
-    this->dataPtr->chainMassPerMetre =
-        _sdf->Get<double>("chain_mass_per_metre");
-    gzdbg << "Chain mass per length set to "
-          << this->dataPtr->chainMassPerMetre << std::endl;
+    this->dataPtr->cableMassPerMetre =
+        _sdf->Get<double>("cable_mass_per_metre");
+    gzdbg << "Cable mass per length set to "
+          << this->dataPtr->cableMassPerMetre << std::endl;
 
     /// \todo(srmainwaring) move to constants.
     double gravity = 9.81;
-    this->dataPtr->w = gravity * this->dataPtr->chainMassPerMetre;
+    this->dataPtr->w = gravity * this->dataPtr->cableMassPerMetre;
   }
   else
   {
-    gzerr << "[Winch] missing required element <chain_mass_per_metre>. "
+    gzerr << "[Winch] missing required element <cable_mass_per_metre>. "
           << "Failed to initialize." << std::endl;
     return;
   }
@@ -312,7 +307,7 @@ void Winch::PreUpdate(
   // Update V and H based on latest buoy position
   this->dataPtr->UpdateVH(_ecm);
 
-  // Skip solver if the chain can drop vertically (within tolerance).
+  // Skip solver if the  cable can drop vertically (within tolerance).
   double toleranceL = 0.1;
   if (this->dataPtr->V + this->dataPtr->H <= this->dataPtr->L + toleranceL)
   {
@@ -357,12 +352,12 @@ void Winch::PreUpdate(
   double c = CatenaryFunction::CatenaryScalingFactor(
     this->dataPtr->V, this->dataPtr->B[0U], this->dataPtr->L);
 
-  // Horizontal component of chain tension, in Newtons
+  // Horizontal component of cable tension, in Newtons
   // Force at buoy heave cone is Fx = -Tx
   double Tr = - c * this->dataPtr->w;
   double Tx = Tr * std::cos(this->dataPtr->theta);
   double Ty = Tr * std::sin(this->dataPtr->theta);
-  // Vertical component of chain tension at attachment point, in Newtons.
+  // Vertical component of cable tension at attachment point, in Newtons.
   double Tz = - this->dataPtr->w * (this->dataPtr->L - this->dataPtr->B[0U]);
 
   #if 0
@@ -375,7 +370,7 @@ void Winch::PreUpdate(
     gzdbg << "HSolver solverInfo: " << solverInfo << "\n"
           << " t: " << std::chrono::duration_cast<
               std::chrono::milliseconds>(_info.simTime).count()/1000.0 << "\n"
-          << " Anchor: " << this->dataPtr->anchorWorldPos << "\n"
+          << " Anchor: " << this->dataPtr->winchWorldPos << "\n"
           << " Link:   " << this->dataPtr->linkWorldPos << "\n"
           << " R: " << this->dataPtr->effectiveRadius << "\n"
           << " L: " << this->dataPtr->L << "\n"

@@ -21,8 +21,6 @@
 
     gz topic -t /wind -m gz.msgs.Vector3d -p "x: 0, y: 10.0"
 
-
-
 -->
 
 <sdf version="1.9">
@@ -273,9 +271,9 @@
         filename="asv_sim2-winch-system"
         name="gz::sim::systems::Winch">
         <link_name>bridle_link</link_name>
-        <anchor_position>5 0 0</anchor_position>
-        <chain_length>6.0</chain_length>
-        <chain_mass_per_metre>1</chain_mass_per_metre>
+        <winch_position>5 0 0</winch_position>
+        <cable_length>6.0</cable_length>
+        <cable_mass_per_metre>1</cable_mass_per_metre>
       </plugin>
     </model>
 
