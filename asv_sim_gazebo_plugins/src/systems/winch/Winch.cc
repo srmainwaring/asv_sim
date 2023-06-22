@@ -72,6 +72,25 @@ class WinchPrivate
   /// \brief The fixed position of the winch in the world.
   public: math::Vector3d winchWorldPos;
 
+  /// \brief Initial cable length.
+  public: double cableLengthInitial{std::nanf("")};
+
+  /// \brief Max cable length.
+  public: double cableLengthMax{std::nanf("")};
+
+  /// \brief Min cable length.
+  public: double cableLengthMin{std::nanf("")};
+
+  /// \brief Winch state. True if stopped.
+  public: bool isWinchStopped{true};
+
+  /// \brief Cable speed: change in cable length per second.
+  public: double cableSpeed{0.0};
+
+  // \brief Cable speed limits.
+  // public: double cableSpeedMax{std::nanf("")};
+  // public: double cableSpeedMin{std::nanf("")};
+
   /// \brief Meters, vertical distance from tethered object to winch.
   ///  Updated per iteration.
   public: double V{std::nanf("")};
@@ -225,12 +244,40 @@ void Winch::Configure(
 
   if (_sdf->HasElement("cable_length"))
   {
-    this->dataPtr->L = _sdf->Get<double>("cable_length");
-    gzdbg << "Cable length set to " << this->dataPtr->L << std::endl;
+    this->dataPtr->cableLengthInitial = _sdf->Get<double>("cable_length");
+    this->dataPtr->L = this->dataPtr->cableLengthInitial;
+    gzdbg << "Cable length set to " << this->dataPtr->cableLengthInitial
+          << std::endl;
   }
   else
   {
     gzerr << "[Winch] missing required element <cable_length>. "
+          << "Failed to initialize." << std::endl;
+    return;
+  }
+
+  if (_sdf->HasElement("cable_length_max"))
+  {
+    this->dataPtr->cableLengthMax = _sdf->Get<double>("cable_length_max");
+    gzdbg << "Cable max length set to " << this->dataPtr->cableLengthMax
+          << std::endl;
+  }
+  else
+  {
+    gzerr << "[Winch] missing required element <cable_length_max>. "
+          << "Failed to initialize." << std::endl;
+    return;
+  }
+
+  if (_sdf->HasElement("cable_length_min"))
+  {
+    this->dataPtr->cableLengthMin = _sdf->Get<double>("cable_length_min");
+    gzdbg << "Cable min length set to " << this->dataPtr->cableLengthMin
+          << std::endl;
+  }
+  else
+  {
+    gzerr << "[Winch] missing required element <cable_length_min>. "
           << "Failed to initialize." << std::endl;
     return;
   }
@@ -304,6 +351,19 @@ void Winch::PreUpdate(
     return;
   }
 
+  // Calculate change in cable length
+  double dt = std::chrono::duration_cast<
+      std::chrono::milliseconds>(_info.dt).count() * 1.0E-3;
+
+  /// \todo(srmainwaring) remove
+  this->dataPtr->cableSpeed = -1.0;
+  double dx = this->dataPtr->cableSpeed * dt;
+  double x = this->dataPtr->L + dx;
+  if (x >= this->dataPtr->cableLengthMin && x <= this->dataPtr->cableLengthMax)
+  {
+    this->dataPtr->L = x;
+  }
+
   // Update V and H based on latest buoy position
   this->dataPtr->UpdateVH(_ecm);
 
@@ -372,7 +432,6 @@ void Winch::PreUpdate(
               std::chrono::milliseconds>(_info.simTime).count()/1000.0 << "\n"
           << " Anchor: " << this->dataPtr->winchWorldPos << "\n"
           << " Link:   " << this->dataPtr->linkWorldPos << "\n"
-          << " R: " << this->dataPtr->effectiveRadius << "\n"
           << " L: " << this->dataPtr->L << "\n"
           << " V + H : " << this->dataPtr->V + this->dataPtr->H << "\n"
           << " V: " << this->dataPtr->V << "\n"

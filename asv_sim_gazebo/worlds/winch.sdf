@@ -273,6 +273,12 @@
         <link_name>bridle_link</link_name>
         <winch_position>5 0 0</winch_position>
         <cable_length>6.0</cable_length>
+        <cable_length_min>1.0</cable_length_min>
+        <cable_length_max>10.0</cable_length_max>
+        
+        <!-- <cable_speed_min>-1.0</cable_speed_min> -->
+        <!-- <cable_speed_max>1.0</cable_speed_max> -->
+
         <cable_mass_per_metre>1</cable_mass_per_metre>
       </plugin>
     </model>
