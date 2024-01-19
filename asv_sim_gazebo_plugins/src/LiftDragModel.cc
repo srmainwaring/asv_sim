@@ -205,12 +205,17 @@ void LiftDragModel::Compute(
   // Compute drag coefficient due to lift.
   double cd = this->DragCoefficient(alpha);
 
-  // add drag coeefficient due to skin friction
-  // for total drag coefficient.
-  double cdSum = cd + this->data->cf;
+  // Compute chordwise velocity.
+  double uf = u * cosAlpha;
 
-  // Compute drag force.
-  _drag = cdSum * q * this->data->area * dragUnit;
+  // Compute chordwise dynamic pressure.
+  double qf = 0.5 * this->data->fluidDensity * uf * uf ;
+
+  // Read drag coefficient due to skin friction.
+  double cf = this->data->cf ;
+
+  // Compute total drag force from vortex and skin friction drag
+  _drag = ((cd * q) + (cf * qf)) * this->data->area * dragUnit;
 
   // Outputs
   _alpha = alpha;
