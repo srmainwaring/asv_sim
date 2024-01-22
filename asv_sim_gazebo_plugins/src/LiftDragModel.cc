@@ -76,6 +76,9 @@ class LiftDragModelPrivate
 
   /// \brief Slope of drag coefficient.
   public: double cda = 2.0 / GZ_PI;
+
+  /// \brief Slope of skin friction coefficient.
+  public: double cf = 0.0;
 };
 
 /////////////////////////////////////////////////
@@ -113,6 +116,7 @@ LiftDragModel* LiftDragModel::Create(
   asv::LoadParam(_sdf, "cla", data->cla, data->cla);
   asv::LoadParam(_sdf, "cla_stall", data->claStall, data->claStall);
   asv::LoadParam(_sdf, "cda", data->cda, data->cda);
+  asv::LoadParam(_sdf, "cf", data->cf, data->cf);
 
   // Only support radially symmetric lift-drag coefficients at present
   if (!data->radialSymmetry)
@@ -198,11 +202,20 @@ void LiftDragModel::Compute(
   // Compute lift force.
   _lift = cl * q * this->data->area * liftUnit;
 
-  // Compute drag coefficient.
+  // Compute drag coefficient due to lift.
   double cd = this->DragCoefficient(alpha);
 
-  // Compute drag force.
-  _drag = cd * q * this->data->area * dragUnit;
+  // Compute chordwise velocity.
+  double uf = u * cosAlpha;
+
+  // Compute chordwise dynamic pressure.
+  double qf = 0.5 * this->data->fluidDensity * uf * uf ;
+
+  // Read drag coefficient due to skin friction.
+  double cf = this->data->cf ;
+
+  // Compute total drag force from vortex and skin friction drag
+  _drag = ((cd * q) + (cf * qf)) * this->data->area * dragUnit;
 
   // Outputs
   _alpha = alpha;
