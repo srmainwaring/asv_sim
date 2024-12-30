@@ -33,7 +33,9 @@
 
 #include "asv/sim/LiftDragModel.hh"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include <gz/math/Pose3.hh>
 #include <gz/math/Vector3.hh>

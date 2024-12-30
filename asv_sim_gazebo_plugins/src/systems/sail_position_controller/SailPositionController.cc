@@ -38,6 +38,7 @@
 #include <gz/msgs/double.pb.h>
 
 #include <atomic>
+#include <memory>
 #include <string>
 #include <unordered_set>
 #include <vector>

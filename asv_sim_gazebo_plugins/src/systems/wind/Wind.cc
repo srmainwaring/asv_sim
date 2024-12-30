@@ -18,6 +18,7 @@
 #include <gz/msgs/vector3d.pb.h>
 
 #include <atomic>
+#include <memory>
 #include <mutex>
 #include <string>
 

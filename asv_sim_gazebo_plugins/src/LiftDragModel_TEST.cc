@@ -16,6 +16,7 @@
 #include <gtest/gtest.h>
 
 #include <memory>
+#include <string>
 
 #include "asv/sim/LiftDragModel.hh"
 
