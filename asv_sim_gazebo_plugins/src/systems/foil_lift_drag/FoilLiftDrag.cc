@@ -34,6 +34,7 @@
 
 #include "FoilLiftDrag.hh"
 
+#include <memory>
 #include <mutex>
 #include <string>
 

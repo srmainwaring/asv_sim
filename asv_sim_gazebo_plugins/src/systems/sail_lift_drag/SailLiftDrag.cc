@@ -34,6 +34,7 @@
 
 #include "SailLiftDrag.hh"
 
+#include <memory>
 #include <mutex>
 #include <string>
 

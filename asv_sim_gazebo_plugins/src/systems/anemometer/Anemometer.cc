@@ -17,6 +17,7 @@
 
 #include <gz/msgs/vector3d.pb.h>
 
+#include <memory>
 #include <mutex>
 #include <string>
 #include <unordered_map>

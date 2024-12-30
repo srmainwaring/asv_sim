@@ -15,6 +15,9 @@
 
 #include "asv/sim/GazeboRosAnemometer.h"
 
+#include <memory>
+#include <string>
+
 #include <gazebo/physics/physics.hh>
 
 // using namespace gazebo;

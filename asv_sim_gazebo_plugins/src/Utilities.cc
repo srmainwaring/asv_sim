@@ -15,6 +15,8 @@
 
 #include "asv/sim/Utilities.hh"
 
+#include <string>
+
 namespace asv
 {
 template <>
